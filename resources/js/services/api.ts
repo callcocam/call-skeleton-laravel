@@ -1,11 +1,12 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { useToast } from '../components/ui/toast';
 
 class ApiService {
   private api: AxiosInstance;
 
   constructor() {
     this.api = axios.create({
-      baseURL: '/api', // Assuming the API is served from the /api endpoint
+      baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
       headers: {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -28,45 +29,102 @@ class ApiService {
       }
     );
 
-    // Add response interceptor
+    // Add response interceptor with improved error handling
     this.api.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        // Handle errors globally
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          const { status } = error.response;
-          
-          switch (status) {
-            case 401:
-              // Handle unauthorized
-              console.error('Unauthorized access');
-              // You could redirect to login page or trigger a logout
-              break;
-            case 403:
-              // Handle forbidden
-              console.error('Forbidden access');
-              break;
-            case 404:
-              // Handle not found
-              console.error('Resource not found');
-              break;
-            case 500:
-              // Handle server error
-              console.error('Server error');
-              break;
-            default:
-              console.error(`Request failed with status: ${status}`);
-          }
-        } else if (error.request) {
-          // The request was made but no response was received
-          console.error('No response received', error.request);
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.error('Error', error.message);
+      (response) => {
+        // Opcionalmente notificar usuário sobre operações bem sucedidas quando há mensagem
+        if (response.data && response.data.message && response.data.status === 'success') {
+          const { toast } = useToast() as any;
+          toast({
+            title: 'Sucesso',
+            description: response.data.message,
+            variant: 'success',
+          });
         }
-        
+        return response;
+      },
+      (error) => {
+        const { toast } = useToast();
+
+        if (error.response) {
+          // Erro de validação do Laravel (422)
+          if (error.response.status === 422) {
+            // Não mostrar toast para erros de validação, serão tratados nos componentes
+            return Promise.reject(error);
+          }
+
+          // Erro de não autorizado (401)
+          if (error.response.status === 401) {
+            toast({
+              title: 'Não autorizado',
+              description: error.response.data.message || 'Sua sessão expirou ou você não tem permissão para acessar este recurso.',
+              variant: 'destructive'
+            });
+
+            // Redirecionar para login se necessário
+            setTimeout(() => {
+              window.location.href = '/login';
+            }, 2000);
+
+            return Promise.reject(error);
+          }
+
+          // Erro de acesso proibido (403)
+          if (error.response.status === 403) {
+            toast({
+              title: 'Acesso negado',
+              description: error.response.data.message || 'Você não tem permissão para realizar esta ação.',
+              variant: 'destructive'
+            });
+
+            return Promise.reject(error);
+          }
+
+          // Erro de não encontrado (404)
+          if (error.response.status === 404) {
+            toast({
+              title: 'Recurso não encontrado',
+              description: error.response.data.message || 'O recurso solicitado não foi encontrado.',
+              variant: 'destructive'
+            });
+
+            return Promise.reject(error);
+          }
+
+          // Erros de servidor (500, etc)
+          if (error.response.status >= 500) {
+            toast({
+              title: 'Erro do servidor',
+              description: error.response.data.message || 'Ocorreu um erro no servidor. Tente novamente mais tarde.',
+              variant: 'destructive'
+            });
+
+            return Promise.reject(error);
+          }
+
+          // Outros erros HTTP
+          toast({
+            title: `Erro ${error.response.status}`,
+            description: error.response.data.message || 'Ocorreu um erro inesperado.',
+            variant: 'destructive'
+          });
+
+        } else if (error.request) {
+          // Requisição enviada mas sem resposta (problemas de rede)
+          toast({
+            title: 'Erro de conexão',
+            description: 'Não foi possível conectar ao servidor. Verifique sua conexão.',
+            variant: 'destructive'
+          });
+        } else {
+          // Erros na configuração da requisição
+          toast({
+            title: 'Erro inesperado',
+            description: error.message || 'Ocorreu um erro inesperado na aplicação.',
+            variant: 'destructive'
+          });
+        }
+
         return Promise.reject(error);
       }
     );
@@ -108,3 +166,26 @@ export const apiService = new ApiService();
 
 // Export default for flexibility
 export default apiService;
+
+// Helper functions for handling form errors
+export const handleValidationErrors = (error: any, errorsObj: Record<string, string | null>) => {
+  // Limpar erros anteriores
+  Object.keys(errorsObj).forEach(key => {
+    errorsObj[key] = null;
+  });
+
+  // Se não for um erro de validação, não fazemos nada
+  if (!error.response || error.response.status !== 422) {
+    return false;
+  }
+
+  // Adicionar novos erros de validação
+  const validationErrors = error.response.data.errors || {};
+
+  Object.entries(validationErrors).forEach(([field, messages]) => {
+    // Usar apenas a primeira mensagem de erro para cada campo
+    errorsObj[field] = Array.isArray(messages) ? messages[0] as string : messages as string;
+  });
+
+  return true;
+};

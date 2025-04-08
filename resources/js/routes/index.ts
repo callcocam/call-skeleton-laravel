@@ -4,29 +4,29 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/plannerate',
-        name: 'home',
+        name: 'plannerate',
         component: () => import('../views/Home.vue'), 
-        redirect: { name: 'plannerate' },
+        redirect: { name: 'plannerate.index' },
         children: [
             {
                 path: '',
-                name: 'plannerate',
+                name: 'plannerate.index',
                 component: () => import('../views/List.vue'),
             },
             {
                 path: 'cadastrar',
-                name: 'create',
+                name: 'plannerate.create',
                 component: () => import('./../views/Create.vue')
             },
             {
                 path: ':id/editar',
-                name: 'edit',
+                name: 'plannerate.edit',
                 component: () => import('../views/Edit.vue'),
                 props: true
             },
             {
                 path: ':id/visualizar',
-                name: 'view',
+                name: 'plannerate.view',
                 component: () => import('../views/View.vue'),
                 props: true
             }
