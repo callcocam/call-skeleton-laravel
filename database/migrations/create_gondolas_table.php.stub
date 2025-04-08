@@ -28,7 +28,7 @@ return new class extends Migration
             // Posição Fluxo
             // Esquerda para direita 
             // Direita para esquerda
-            $table->string('flow', ['left_to_right', 'right_to_left'])->default('left_to_right'); // Fluxo da gôndola
+            $table->enum('flow', ['left_to_right', 'right_to_left'])->default('left_to_right'); // Fluxo da gôndola
             $table->integer('scale_factor')->default(3)->nullable(); // Fator de escala
             $table->enum('status', array_column(GondolaStatus::cases(), 'value'))
                 ->default(GondolaStatus::Draft->value);
