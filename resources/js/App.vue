@@ -22,8 +22,7 @@ const props = defineProps({
 
 <template>
     <Head :title="title" :description="description" />
-
     <AppLayout :breadcrumbs="breadcrumbs">
-       
+        <router-view></router-view>
     </AppLayout>
 </template>
