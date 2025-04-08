@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('spacing')->default(0)->nullable(); // Espaçamento ente as camadas
             $table->json('settings')->nullable(); // Configurações
             $table->enum('status', array_column(LayerStatus::cases(), 'value'))
-            ->default(LayerStatus::DRAFT->value);
+            ->default(LayerStatus::Draft->value);
             $table->timestamps();
             $table->softDeletes();
         });

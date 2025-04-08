@@ -10,22 +10,22 @@ namespace Callcocam\Plannerate\Enums;
 
 enum GondolaStatus: string
 {
-    case DRAFT = 'draft';
-    case PUBLISHED = 'published';
+    case Draft = 'draft';
+    case Published = 'published';
 
     public function label(): string
     {
         return match ($this) {
-            self::DRAFT => 'Rascunho',
-            self::PUBLISHED => 'Publicado'
+            self::Draft => 'Rascunho',
+            self::Published => 'Publicado'
         };
     }
 
     public function color(): string
     {
         return match ($this) {
-            self::DRAFT => 'gray',
-            self::PUBLISHED => 'green'
+            self::Draft => 'gray',
+            self::Published => 'green'
         };
     }
 }

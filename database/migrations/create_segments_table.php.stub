@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer('spacing')->nullable(); // Espaçamento entre as camadas
             $table->json('settings')->nullable(); // Configurações
             $table->enum('status', array_column(SegmentStatus::cases(), 'value'))
-            ->default(SegmentStatus::DRAFT->value);
+            ->default(SegmentStatus::Draft->value);
             $table->timestamps();
             $table->softDeletes();
         });
