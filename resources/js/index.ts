@@ -9,8 +9,7 @@ interface PluginOptions {
 const install = (app: App, options: PluginOptions = {}) => {
     const componentRegistry: string[] = [];
     app.component('Plannerate', Plannerate);
-    app.component('v-plannerate', Plannerate);
-    console.log('Plannerate', Plannerate)
+    app.component('v-plannerate', Plannerate); 
     app.config.globalProperties.$plannerate = options
 }
 

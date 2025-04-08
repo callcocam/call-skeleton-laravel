@@ -9,7 +9,8 @@
 namespace Callcocam\Plannerate\Models;
 
 use App\Models\Store;
-use Callcocam\Plannerate\Enums\PlannerateStatus; 
+use Callcocam\Plannerate\Enums\PlannerateStatus;
+use Callcocam\Plannerate\Enums\PlanogramStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Tall\Sluggable\HasSlug;
 use Tall\Sluggable\SlugOptions;
 
-class Plannerate extends Model
+class Planogram extends Model
 {
     use HasFactory, HasUlids, SoftDeletes, HasSlug;
 
@@ -26,13 +27,10 @@ class Plannerate extends Model
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
-        'status' => PlannerateStatus::class,
+        'status' => PlanogramStatus::class,
     ];
 
-    public function stores()
-    {
-        return $this->belongsToMany(Store::class, 'planogram_store');
-    }
+   
 
     public function gondolas()
     {
