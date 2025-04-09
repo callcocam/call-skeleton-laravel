@@ -4,7 +4,7 @@
         <div>
             <div class="flex h-full w-full gap-6 overflow-hidden">
                 <!-- Barra lateral esquerda com componente Products separado -->
-                <Products  />
+                <Products v-if="gondolas?.length" />
                 <!-- Área central rolável (vertical e horizontal) -->
                 <div class="flex h-full w-full flex-col gap-6 overflow-x-auto overflow-y-auto">
                     <Gondolas v-if="gondolas?.length" />
@@ -39,7 +39,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { apiService } from '../services';
 import { useEditorStore } from '../store/editor';
@@ -53,28 +53,23 @@ const router = useRouter();
 const id = ref<string>(route.params.id as string);
 const isLoading = ref<boolean>(false);
 
-const editorStore = useEditorStore(); 
+const editorStore = useEditorStore();
 
 const record = ref<any>(null); // Substitua 'any' pelo tipo correto, se possível
-const gondolas = ref<any[]>([]); // Substitua 'any' pelo tipo correto, se possível
+const gondolas = computed(() => editorStore.gondolas);
 const selectedProducts = ref<any[]>([]); // Substitua 'any' pelo tipo correto, se possível
 
 const get = async () => {
-    const response = await apiService.get('plannerate/'.concat(id.value)); 
+    const response = await apiService.get('plannerate/'.concat(id.value));
     record.value = response.data;
-    console.log('record', record.value);
-    gondolas.value = response.data.gondolas;
+    console.log('record',response.data.gondolas);
     editorStore.setGondolas(response.data.gondolas);
-    if (response) {
-    }
+    editorStore.setGondolaId(route.params.gondolaId as string); // Atualiza o ID da gôndola no store
 };
 
-onMounted(async () => {
-    isLoading.value = true;
-    await get();
-    isLoading.value = false;
-
-    if (!isLoading.value) {
+watch(
+    () => route.params,
+    async (newId) => {
         if (!route.params.gondolaId) {
             // Se não houver gondolaId na rota, redireciona para a primeira gôndola
             if (gondolas.value.length > 0) {
@@ -87,6 +82,12 @@ onMounted(async () => {
                 }
             }
         }
-    }
+    },
+);
+
+onMounted(async () => {
+    isLoading.value = true;
+    await get();
+    isLoading.value = false;
 });
 </script>

@@ -1,7 +1,8 @@
 // Info.vue - Componente Principal
 <script setup lang="ts">
-import { ArrowLeftRight, Grid, Minus, Plus } from 'lucide-vue-next';
-import { computed, ref } from 'vue'; 
+import { ArrowLeftRight, Grid, Minus, Plus, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../../store/editor';
 import Category from './Category.vue';
 import Popover from './Popover.vue';
@@ -18,6 +19,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:invertOrder', 'update:category']);
+
+const router = useRouter();
 
 // Obter a loja do editor
 const editorStore = useEditorStore();
@@ -58,6 +61,22 @@ const updateCategory = (category) => {
 // Limpar todos os filtros
 const clearFilters = () => {
     filters.value.category = null;
+};
+// Remover a gôndola
+const removeGondola = async () => {
+    if (!confirm('Tem certeza de que deseja remover esta gôndola?')) {
+        return;
+    }
+    try {
+        editorStore.removeGondola(props.gondola.id); 
+        // await apiService.delete('gondolas/'.concat(props.gondola.id));
+        router.push({
+            name: 'plannerate.view',
+            params: { id: props.gondola.planogram_id },
+        });
+    } catch (error) {
+        console.error('Error removing gondola:', error);
+    }
 };
 </script>
 
@@ -149,6 +168,15 @@ const clearFilters = () => {
                     <Button type="button" variant="secondary" class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                         <Plus class="mr-1 h-4 w-4" />
                         <span class="hidden md:block">Adicionar Modulo</span>
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        @click="removeGondola"
+                    >
+                        <Trash2 class="mr-1 h-4 w-4" />
+                        <span class="hidden md:block">Remover Gindolas</span>
                     </Button>
                 </div>
             </div>

@@ -124,8 +124,9 @@
 
 <script setup lang="ts">
 import { ChevronDown, Loader, Package, Search, SlidersHorizontal } from 'lucide-vue-next';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { apiService } from '../../../services';
+import { useEditorStore } from '../../../store/editor';
 
 interface Product {
     id: number;
@@ -147,6 +148,10 @@ const props = defineProps({
     },
 });
 
+const editorStore = useEditorStore();
+
+const gondolaId = computed(() => editorStore.gondolaId);
+
 const emit = defineEmits(['select-product', 'drag-start', 'view-stats']);
 
 // Estado
@@ -160,7 +165,7 @@ const filters = ref({
     flammable: false,
     perishable: false,
 });
-const gondola = ref(null);
+const gondolas = computed(() => editorStore.gondolas);
 // Vamos pegar todos os produtos que estão na gondola
 const notInGondola = ref([] as string[]);
 
@@ -201,13 +206,19 @@ async function fetchProducts() {
     try {
         loading.value = true;
 
-        // gondola.sections.forEach((section) => {
-        //     section.shelves.forEach((shelf) => {
-        //         shelf.segments.forEach((segment) => {
-        //             notInGondola.value.push(segment.layer.product.id);
-        //         });
-        //     });
-        // });
+        const gondola = gondolas.value.find((g) => g.id === gondolaId.value);
+        if (gondola) {
+            if (gondola?.sections) {
+                gondola.sections.forEach((section) => {
+                    section.shelves.forEach((shelf) => {
+                        shelf.segments.forEach((segment) => {
+                            notInGondola.value.push(segment.layer.product.id);
+                        });
+                    });
+                });
+            }
+        }
+
         // Se houver implementação real da API
         // @ts-ignore
         const response = await apiService.get('products', {
@@ -221,7 +232,6 @@ async function fetchProducts() {
                 perishable: filters.value.perishable,
             },
         });
-        console.log('response', response);
         filteredProducts.value = response;
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);

@@ -71,10 +71,7 @@
 <script setup>
 import { PencilIcon, PlusCircleIcon, SaveIcon } from 'lucide-vue-next';
 import { ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { Badge } from '../../components/ui/badge';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { useRoute, useRouter } from 'vue-router'; 
 
 const router = useRouter();
 const route = useRoute();
@@ -85,9 +82,7 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-});
-
-console.log('props', props.planogram);
+}); 
 
 // Emitir eventos para o componente pai
 const emit = defineEmits(['close', 'gondola-added']);

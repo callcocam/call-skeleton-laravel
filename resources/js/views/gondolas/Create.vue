@@ -99,8 +99,7 @@
 
 <script setup lang="ts">
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, Loader2Icon, SaveIcon, X } from 'lucide-vue-next';
-import { reactive, ref } from 'vue';
-import { Button } from './../../components/ui/button';
+import { reactive, ref } from 'vue'; 
 import { useToast } from './../../components/ui/toast';
 import { useEditorStore } from './../../store/editor';
 
