@@ -3,10 +3,11 @@
 import { ArrowLeftRight, Grid, Minus, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useRedirect } from '../../../composables/useRedirect';
+import { apiService } from '../../../services';
 import { useEditorStore } from '../../../store/editor';
 import Category from './Category.vue';
 import Popover from './Popover.vue';
-import { apiService } from '../../../services';
 
 const props = defineProps({
     gondola: {
@@ -22,6 +23,8 @@ const props = defineProps({
 const emit = defineEmits(['update:invertOrder', 'update:category']);
 
 const router = useRouter();
+
+const { redirectRemoveGondola } = useRedirect(router);
 
 // Obter a loja do editor
 const editorStore = useEditorStore();
@@ -63,18 +66,25 @@ const updateCategory = (category) => {
 const clearFilters = () => {
     filters.value.category = null;
 };
+// Adicionar um módulo à gôndola
+const addModuleToGondola = () => {
+     router.push({
+        name: 'gondola.edit',
+        params:{
+            id:props.gondola.planogram_d,
+            gondolaId: props.gondola.id
+        }
+     })
+};
 // Remover a gôndola
 const removeGondola = async () => {
     if (!confirm('Tem certeza de que deseja remover esta gôndola?')) {
         return;
     }
     try {
-        editorStore.removeGondola(props.gondola.id); 
+        editorStore.removeGondola(props.gondola.id);
         await apiService.delete('gondolas/'.concat(props.gondola.id));
-        router.push({
-            name: 'plannerate.view',
-            params: { id: props.gondola.planogram_id },
-        });
+        redirectRemoveGondola(props.gondola); // Redireciona após a remoção
     } catch (error) {
         console.error('Error removing gondola:', error);
     }
@@ -166,7 +176,7 @@ const removeGondola = async () => {
                         <span class="hidden md:block">Inverter Ordem</span>
                     </Button>
 
-                    <Button type="button" variant="secondary" class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                    <Button type="button" variant="secondary" class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" @click="addModuleToGondola">
                         <Plus class="mr-1 h-4 w-4" />
                         <span class="hidden md:block">Adicionar Modulo</span>
                     </Button>

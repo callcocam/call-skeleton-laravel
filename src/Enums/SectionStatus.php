@@ -11,21 +11,39 @@ namespace Callcocam\Plannerate\Enums;
 enum SectionStatus: string
 {
     case Draft = 'draft';
-    case Published = 'published';
-
-    public function label(): string
+    case Published = 'published'; 
+    
+    /**
+     * Get all enum values as array
+     *
+     * @return array
+     */
+    public static function getValues(): array
     {
-        return match($this) {
-            self::Draft => 'Rascunho',
-            self::Published => 'Publicado',
-        };
+        return array_column(self::cases(), 'value');
     }
-
-    public function color(): string
+    
+    /**
+     * Get all enum labels as array
+     *
+     * @return array
+     */
+    public static function getLabels(): array
     {
-        return match ($this) {
-            self::Draft => 'gray',
-            self::Published => 'green'
-        };
+        return [
+            self::Draft->value => 'Rascunho',
+            self::Published->value => 'Publicado', 
+        ];
+    }
+    
+    /**
+     * Get label for current value
+     *
+     * @return string
+     */
+    public function getLabel(): string
+    {
+        $labels = self::getLabels();
+        return $labels[$this->value] ?? 'Desconhecido';
     }
 }

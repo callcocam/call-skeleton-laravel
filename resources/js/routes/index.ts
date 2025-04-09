@@ -50,6 +50,13 @@ const routes: Array<RouteRecordRaw> = [
                                 props: true,
 
                             },
+                            {
+                                path: 'editar',
+                                name: 'gondola.edit',
+                                component: () => import('./../views/gondolas/Edit.vue'),
+                                props: true,
+
+                            },
                         ]
                     }
                 ]
