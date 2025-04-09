@@ -11,6 +11,9 @@
                                 params: { gondolaId: gondola.id },
                             }"
                             class="flex items-center gap-2 rounded-md p-2 text-sm font-medium text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+                            :class="{
+                                'bg-gray-100 dark:bg-gray-700': route.params.gondolaId == gondola.id,
+                            }"
                         >
                             {{ gondola.name }}
                         </router-link>
@@ -18,7 +21,7 @@
                 </NavigationMenuItem>
             </NavigationMenuList>
         </NavigationMenu>
-        <router-view />
+        <router-view :key="route.fullPath" />
     </div>
 </template>
 <script setup lang="ts">

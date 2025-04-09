@@ -8,6 +8,7 @@
 
 namespace Callcocam\Plannerate\Models;
 
+use Callcocam\LaraGatekeeper\Core\Landlord\BelongsToTenants;
 use Callcocam\LaraGatekeeper\Models\Tenant;
 use Callcocam\Plannerate\Enums\PlanogramStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -19,7 +20,7 @@ use Tall\Sluggable\SlugOptions;
 
 class Planogram extends Model
 {
-    use HasFactory, HasUlids, SoftDeletes, HasSlug;
+    use HasFactory, HasUlids, SoftDeletes, HasSlug, BelongsToTenants;
 
     protected $guarded = ['id'];
 

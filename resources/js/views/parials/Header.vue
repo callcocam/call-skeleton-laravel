@@ -97,9 +97,13 @@ const showGondolaModal = ref(false);
 
 // Função para abrir o modal de adicionar gôndola
 const openAddGondolaModal = () => {
+    const query = {
+        ...route.query,
+    };
     router.push({
         name: 'gondola.create',
-        query: { ...route.query },
+        params: { gondolaId: route.params?.gondolaId || null },
+        query,
     });
 };
 

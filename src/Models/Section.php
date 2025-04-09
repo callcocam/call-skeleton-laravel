@@ -10,6 +10,7 @@ namespace Callcocam\Plannerate\Models;
  
 use Tall\Sluggable\HasSlug;
 use App\Models\User;
+use Callcocam\LaraGatekeeper\Core\Landlord\BelongsToTenants;
 use Callcocam\Plannerate\Enums\SectionStatus; 
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,7 +22,7 @@ use Tall\Sluggable\SlugOptions;
 
 class Section extends Model
 {
-    use HasFactory, HasSlug, HasUlids, SoftDeletes;
+    use HasFactory, HasSlug, HasUlids, SoftDeletes, BelongsToTenants;
 
     protected $fillable = [
         'tenant_id',

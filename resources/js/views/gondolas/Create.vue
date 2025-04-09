@@ -1,6 +1,13 @@
 <template>
     <Dialog :open="isOpen">
-        <DialogContent class="flex max-h-[90vh] w-full max-w-4xl flex-col p-0 dark:border-gray-700 dark:bg-gray-800">
+        <DialogPersonaCloseContent class="flex max-h-[90vh] w-full max-w-4xl flex-col p-0 dark:border-gray-700 dark:bg-gray-800">
+            <DialogClose
+                @click="fecharModal"
+                class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+            >
+                <X class="h-4 w-4" />
+                <span class="sr-only">Close</span>
+            </DialogClose>
             <!-- Cabeçalho Fixo -->
             <div class="border-b p-4 dark:border-gray-700">
                 <div class="flex items-center justify-between">
@@ -86,16 +93,16 @@
                     Salvar
                 </Button>
             </div>
-        </DialogContent>
+        </DialogPersonaCloseContent>
     </Dialog>
 </template>
 
 <script setup lang="ts">
-import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, Loader2Icon, SaveIcon } from 'lucide-vue-next';
+import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, Loader2Icon, SaveIcon, X } from 'lucide-vue-next';
 import { reactive, ref } from 'vue';
 import { Button } from './../../components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from './../../components/ui/dialog';
 import { useToast } from './../../components/ui/toast';
+import { useEditorStore } from './../../store/editor';
 
 // Importação dos componentes de passos
 import { useRoute, useRouter } from 'vue-router';
@@ -120,6 +127,8 @@ const planogramId = ref(route.params.id);
 
 const emit = defineEmits(['close', 'gondola-added', 'update:open']);
 const { toast } = useToast();
+
+const editorStore = useEditorStore();
 
 const isOpen = ref(props.open);
 const enviando = ref(false);
@@ -180,8 +189,16 @@ const updateForm = (newData) => {
 };
 
 // Função para fechar o modal
-const fecharModal = () => {
-    router.push({ name: 'plannerate.view', params: { id: planogramId.value } });
+const fecharModal = (params = {} as any) => {
+    if (route.params.gondolaId) {
+        console.log('params', planogramId.value);
+        router.push({
+            name: 'gondola.view',
+            params: { id: planogramId.value, gondolaId: route.params.gondolaId },
+        });
+    } else {
+        router.push({ name: 'plannerate.view', params });
+    }
 };
 
 // Função para avançar para o próximo passo com validação
@@ -236,15 +253,16 @@ const enviarFormulario = async () => {
     try {
         // Usando PUT com o axios para o mesmo endpoint
         const response = await apiService.post('gondolas', dadosEnvio);
-
         // Se chegou aqui, deu certo
         toast({
             title: 'Sucesso',
             description: 'Gôndola criada com sucesso!',
             variant: 'default',
         });
- 
-        fecharModal();
+
+        editorStore.addGondola(response.data);
+
+        router.push({ name: 'gondola.view', params: { id: planogramId.value, gondolaId: response.data.id } });
     } catch (error) {
         console.error('Erro ao salvar gôndola:', error);
 

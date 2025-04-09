@@ -4,7 +4,7 @@
         <div>
             <div class="flex h-full w-full gap-6 overflow-hidden">
                 <!-- Barra lateral esquerda com componente Products separado -->
-                <Products />
+                <Products  />
                 <!-- Área central rolável (vertical e horizontal) -->
                 <div class="flex h-full w-full flex-col gap-6 overflow-x-auto overflow-y-auto">
                     <Gondolas v-if="gondolas?.length" />

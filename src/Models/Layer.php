@@ -9,13 +9,14 @@
 namespace Callcocam\Plannerate\Models;
 
 use App\Models\Product;
+use Callcocam\LaraGatekeeper\Core\Landlord\BelongsToTenants;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Layer extends Model
 {
-    use HasUlids, SoftDeletes;
+    use HasUlids, SoftDeletes, BelongsToTenants;
 
     protected $fillable = [
         'tenant_id',

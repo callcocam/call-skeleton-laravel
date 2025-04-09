@@ -158,7 +158,19 @@ class GondolaController extends Controller
     {
         try {
             DB::beginTransaction();
-
+            $planogram = Planogram::findOrFail($request->input('planogram_id'));
+            // $planogram->gondolas->map(function ($gondola) use ($request) {
+            //     // Atualizar gôndola
+            //     $gondola->sections->map(function ($section) use ($request) {
+            //         // Atualizar seção
+            //         $section->shelves->map(function ($shelf) use ($request) {
+            //             // Atualizar prateleira
+            //             $shelf->forceDelete();
+            //         });
+            //         $section->forceDelete();
+            //     });
+            //     $gondola->forceDelete();
+            // });
 
             // Validar dados
             $validatedData = $request->validated();
@@ -182,6 +194,7 @@ class GondolaController extends Controller
                 'num_modulos' => isset($sectionData['num_modulos']) ? (int)$sectionData['num_modulos'] : 1,
                 'status' => $request->input('status', 'draft'),
                 'user_id' => auth()->id(),
+                'tenant_id' => $planogram->tenant_id,
             ];
             // Criar a gôndola
             $gondola = Gondola::create($gondolaData);
@@ -220,6 +233,7 @@ class GondolaController extends Controller
                         'settings' =>  $sectionSettings,
                         'status' => $request->input('status', 'draft'),
                         'user_id' => auth()->id(),
+                        'tenant_id' => $planogram->tenant_id,
                     ];
 
                     // Criar a seção
@@ -246,6 +260,7 @@ class GondolaController extends Controller
                             'settings' => [],
                             'status' => $request->input('status', 'draft'),
                             'user_id' => auth()->id(),
+                            'tenant_id' => $planogram->tenant_id,
                         ];
 
                         $section->shelves()->create($shelfData);

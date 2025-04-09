@@ -8,6 +8,7 @@
 
 namespace Callcocam\Plannerate\Models;
 
+use Callcocam\LaraGatekeeper\Core\Landlord\BelongsToTenants;
 use Callcocam\Plannerate\Enums\ShelfStatus; 
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Shelf extends Model
 {
-    use  HasUlids, SoftDeletes;
+    use  HasUlids, SoftDeletes, BelongsToTenants;
 
     protected $fillable = [
         'tenant_id',

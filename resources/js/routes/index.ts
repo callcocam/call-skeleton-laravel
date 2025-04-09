@@ -32,7 +32,7 @@ const routes: Array<RouteRecordRaw> = [
                 children: [
                     {
                         path: 'gondola/criar',
-                        name: 'gondola.create',
+                        name: 'plannerate.gondola.create',
                         component: () => import('./../views/gondolas/Create.vue'),
                         props: true,
 
@@ -42,6 +42,15 @@ const routes: Array<RouteRecordRaw> = [
                         path: 'gondola/:gondolaId',
                         component: () => import('./../views/gondolas/Gondola.vue'),
                         props: true,
+                        children: [
+                            {
+                                path: 'criar',
+                                name: 'gondola.create',
+                                component: () => import('./../views/gondolas/Create.vue'),
+                                props: true,
+
+                            },
+                        ]
                     }
                 ]
             }

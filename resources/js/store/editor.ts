@@ -7,6 +7,7 @@ interface EditorState {
     selectedElement: string | null;
     selectedElements: string[];
     scaleFactor: number;
+    showGrid: boolean;
     history: string[];
     historyIndex: number;
 }
@@ -19,6 +20,7 @@ export const useEditorStore = defineStore('editor', {
         selectedElements: [],
         gondolas: [],
         scaleFactor: 3,
+        showGrid: true,
         history: [],
         historyIndex: -1,
     }),
@@ -63,6 +65,9 @@ export const useEditorStore = defineStore('editor', {
         },
         setScaleFactor(scaleFactor: number) {
             this.scaleFactor = scaleFactor;
+        },
+        toggleGrid() {
+            this.showGrid = !this.showGrid;
         },
         setSelectedElements(elements: string[]) {
             this.selectedElements = elements;
