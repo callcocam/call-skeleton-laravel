@@ -6,7 +6,7 @@
  * https://www.sigasmart.com.br
  */
 
-namespace Callcocam\Plannerate\Http\Requests\Plannerate;
+namespace Callcocam\Plannerate\Http\Requests\Planogram;
 
 use Callcocam\Plannerate\Enums\PlanogramStatus;
 use Callcocam\Plannerate\Http\Requests\BaseFormRequest;
@@ -17,7 +17,7 @@ use Callcocam\Plannerate\Http\Requests\BaseFormRequest;
  * Classe de validação para requisições de criação de registros Plannerate.
  * Define regras de validação e mensagens personalizadas.
  */
-class StorePlannerateRequest extends BaseFormRequest
+class StorePlanogramRequest extends BaseFormRequest
 {
     /**
      * Determina se o usuário está autorizado a fazer esta requisição.
@@ -37,12 +37,11 @@ class StorePlannerateRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'unique:planograms,slug'],
+            'name' => ['required', 'string', 'max:255'], 
             'description' => ['nullable', 'string', 'max:255'],
             'store_id' => ['nullable', 'string', 'exists:stores,id'],
             'cluster_id' => ['nullable', 'string', 'exists:clusters,id'],
-            'department_id' => ['nullable', 'string', 'exists:departments,id'],
+            'department_id' => ['nullable', 'string', 'exists:departaments,id'],
             'start_date' => ['nullable', 'date', 'before_or_equal:end_date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'status' => ['required', 'string', 'in:' . implode(',', array_column(PlanogramStatus::cases(), 'value'))],

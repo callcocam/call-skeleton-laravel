@@ -6,7 +6,7 @@
  * https://www.sigasmart.com.br
  */
 
-namespace Callcocam\Plannerate\Http\Requests\Plannerate;
+namespace Callcocam\Plannerate\Http\Requests\Planogram;
 
 use Callcocam\Plannerate\Enums\PlanogramStatus;
 use Illuminate\Foundation\Http\FormRequest;
@@ -18,7 +18,7 @@ use Illuminate\Validation\Rule;
  * Classe de validação para requisições de atualização de registros Plannerate.
  * Define regras de validação e mensagens personalizadas.
  */
-class UpdatePlannerateRequest extends FormRequest
+class UpdatePlanogramRequest extends FormRequest
 {
     /**
      * Determina se o usuário está autorizado a fazer esta requisição.
@@ -43,17 +43,11 @@ class UpdatePlannerateRequest extends FormRequest
         $planogramId = $this->route('planogram') ?? $this->route('id');
 
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'slug' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('planograms', 'slug')->ignore($planogramId)
-            ],
+            'name' => ['required', 'string', 'max:255'], 
             'description' => ['nullable', 'string', 'max:255'],
             'store_id' => ['nullable', 'string', 'exists:stores,id'],
             'cluster_id' => ['nullable', 'string', 'exists:clusters,id'],
-            'department_id' => ['nullable', 'string', 'exists:departments,id'],
+            'department_id' => ['nullable', 'string', 'exists:departaments,id'],
             'start_date' => ['nullable', 'date', 'before_or_equal:end_date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'status' => ['required', 'string', 'in:' . implode(',', array_column(PlanogramStatus::cases(), 'value'))],

@@ -7,9 +7,7 @@
  */
 
 namespace Callcocam\Plannerate\Models;
-
-use App\Models\Store;
-use Callcocam\Plannerate\Enums\PlannerateStatus;
+ 
 use Callcocam\Plannerate\Enums\PlanogramStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -9,7 +9,8 @@
 namespace Callcocam\Plannerate\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Callcocam\Plannerate\Facades\Plannerate; 
+use Callcocam\Plannerate\Facades\Plannerate;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PlannerateController extends Controller
@@ -26,5 +27,10 @@ class PlannerateController extends Controller
                 ['title' => 'Planejamento de Tarefas', 'url' => route(Plannerate::getRoute())],
             ], 
         ]);
+    }
+
+    public function store(Request $request)
+    {
+        // Implementar a lógica para armazenar um novo planograma
     }
 }

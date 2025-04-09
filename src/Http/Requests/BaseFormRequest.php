@@ -8,7 +8,7 @@
 
 namespace Callcocam\Plannerate\Http\Requests;
 
-use Callcocam\Raptor\Core\Landlord\Facades\Landlord;
+use Callcocam\LaraGatekeeper\Core\Landlord\Facades\Landlord;
 use Illuminate\Foundation\Http\FormRequest;
 
 abstract class BaseFormRequest extends FormRequest

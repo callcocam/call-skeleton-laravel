@@ -10,8 +10,8 @@ namespace Callcocam\Plannerate\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Callcocam\Plannerate\Facades\Plannerate;
-use Callcocam\Plannerate\Http\Requests\Plannerate\StorePlannerateRequest;
-use Callcocam\Plannerate\Http\Requests\Plannerate\UpdatePlannerateRequest;
+use Callcocam\Plannerate\Http\Requests\Planogram\StorePlanogramRequest;
+use Callcocam\Plannerate\Http\Requests\Planogram\UpdatePlanogramRequest;
 use Callcocam\Plannerate\Http\Resources\PlanogramResource;
 use Callcocam\Plannerate\Models\Planogram;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -59,6 +59,7 @@ class PlannerateController extends Controller
 
             $data = $query->paginate(request()->input('per_page', 15));
 
+
             return PlanogramResource::collection($data)
                 ->additional([
                     'meta' => [
@@ -66,6 +67,20 @@ class PlannerateController extends Controller
                         'description' => 'Planejamento de Tarefas',
                         'breadcrumbs' => [
                             ['title' => 'Planejamento de Tarefas', 'url' => route(Plannerate::getRoute())],
+                        ],
+                        'pagination' => [
+                            'total' => $data->total(),
+                            'count' => $data->count(),
+                            'per_page' => $data->perPage(),
+                            'current_page' => $data->currentPage(),
+                            'total_pages' => $data->lastPage(),
+                            'has_more_pages' => $data->hasMorePages(),
+                            'next_page_url' => $data->nextPageUrl(),
+                            'previous_page_url' => $data->previousPageUrl(),
+                            'first_page_url' => $data->url(1),
+                            'last_page_url' => $data->url($data->lastPage()),
+                            'from' => $data->firstItem(),
+                            'to' => $data->lastItem(),
                         ],
                     ],
                     'message' => null,
@@ -117,7 +132,9 @@ class PlannerateController extends Controller
     public function show(string $id)
     {
         try {
-            $planogram = Planogram::with(['store', 'cluster', 'department', 'user'])->findOrFail($id);
+            $planogram = $this->getModel()::findOrFail($id);
+
+            $planogram->with(['store', 'cluster', 'department', 'user']);
 
             return new PlanogramResource($planogram);
         } catch (ModelNotFoundException $e) {
@@ -127,7 +144,6 @@ class PlannerateController extends Controller
             ], 404);
         } catch (Throwable $e) {
             Log::error('Erro ao exibir planograma', [
-                'id' => $id,
                 'exception' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -143,10 +159,10 @@ class PlannerateController extends Controller
     /**
      * Armazena um novo planograma
      * 
-     * @param StorePlannerateRequest $request
+     * @param StorePlanogramRequest $request
      * @return PlanogramResource|JsonResponse
      */
-    public function store(StorePlannerateRequest $request)
+    public function store(StorePlanogramRequest $request)
     {
         try {
             DB::beginTransaction();
@@ -191,11 +207,11 @@ class PlannerateController extends Controller
     /**
      * Atualiza um planograma existente
      * 
-     * @param UpdatePlannerateRequest $request
+     * @param UpdatePlanogramRequest $request
      * @param Planogram $planogram
      * @return PlanogramResource|JsonResponse
      */
-    public function update(UpdatePlannerateRequest $request, string $id)
+    public function update(UpdatePlanogramRequest $request, string $id)
     {
         try {
             DB::beginTransaction();
@@ -246,10 +262,11 @@ class PlannerateController extends Controller
      */
     public function destroy(string $id)
     {
+        $planogram = $this->getModel()::findOrFail($id);
+
         try {
             DB::beginTransaction();
 
-            $planogram = $this->getModel()::findOrFail($id);
             $planogram->delete();
 
             DB::commit();
@@ -269,7 +286,6 @@ class PlannerateController extends Controller
             DB::rollBack();
 
             Log::error('Erro ao excluir planograma', [
-                'id' => $id,
                 'exception' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),

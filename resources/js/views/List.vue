@@ -31,12 +31,16 @@
                         <Input id="search" placeholder="Nome ou ID" v-model="filters.search" />
                     </div>
                     <div class="space-y-2">
-                        <Label for="value-range">Faixa de Valor</Label>
-                        <div class="flex items-center space-x-2">
-                            <Input id="value-min" placeholder="Min" type="number" v-model="filters.minValue" class="w-full" />
-                            <span>-</span>
-                            <Input id="value-max" placeholder="Max" type="number" v-model="filters.maxValue" class="w-full" />
-                        </div>
+                        <Label for="status">Status</Label>
+                        <Select v-model="filters.status">
+                            <SelectTrigger class="w-full">
+                                <SelectValue placeholder="Selecione o status" />
+                            </SelectTrigger>
+                            <SelectContent> 
+                                <SelectItem value="draft">Rascunho</SelectItem> 
+                                <SelectItem value="published">Publicado</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div class="flex items-end space-x-2">
                         <Button variant="secondary" class="flex-1" @click="applyFilters">
@@ -54,55 +58,91 @@
             <div v-if="hasActiveFilters" class="flex flex-wrap gap-2 border-b border-border/40 bg-muted/5 px-4 py-2">
                 <Badge variant="outline" class="flex items-center gap-1" v-if="filters.search">
                     Pesquisa: {{ filters.search }}
-                    <XIcon class="h-3 w-3 cursor-pointer" @click="filters.search = ''" />
+                    <XIcon
+                        class="h-3 w-3 cursor-pointer"
+                        @click="
+                            () => {
+                                filters.search = '';
+                                applyFilters();
+                            }
+                        "
+                    />
                 </Badge>
-                <Badge variant="outline" class="flex items-center gap-1" v-if="filters.minValue || filters.maxValue">
-                    Valor: {{ filters.minValue || '0' }} - {{ filters.maxValue || 'Máx' }}
-                    <XIcon class="h-3 w-3 cursor-pointer" @click="resetValueFilter" />
+                <Badge variant="outline" class="flex items-center gap-1" v-if="filters.status">
+                    Status: {{ getStatusLabel(filters.status) }}
+                    <XIcon
+                        class="h-3 w-3 cursor-pointer"
+                        @click="
+                            () => {
+                                filters.status = '';
+                                applyFilters();
+                            }
+                        "
+                    />
                 </Badge>
             </div>
 
             <CardContent class="p-0">
-                <div class="relative overflow-x-auto">
+                <!-- Loading indicator -->
+                <div v-if="isLoading" class="flex justify-center py-8">
+                    <RefreshCw class="h-8 w-8 animate-spin text-primary" />
+                </div>
+
+                <div v-else class="relative overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow class="hover:bg-muted/5">
-                                <TableHead class="w-20">ID</TableHead>
-                                <TableHead class="cursor-pointer" @click="sortBy('name')">
-                                    Nome
-                                    <ChevronUp v-if="sortConfig.key === 'name' && sortConfig.direction === 'asc'" class="inline h-4 w-4" />
-                                    <ChevronDown v-if="sortConfig.key === 'name' && sortConfig.direction === 'desc'" class="inline h-4 w-4" />
-                                </TableHead>
-                                <TableHead class="cursor-pointer" @click="sortBy('value')">
-                                    Valor
-                                    <ChevronUp v-if="sortConfig.key === 'value' && sortConfig.direction === 'asc'" class="inline h-4 w-4" />
-                                    <ChevronDown v-if="sortConfig.key === 'value' && sortConfig.direction === 'desc'" class="inline h-4 w-4" />
-                                </TableHead>
+                                <TableHead class="w-32">ID</TableHead>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>Data Início</TableHead>
+                                <TableHead>Data Fim</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead class="w-24 text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="item in filteredItems" :key="item.id" class="transition-colors hover:bg-muted/10">
-                                <TableCell class="font-medium">{{ item.id }}</TableCell>
+                            <TableRow v-for="item in items" :key="item.id" class="transition-colors hover:bg-muted/10">
+                                <TableCell class="font-medium">{{ formatId(item.id) }}</TableCell>
                                 <TableCell>{{ item.name }}</TableCell>
-                                <TableCell>{{ formatCurrency(item.value) }}</TableCell>
+                                <TableCell>{{ formatDate(item.start_date) }}</TableCell>
+                                <TableCell>{{ formatDate(item.end_date) }}</TableCell>
+                                <TableCell>
+                                    <Badge :variant="getStatusVariant(item.status)">
+                                        {{ getStatusLabel(item.status) }}
+                                    </Badge>
+                                </TableCell>
                                 <TableCell>
                                     <div class="flex justify-end gap-1">
-                                        <Button variant="ghost" size="icon" class="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            class="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                            @click="viewPlanogram(item.id)"
+                                        >
                                             <EyeIcon class="h-4 w-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" class="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            class="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                            @click="editPlanogram(item.id)"
+                                        >
                                             <Pencil class="h-4 w-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" class="h-8 w-8 text-muted-foreground hover:text-destructive">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            class="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                            @click="confirmDelete(item)"
+                                        >
                                             <Trash2 class="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </TableCell>
                             </TableRow>
 
-                            <TableRow v-if="filteredItems.length === 0">
-                                <TableCell colspan="4" class="h-24 text-center">
+                            <TableRow v-if="items.length === 0 && !isLoading">
+                                <TableCell colspan="6" class="h-24 text-center">
                                     <div class="flex flex-col items-center justify-center text-muted-foreground">
                                         <FileX class="mb-2 h-8 w-8" />
                                         <p>Nenhum planograma encontrado</p>
@@ -115,16 +155,18 @@
                 </div>
             </CardContent>
 
-            <div class="flex items-center justify-between border-t border-border/40 p-4">
+            <div class="flex flex-col items-center justify-between gap-4 border-t border-border/40 p-4 sm:flex-row">
                 <div class="text-sm text-muted-foreground">
-                    Mostrando <span class="font-medium">{{ filteredItems.length }}</span> de
-                    <span class="font-medium">{{ items.length }}</span> planogramas
+                    Mostrando <span class="font-medium">{{ pagination.from || 0 }}</span> a
+                    <span class="font-medium">{{ pagination.to || 0 }}</span> de
+                    <span class="font-medium">{{ pagination.total || 0 }}</span> planogramas
                 </div>
                 <div class="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" :disabled="currentPage === 1">
+                    <div class="mr-2 text-sm text-muted-foreground">Página {{ pagination.current_page }} de {{ pagination.total_pages }}</div>
+                    <Button variant="outline" size="sm" :disabled="!pagination.previous_page_url" @click="goToPage(pagination.current_page - 1)">
                         <ChevronLeft class="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm" :disabled="currentPage >= totalPages">
+                    <Button variant="outline" size="sm" :disabled="!pagination.next_page_url" @click="goToPage(pagination.current_page + 1)">
                         <ChevronRight class="h-4 w-4" />
                     </Button>
                 </div>
@@ -135,10 +177,8 @@
 
 <script setup lang="ts">
 import {
-    ChevronDown,
     ChevronLeft,
     ChevronRight,
-    ChevronUp,
     Eye as EyeIcon,
     FileX,
     Filter as FilterIcon,
@@ -150,131 +190,224 @@ import {
     X as XIcon,
 } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { useToast } from '../components/ui/toast';
 import { apiService } from '../services';
 
+interface Item {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    store_id: string | null;
+    cluster_id: string | null;
+    department_id: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    status: string;
+    status_label: string;
+    created_at: string;
+    updated_at: string;
+}
+
+interface Pagination {
+    total: number;
+    count: number;
+    per_page: number;
+    current_page: number;
+    total_pages: number;
+    has_more_pages: boolean;
+    next_page_url: string | null;
+    previous_page_url: string | null;
+    first_page_url: string;
+    last_page_url: string;
+    from: number;
+    to: number;
+}
+
 // Estado e referências
-const items = ref([] as Array<{ id: number; name: string; value: number }>);
+const router = useRouter();
+const { toast } = useToast();
+const items = ref([] as Array<Item>);
 const showFilters = ref(false);
-const currentPage = ref(1);
-const itemsPerPage = ref(10);
 const isLoading = ref(false);
+const confirmingDelete = ref<Item | null>(null);
+
+// Paginação
+const pagination = ref<Pagination>({
+    total: 0,
+    count: 0,
+    per_page: 15,
+    current_page: 1,
+    total_pages: 1,
+    has_more_pages: false,
+    next_page_url: null,
+    previous_page_url: null,
+    first_page_url: '',
+    last_page_url: '',
+    from: 0,
+    to: 0,
+});
 
 // Filtros
 const filters = ref({
     search: '',
-    minValue: undefined as number | undefined,
-    maxValue: undefined as number | undefined,
-});
-
-// Ordenação
-const sortConfig = ref({
-    key: 'id',
-    direction: 'asc',
+    status: '',
+    page: 1,
+    per_page: 15,
 });
 
 // Verificar se há filtros ativos
 const hasActiveFilters = computed(() => {
-    return !!filters.value.search || filters.value.minValue !== undefined || filters.value.maxValue !== undefined;
+    return !!filters.value.search || !!filters.value.status;
 });
-
-// Itens filtrados
-const filteredItems = computed(() => {
-    let result = [...items.value];
-
-    // Aplicar filtros
-    if (filters.value.search) {
-        const searchLower = filters.value.search.toLowerCase();
-        result = result.filter((item) => item.id.toString().includes(filters.value.search) || item.name.toLowerCase().includes(searchLower));
-    }
-
-    if (filters.value.minValue !== undefined) {
-        result = result.filter((item) => item.value >= (filters.value.minValue || 0));
-    }
-
-    if (filters.value.maxValue !== undefined) {
-        result = result.filter((item) => item.value <= (filters.value.maxValue as number));
-    }
-
-    // Aplicar ordenação
-    result.sort((a, b) => {
-        const factor = sortConfig.value.direction === 'asc' ? 1 : -1;
-        const key = sortConfig.value.key as keyof typeof a;
-
-        if (typeof a[key] === 'string') {
-            return factor * (a[key] as string).localeCompare(b[key] as string);
-        } else {
-            return factor * ((a[key] as number) - (b[key] as number));
-        }
-    });
-
-    return result;
-});
-
-// Total de páginas para paginação
-const totalPages = computed(() => {
-    return Math.ceil(filteredItems.value.length / itemsPerPage.value);
-});
-
-// Formatar valor como moeda
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-    }).format(value);
-};
 
 // Funções
 const getData = async () => {
     isLoading.value = true;
     try {
-        const response = await apiService.get('/plannerate');
-        console.log(response.data);
-        const { data } = response.data;
-        items.value = data || [];
+        // Construir query params baseado nos filtros
+        const params = new URLSearchParams();
+
+        if (filters.value.search) {
+            params.append('search', filters.value.search);
+        }
+
+        if (filters.value.status) {
+            params.append('status', filters.value.status);
+        }
+
+        params.append('page', filters.value.page.toString());
+        params.append('per_page', filters.value.per_page.toString());
+
+        const url = `/plannerate?${params.toString()}`;
+        const response = await apiService.get(url);
+
+        items.value = response.data || [];
+
+        // Atualizar informações de paginação
+        if (response.meta && response.meta.pagination) {
+            pagination.value = response.meta.pagination;
+        }
     } catch (error) {
         console.error('Erro ao carregar planogramas:', error);
-        // Implementar notificação de erro aqui
+        toast({
+            title: 'Erro',
+            description: 'Não foi possível carregar os planogramas. Tente novamente mais tarde.',
+            variant: 'destructive',
+        });
     } finally {
         isLoading.value = false;
     }
 };
 
-const sortBy = (key: string) => {
-    if (sortConfig.value.key === key) {
-        sortConfig.value.direction = sortConfig.value.direction === 'asc' ? 'desc' : 'asc';
-    } else {
-        sortConfig.value.key = key;
-        sortConfig.value.direction = 'asc';
-    }
-};
-
 const applyFilters = () => {
-    currentPage.value = 1;
-    // Aplicar filtros (já feito pelo computed)
+    filters.value.page = 1; // Resetar para a primeira página ao filtrar
+    getData();
 };
 
 const resetFilters = () => {
     filters.value = {
         search: '',
-        minValue: undefined,
-        maxValue: undefined,
+        status: '',
+        page: 1,
+        per_page: 15,
     };
-    currentPage.value = 1;
+    getData();
 };
 
-const resetValueFilter = () => {
-    filters.value.minValue = undefined;
-    filters.value.maxValue = undefined;
+const goToPage = (page: number) => {
+    if (page < 1 || page > pagination.value.total_pages) return;
+
+    filters.value.page = page;
+    getData();
+};
+
+const viewPlanogram = (id: string) => {
+    router.push({ name: 'plannerate.view', params: { id } });
+};
+
+const editPlanogram = (id: string) => {
+    router.push({ name: 'plannerate.edit', params: { id } });
+};
+
+const confirmDelete = (item: Item) => {
+    if (confirm(`Tem certeza que deseja excluir o planograma "${item.name}"?`)) {
+        deletePlanogram(item.id);
+    }
+};
+
+const deletePlanogram = async (id: string) => {
+    try {
+        isLoading.value = true;
+        await apiService.delete(`/plannerate/${id}`);
+
+        toast({
+            title: 'Sucesso',
+            description: 'Planograma excluído com sucesso!',
+            variant: 'default',
+        });
+
+        // Recarregar a lista
+        getData();
+    } catch (error) {
+        console.error('Erro ao excluir planograma:', error);
+        toast({
+            title: 'Erro',
+            description: 'Não foi possível excluir o planograma. Tente novamente mais tarde.',
+            variant: 'destructive',
+        });
+    } finally {
+        isLoading.value = false;
+        confirmingDelete.value = null;
+    }
+};
+
+// Funções utilitárias
+const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+};
+
+const formatId = (id: string) => {
+    // Exibe apenas os primeiros 8 caracteres para ULIDs longas
+    return id.length > 10 ? `${id.substring(0, 8)}...` : id;
+};
+
+const getStatusLabel = (status: string) => {
+    const statusMap: Record<string, string> = {
+        draft: 'Rascunho',
+        pending: 'Pendente',
+        active: 'Ativo',
+        completed: 'Concluído',
+        inactive: 'Inativo',
+    };
+
+    return statusMap[status] || status;
+};
+
+const getStatusVariant = (status: string): 'default' | 'outline' | 'secondary' | 'destructive' => {
+    const variantMap: Record<string, any> = {
+        draft: 'outline',
+        pending: 'secondary',
+        active: 'default',
+        completed: 'default',
+        inactive: 'destructive',
+    };
+
+    return variantMap[status] || 'outline';
 };
 
 // Inicialização
-onMounted(async () => {
-    await getData();
+onMounted(() => {
+    getData();
 });
 </script>

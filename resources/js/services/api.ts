@@ -1,17 +1,25 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useToast } from '../components/ui/toast';
 
+// Import the global declaration from app.ts
+declare global {
+  interface Window {
+    axios: typeof axios;
+  }
+}
+
 class ApiService {
   private api: AxiosInstance;
 
   constructor() {
-    this.api = axios.create({
+    this.api = window.axios.create({
       baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
       headers: {
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json', 
       },
       withCredentials: true, // Includes cookies in cross-site requests
+      withXSRFToken: true, // Automatically includes XSRF token in requests
     });
 
     // Add request interceptor
@@ -63,7 +71,7 @@ class ApiService {
 
             // Redirecionar para login se necessário
             setTimeout(() => {
-              window.location.href = '/login';
+              // window.location.href = '/login';
             }, 2000);
 
             return Promise.reject(error);

@@ -26,7 +26,7 @@ class PlannerateServiceProvider extends PackageServiceProvider
             ->name('plannerate')
             ->hasConfigFile()
             ->hasViews()
-            ->hasRoutes('api', 'web')
+            ->hasRoutes('web', 'api')
 
             ->hasMigrations(
                 'create_planograms_table',
