@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router';
 import { useEditorStore } from '../../../store/editor';
 import Category from './Category.vue';
 import Popover from './Popover.vue';
+import { apiService } from '../../../services';
 
 const props = defineProps({
     gondola: {
@@ -69,7 +70,7 @@ const removeGondola = async () => {
     }
     try {
         editorStore.removeGondola(props.gondola.id); 
-        // await apiService.delete('gondolas/'.concat(props.gondola.id));
+        await apiService.delete('gondolas/'.concat(props.gondola.id));
         router.push({
             name: 'plannerate.view',
             params: { id: props.gondola.planogram_id },

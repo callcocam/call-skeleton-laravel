@@ -425,23 +425,28 @@ class GondolaController extends Controller
     /**
      * Remove uma gôndola
      *
-     * @param string $planogramId
      * @param string $id
      * @return JsonResponse
      */
-    public function destroy(string $planogramId, string $id)
+    public function destroy(Gondola $gondola)
     {
         try {
             DB::beginTransaction();
+            $gondola->sections->map(function ($section) {
+                // Atualizar seção
+                $section->shelves->map(function ($shelf) {
 
-            // Verificar se o planograma existe
-            Planogram::findOrFail($planogramId);
-
-            // Buscar a gôndola
-            $gondola = Gondola::where('planogram_id', $planogramId)->findOrFail($id);
-
-            // Excluir gôndola (soft delete)
-            $gondola->delete();
+                    $shelf->segments->map(function ($segment) {
+                        $segment->layer()->forceDelete();
+                        // Atualizar segmento
+                        $segment->forceDelete();
+                    });
+                    // Atualizar prateleira
+                    $shelf->forceDelete();
+                });
+                $section->forceDelete();
+            });
+            $gondola->forceDelete();
 
             DB::commit();
 
@@ -458,8 +463,6 @@ class GondolaController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error('Erro ao excluir gôndola', [
-                'planogram_id' => $planogramId,
-                'gondola_id' => $id,
                 'exception' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
