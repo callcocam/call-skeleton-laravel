@@ -13,6 +13,7 @@ class ApiService {
 
   constructor() {
     this.api = window.axios.create({
+      // @ts-ignore
       baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
       headers: {
         'Content-Type': 'application/json',
