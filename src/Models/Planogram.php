@@ -7,7 +7,8 @@
  */
 
 namespace Callcocam\Plannerate\Models;
- 
+
+use Callcocam\LaraGatekeeper\Models\Tenant;
 use Callcocam\Plannerate\Enums\PlanogramStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,10 +32,14 @@ class Planogram extends Model
    
 
     public function gondolas()
-    {
+    { 
         return $this->hasMany(Gondola::class);
     }
 
+    public function tenant()
+    {
+        return $this->belongsTo(config('plannerate.tenant_model', Tenant::class));
+    }
 
     /**
      * @return SlugOptions

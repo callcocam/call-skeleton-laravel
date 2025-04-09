@@ -243,7 +243,7 @@ const savePlanogram = async () => {
     isSubmitting.value = true;
 
     try {
-        const routePath = route.name.replace('.', '/').replace('create', 'store');
+        const routePath = route.name.replace('.create',  '');
         console.log('Salvando planograma:', form, routePath);
         const response = await apiService.post(routePath, form);
 

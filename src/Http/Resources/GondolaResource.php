@@ -31,6 +31,7 @@ class GondolaResource extends JsonResource
                 'label' => $this->status->label(),
                 'color' => $this->status->color(),
             ],
+            'planogram' => new PlanogramResource($this->whenLoaded('planogram')),
             'sections' => SectionResource::collection($this->whenLoaded('sections')),
         ];
     }

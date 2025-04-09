@@ -3,7 +3,10 @@ import { defineStore } from 'pinia';
 interface EditorState {
     content: string;
     isEditing: boolean;
+    gondolas: any[];
     selectedElement: string | null;
+    selectedElements: string[];
+    scaleFactor: number;
     history: string[];
     historyIndex: number;
 }
@@ -13,6 +16,9 @@ export const useEditorStore = defineStore('editor', {
         content: '',
         isEditing: false,
         selectedElement: null,
+        selectedElements: [],
+        gondolas: [],
+        scaleFactor: 3,
         history: [],
         historyIndex: -1,
     }),
@@ -20,7 +26,7 @@ export const useEditorStore = defineStore('editor', {
     getters: {
         canUndo: (state) => state.historyIndex > 0,
         canRedo: (state) => state.historyIndex < state.history.length - 1,
-        isEmpty: (state) => !state.content || state.content.trim() === '',
+        isEmpty: (state) => !state.content || state.content.trim() === '',  
     },
 
     actions: {
@@ -39,6 +45,34 @@ export const useEditorStore = defineStore('editor', {
 
         stopEditing() {
             this.isEditing = false;
+        },
+        setGondolas(gondolas: any[]) {
+            this.gondolas = gondolas;
+        },
+        addGondola(gondola: any) {
+            this.gondolas.push(gondola);
+        },
+        removeGondola(gondolaId: string) {
+            this.gondolas = this.gondolas.filter((gondola) => gondola.id !== gondolaId);
+        },
+        updateGondola(gondolaId: string, updatedGondola: any) {
+            const index = this.gondolas.findIndex((gondola) => gondola.id === gondolaId);
+            if (index !== -1) {
+                this.gondolas[index] = { ...this.gondolas[index], ...updatedGondola };
+            }
+        },
+        setScaleFactor(scaleFactor: number) {
+            this.scaleFactor = scaleFactor;
+        },
+        setSelectedElements(elements: string[]) {
+            this.selectedElements = elements;
+        },
+        clearSelectedElements() {
+            this.selectedElements = [];
+            this.selectedElement = null;
+        },
+        clearSelectedElement() {
+            this.selectedElement = null;
         },
 
         addToHistory(content: string) {

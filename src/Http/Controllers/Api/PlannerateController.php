@@ -132,9 +132,8 @@ class PlannerateController extends Controller
     public function show(string $id)
     {
         try {
-            $planogram = $this->getModel()::findOrFail($id);
-
-            $planogram->with(['store', 'cluster', 'department', 'user']);
+            $planogram = $this->getModel()::query(0)->with(['tenant','store', 'cluster', 'department',   'gondolas'])->findOrFail($id);
+ 
 
             return new PlanogramResource($planogram);
         } catch (ModelNotFoundException $e) {
@@ -150,7 +149,7 @@ class PlannerateController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Ocorreu um erro ao carregar o planograma',
+                'message' => $e->getMessage(),
                 'status' => 'error'
             ], 500);
         }

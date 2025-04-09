@@ -15,7 +15,7 @@ class LayerResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'tenant_id' => $this->tenant_id,
             'user_id' => $this->user_id,
@@ -24,8 +24,13 @@ class LayerResource extends JsonResource
             'height' => $this->height,
             'quantity' => $this->quantity,
             'spacing' => $this->spacing,
-            'product' => new ProductResource($this->whenLoaded('product')),
+            // 'product' => new ProductResource($this->whenLoaded('product')),
             'segment' => new SegmentResource($this->whenLoaded('segment')),
         ];
-    }
+
+        if (class_exists('App\Http\Resources\ProductResource')) {
+            $data['product'] = app('App\Http\Resources\ProductResource', [$this->whenLoaded('product')]);
+        }
+        return $data;
+    } 
 }

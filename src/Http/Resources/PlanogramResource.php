@@ -26,6 +26,8 @@ class PlanogramResource extends JsonResource
     {
         $data = [
             'id' => $this->id,
+            'tenant_id' => $this->tenant_id,
+            'user_id' => $this->user_id,
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
@@ -59,10 +61,12 @@ class PlanogramResource extends JsonResource
             'start_date' => $this->start_date ? $this->start_date->format('Y-m-d') : null,
             'end_date' => $this->end_date ? $this->end_date->format('Y-m-d') : null,
             'status' => $this->status,
+            'gondolas' => GondolaResource::collection($this->whenLoaded('gondolas')),
             'status_label' => $this->status,
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
             'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
             'deleted_at' => $this->deleted_at ? $this->deleted_at->format('Y-m-d H:i:s') : null,
+            'tenant' => $this->whenLoaded('tenant'),
             'clusters' => [],
             'departments' => [],
             'stores' => [],

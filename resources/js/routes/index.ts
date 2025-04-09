@@ -5,7 +5,7 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/plannerate',
         name: 'plannerate',
-        component: () => import('../views/Home.vue'), 
+        component: () => import('../views/Home.vue'),
         redirect: { name: 'plannerate.index' },
         children: [
             {
@@ -25,10 +25,25 @@ const routes: Array<RouteRecordRaw> = [
                 props: true
             },
             {
-                path: ':id/visualizar',
+                path: ':id',
                 name: 'plannerate.view',
                 component: () => import('../views/View.vue'),
-                props: true
+                props: true,
+                children: [
+                    {
+                        path: 'gondola/criar',
+                        name: 'gondola.create',
+                        component: () => import('./../views/gondolas/Create.vue'),
+                        props: true,
+
+                    },
+                    {
+                        name: 'gondola.view',
+                        path: 'gondola/:gondolaId',
+                        component: () => import('./../views/gondolas/Gondola.vue'),
+                        props: true,
+                    }
+                ]
             }
         ]
     },
