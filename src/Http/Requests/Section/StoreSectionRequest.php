@@ -10,6 +10,7 @@ namespace Callcocam\Plannerate\Http\Requests\Section;
 
 use Callcocam\Plannerate\Enums\SectionStatus;
 use Callcocam\Plannerate\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class StoreSectionRequest extends BaseFormRequest
@@ -17,6 +18,7 @@ class StoreSectionRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
+            'gondola_id' => ['required', 'string', 'exists:gondolas,id'],
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:50', 'unique:sections,code'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:sections,slug'],

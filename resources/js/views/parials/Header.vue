@@ -41,9 +41,9 @@
                 <CardHeader class="pb-2">
                     <CardTitle class="text-sm font-medium dark:text-gray-200">Tenant</CardTitle>
                 </CardHeader>
-                <CardContent v-if="planogram.tenant">
-                    <div class="text-lg font-semibold dark:text-gray-100">{{ planogram.tenant.name }}</div>
-                    <div class="text-sm text-muted-foreground dark:text-gray-400">{{ planogram.tenant.email }}</div>
+                <CardContent v-if="planogram.store">
+                    <div class="text-lg font-semibold dark:text-gray-100">{{ planogram.store.name }}</div>
+                    <div class="text-sm text-muted-foreground dark:text-gray-400">{{ planogram.store.email }}</div>
                 </CardContent>
             </Card>
 

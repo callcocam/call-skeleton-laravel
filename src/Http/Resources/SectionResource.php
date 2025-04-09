@@ -27,7 +27,7 @@ class SectionResource extends JsonResource
             'ordering' => $this->ordering,
             'status' => [
                 'value' => $this->status->value,
-                'label' => $this->status->label(),
+                'label' => $this->status->getLabel(),
                 'color' => $this->status->color(),
             ],
             'shelves' => ShelfResource::collection($this->whenLoaded('shelves')),

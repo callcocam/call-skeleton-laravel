@@ -76,11 +76,7 @@
     </div>
 </template>
 
-<script setup>
-import { Button } from '../../../../components/ui/button';
-import { Input } from '../../../../components/ui/input';
-import { Label } from '../../../../components/ui/label';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+<script setup>  
 import { InfoIcon } from 'lucide-vue-next';
 import { onMounted, reactive, watch } from 'vue';
 

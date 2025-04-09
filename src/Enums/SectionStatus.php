@@ -46,4 +46,17 @@ enum SectionStatus: string
         $labels = self::getLabels();
         return $labels[$this->value] ?? 'Desconhecido';
     }
+
+    /**
+     * Get color for current value
+     *
+     * @return string
+     */
+    public function color(): string
+    {
+        return match ($this) {
+            self::Draft => 'bg-gray-200 text-gray-800',
+            self::Published => 'bg-green-200 text-green-800',
+        };
+    }
 }

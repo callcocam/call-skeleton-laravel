@@ -10,8 +10,7 @@ namespace Callcocam\Plannerate\Http\Requests\Section;
 
 use Callcocam\Plannerate\Enums\SectionStatus;
 use Callcocam\Plannerate\Http\Requests\BaseFormRequest;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rule; 
 
 class UpdateSectionRequest extends BaseFormRequest
 {

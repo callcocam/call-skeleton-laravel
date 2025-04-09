@@ -189,8 +189,7 @@ const updateForm = (newData) => {
 
 // Função para fechar o modal
 const fecharModal = (params = {} as any) => {
-    if (route.params.gondolaId) {
-        console.log('params', planogramId.value);
+    if (route.params.gondolaId) { 
         router.push({
             name: 'gondola.view',
             params: { id: planogramId.value, gondolaId: route.params.gondolaId },

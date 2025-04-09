@@ -234,9 +234,24 @@ const isOpen = ref(props.open);
 const enviando = ref(false);
 const errors = ref<Record<string, any>>({}); // Tipagem mais específica para erros
 
+// Função para gerar um código aleatório formatado para o nome da gôndola
+const gerarCodigoGondola = () => {
+    const prefixo = 'GND';
+    const data = new Date();
+    const ano = data.getFullYear().toString().slice(2); // Últimos 2 dígitos do ano
+    const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+    const random = Math.floor(Math.random() * 10000)
+        .toString()
+        .padStart(4, '0');
+
+    return `${prefixo}-${ano}${mes}-${random}`;
+};
+
 // Formulário com campos para a seção
 const formData = reactive({
-    name: '', // Novo campo para nome da seção
+    name: '', // Nome da seção
+    code: '', // Novo campo para nome da seção
+    gondola_id: gondolaId.value, // ID da gôndola
     num_modulos: 1,
     width: 130,
     height: 180,
@@ -262,7 +277,9 @@ watch(
         if (newVal) {
             // Resetar form e erros ao abrir
             Object.assign(formData, {
-                name: `Seção ${gondolaId.value || ''}-${Date.now().toString().slice(-4)}`, // Nome padrão
+                name: gerarCodigoGondola(), // Nome da seção
+                code: gerarCodigoGondola(), // Nome padrão
+                gondola_id: gondolaId.value,
                 num_modulos: 1,
                 width: 130,
                 height: 180,
@@ -293,7 +310,8 @@ onMounted(() => {
     if (props.open) {
         gondolaId.value = route.params.gondolaId;
         planogramId.value = route.params.id;
-        formData.name = `Seção ${gondolaId.value || ''}-${Date.now().toString().slice(-4)}`;
+        formData.code = gerarCodigoGondola();
+        formData.name = gerarCodigoGondola().concat(' - Seção');
         formData.shelf_width = formData.width - formData.cremalheira_width * 2; // Exemplo de cálculo
     }
 });
@@ -305,9 +323,7 @@ const fecharModal = () => {
     router.push({
         name: 'gondola.view',
         params: { id: planogramId.value, gondolaId: gondolaId.value },
-    });
-    emit('update:open', false); // Emitir evento para fechar o modal no componente pai
-    emit('close');
+    }); 
 };
 
 // Função para enviar o formulário de adição de seção

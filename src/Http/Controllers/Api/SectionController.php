@@ -37,24 +37,24 @@ class SectionController extends Controller
         try {
             // Verificar se a gôndola existe
             $gondola = Gondola::findOrFail($gondolaId);
-            
+
             $query = Section::query()
                 ->where('gondola_id', $gondolaId)
                 ->orderBy('ordering', 'asc');
-            
+
             // Aplicar filtros
             if (request()->has('search')) {
                 $search = request()->input('search');
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('code', 'like', "%{$search}%");
+                        ->orWhere('code', 'like', "%{$search}%");
                 });
             }
-            
+
             if (request()->has('status')) {
                 $query->where('status', request()->input('status'));
             }
-            
+
             $perPage = request()->input('per_page', 15);
             $data = $query->paginate($perPage);
 
@@ -93,7 +93,7 @@ class SectionController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            
+
             return response()->json([
                 'message' => 'Ocorreu um erro ao carregar as seções',
                 'status' => 'error'
@@ -113,11 +113,11 @@ class SectionController extends Controller
         try {
             // Verificar se a gôndola existe
             Gondola::findOrFail($gondolaId);
-            
+
             $section = Section::with(['shelves'])
                 ->where('gondola_id', $gondolaId)
                 ->findOrFail($id);
-            
+
             return (new SectionResource($section))
                 ->additional([
                     'message' => null,
@@ -136,7 +136,7 @@ class SectionController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            
+
             return response()->json([
                 'message' => 'Ocorreu um erro ao carregar a seção',
                 'status' => 'error'
@@ -151,44 +151,25 @@ class SectionController extends Controller
      * @param string $gondolaId
      * @return SectionResource|JsonResponse
      */
-    public function store(StoreSectionRequest $request, string $gondolaId)
+    public function store(StoreSectionRequest $request)
     {
         try {
             DB::beginTransaction();
-            
+
             // Verificar se a gôndola existe
-            $gondola = Gondola::findOrFail($gondolaId);
-            
+            $gondola = Gondola::findOrFail($request->input('gondola_id'));;
+
             // Validar dados
             $validatedData = $request->validated();
-            
-            // Adicionar informações complementares
-            $validatedData['gondola_id'] = $gondolaId;
-            $validatedData['user_id'] = auth()->id();
-            $validatedData['tenant_id'] = auth()->user()->tenant_id ?? null;
-            
-            // Gerar slug se não fornecido
-            if (empty($validatedData['slug']) && !empty($validatedData['name'])) {
-                $validatedData['slug'] = Str::slug($validatedData['name']);
-            }
-            
-            // Gerar código único se não fornecido
-            if (empty($validatedData['code'])) {
-                $prefix = substr(strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $gondola->name)), 0, 3);
-                $uniqueId = strtoupper(Str::random(5));
-                $validatedData['code'] = "{$prefix}-{$uniqueId}";
-            }
-            
-            // Obter a última ordem se não fornecida
-            if (empty($validatedData['ordering'])) {
-                $lastOrdering = Section::where('gondola_id', $gondolaId)
-                    ->max('ordering') ?? 0;
-                $validatedData['ordering'] = $lastOrdering + 1;
-            }
-            
+
+            // Obter a última ordem se não fornecida 
+            $lastOrdering = Section::where('gondola_id', $gondola->id)
+                ->max('ordering') ?? 0;
+            $validatedData['ordering'] = $lastOrdering + 1;
+
             // Criar a seção
             $section = Section::create($validatedData);
-            
+
             // Criar prateleiras se necessário
             if (isset($validatedData['num_shelves']) && $validatedData['num_shelves'] > 0) {
                 $shelfHeight = $validatedData['shelf_height'] ?? 4;
@@ -197,26 +178,26 @@ class SectionController extends Controller
                     $shelves[] = [
                         'id' => (string) Str::ulid(),
                         'section_id' => $section->id,
-                        'name' => "Prateleira " . ($i + 1),
-                        'position' => $i,
-                        'height' => $shelfHeight,
-                        'width' => $validatedData['width'] ?? 130,
-                        'depth' => $validatedData['shelf_depth'] ?? 40,
+                        'code' => uniqid($i),
+                        'shelf_position' => $i,
+                        'shelf_height' => $shelfHeight,
+                        'shelf_width' => $validatedData['width'] ?? 130,
+                        'shelf_depth' => $validatedData['shelf_depth'] ?? 40,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
                 }
-                
+
                 if (!empty($shelves)) {
                     $section->shelves()->insert($shelves);
                 }
             }
-            
+
             DB::commit();
-            
+
             // Carregar relacionamentos para o retorno
             $section = $section->fresh(['gondola', 'shelves']);
-            
+
             return (new SectionResource($section))
                 ->additional([
                     'message' => 'Seção criada com sucesso',
@@ -231,13 +212,12 @@ class SectionController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error('Erro ao criar seção', [
-                'gondola_id' => $gondolaId,
                 'data' => $request->all(),
                 'exception' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            
+
             return response()->json([
                 'message' => 'Ocorreu um erro ao criar a seção',
                 'status' => 'error'
@@ -257,30 +237,30 @@ class SectionController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             // Verificar se a gôndola existe
             Gondola::findOrFail($gondolaId);
-            
+
             // Buscar a seção
             $section = Section::where('gondola_id', $gondolaId)->findOrFail($id);
-            
+
             // Validar dados
             $validatedData = $request->validated();
-            
+
             // Atualizar slug se o nome foi alterado
             if (isset($validatedData['name']) && $section->name !== $validatedData['name']) {
                 $validatedData['slug'] = Str::slug($validatedData['name']);
             }
-            
+
             // Atualizar a seção
             $section->update($validatedData);
-            
+
             // Atualizar prateleiras se necessário
             if (isset($validatedData['num_shelves'])) {
                 // Obter o número atual de prateleiras
                 $currentShelves = $section->shelves()->count();
                 $numShelves = $validatedData['num_shelves'];
-                
+
                 if ($numShelves > $currentShelves) {
                     // Adicionar novas prateleiras
                     $shelfHeight = $validatedData['shelf_height'] ?? $section->shelf_height ?? 4;
@@ -298,7 +278,7 @@ class SectionController extends Controller
                             'updated_at' => now(),
                         ];
                     }
-                    
+
                     if (!empty($shelves)) {
                         $section->shelves()->insert($shelves);
                     }
@@ -306,7 +286,7 @@ class SectionController extends Controller
                     // Remover prateleiras excedentes
                     $section->shelves()->where('position', '>=', $numShelves)->delete();
                 }
-                
+
                 // Atualizar dimensões das prateleiras existentes
                 if (isset($validatedData['width']) || isset($validatedData['shelf_height'])) {
                     $section->shelves()->update([
@@ -315,12 +295,12 @@ class SectionController extends Controller
                     ]);
                 }
             }
-            
+
             DB::commit();
-            
+
             // Carregar relacionamentos para o retorno
             $section = $section->fresh(['gondola', 'shelves']);
-            
+
             return (new SectionResource($section))
                 ->additional([
                     'message' => 'Seção atualizada com sucesso',
@@ -342,7 +322,7 @@ class SectionController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            
+
             return response()->json([
                 'message' => 'Ocorreu um erro ao atualizar a seção',
                 'status' => 'error'
@@ -361,18 +341,18 @@ class SectionController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             // Verificar se a gôndola existe
             Gondola::findOrFail($gondolaId);
-            
+
             // Buscar a seção
             $section = Section::where('gondola_id', $gondolaId)->findOrFail($id);
-            
+
             // Excluir seção (soft delete)
             $section->delete();
-            
+
             DB::commit();
-            
+
             return response()->json([
                 'message' => 'Seção excluída com sucesso',
                 'status' => 'success'
@@ -392,7 +372,7 @@ class SectionController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            
+
             return response()->json([
                 'message' => 'Ocorreu um erro ao excluir a seção',
                 'status' => 'error'
@@ -411,28 +391,28 @@ class SectionController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             // Verificar se a gôndola existe
             Gondola::findOrFail($gondolaId);
-            
+
             // Validar a requisição
             $request->validate([
                 'sections' => 'required|array',
                 'sections.*.id' => 'required|string|exists:sections,id',
                 'sections.*.ordering' => 'required|integer|min:0',
             ]);
-            
+
             // Atualizar a ordem das seções
             $sections = $request->input('sections');
-            
+
             foreach ($sections as $sectionData) {
                 Section::where('id', $sectionData['id'])
                     ->where('gondola_id', $gondolaId)
                     ->update(['ordering' => $sectionData['ordering']]);
             }
-            
+
             DB::commit();
-            
+
             return response()->json([
                 'message' => 'Ordem das seções atualizada com sucesso',
                 'status' => 'success'
@@ -452,7 +432,7 @@ class SectionController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            
+
             return response()->json([
                 'message' => 'Ocorreu um erro ao reordenar as seções',
                 'status' => 'error'
