@@ -4,27 +4,27 @@
             <div class="rounded-full bg-gray-100 p-2 dark:bg-gray-700">
                 <CheckIcon class="h-5 w-5 dark:text-gray-200" />
             </div>
-            <h3 class="ml-2 text-lg font-medium dark:text-gray-100">Revisão Final</h3>
+            <h3 class="ml-2 text-lg font-medium dark:text-gray-100">Final Review</h3>
         </div>
 
         <div class="space-y-6">
-            <!-- Informações Básicas -->
+            <!-- Basic Information -->
             <div class="space-y-2">
-                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Informações Básicas</h4>
+                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Basic Information</h4>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                         <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Nome:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.name }}</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Name:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.gondolaName }}</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Localização:</dt>
+                                <dt class="w-32 font-medium dark:text-gray-300">Location:</dt>
                                 <dd class="dark:text-gray-200">{{ formData.location }}</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Lado:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.side || 'Não especificado' }}</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Side:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.side || 'Not specified' }}</dd>
                             </div>
                         </dl>
                     </div>
@@ -32,42 +32,38 @@
                         <dl class="space-y-1">
                             <div class="flex">
                                 <dt class="w-32 font-medium dark:text-gray-300">Status:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.status === 'published' ? 'Publicado' : 'Rascunho' }}</dd>
+                                <dd class="dark:text-gray-200">{{ formData.status === 'published' ? 'Published' : 'Draft' }}</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Fluxo:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.flow === 'left_to_right' ? 'Esquerda para direita' : 'Direita para esquerda' }}</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Flow:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.flow === 'left_to_right' ? 'Left to Right' : 'Right to Left' }}</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Fator de Escala:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.scale_factor }}</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Scale Factor:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.scaleFactor }}</dd>
                             </div>
                         </dl>
                     </div>
                 </div>
             </div>
 
-            <!-- Módulos -->
+            <!-- Modules -->
             <div class="space-y-2">
-                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Módulos</h4>
+                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Modules</h4>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                         <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Nº de Módulos:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.num_modulos }}</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300"># of Modules:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.numModules }}</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Largura:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.section_width }}cm</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Width:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.width }}cm</dd>
                             </div>
-                        </dl>
-                    </div>
-                    <div>
-                        <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Código da Seção:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.section_code || 'Automático' }}</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Height:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.height }}cm</dd>
                             </div>
                         </dl>
                     </div>
@@ -81,111 +77,108 @@
                     <div>
                         <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Altura:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.base_height }}cm</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Height:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.baseHeight }}cm</dd>
                             </div>
                         </dl>
                     </div>
                     <div>
                         <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Largura:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.base_width }}cm</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Width:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.baseWidth }}cm</dd>
                             </div>
                         </dl>
                     </div>
                     <div>
                         <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Profundidade:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.base_depth }}cm</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Depth:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.baseDepth }}cm</dd>
                             </div>
                         </dl>
                     </div>
                 </div>
             </div>
 
-            <!-- Cremalheira -->
+            <!-- Rack -->
             <div class="space-y-2">
-                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Cremalheira</h4>
+                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Rack</h4>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                         <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-48 font-medium dark:text-gray-300">Largura da Cremalheira:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.cremalheira_width }}cm</dd>
+                                <dt class="w-48 font-medium dark:text-gray-300">Rack Width:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.rackWidth }}cm</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-48 font-medium dark:text-gray-300">Altura do Furo:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.hole_height }}cm</dd>
+                                <dt class="w-48 font-medium dark:text-gray-300">Hole Height:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.holeHeight }}cm</dd>
                             </div>
                         </dl>
                     </div>
                     <div>
                         <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-48 font-medium dark:text-gray-300">Largura do Furo:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.hole_width }}cm</dd>
+                                <dt class="w-48 font-medium dark:text-gray-300">Hole Width:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.holeWidth }}cm</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-48 font-medium dark:text-gray-300">Espaçamento entre Furos:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.hole_spacing }}cm</dd>
+                                <dt class="w-48 font-medium dark:text-gray-300">Hole Spacing:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.holeSpacing }}cm</dd>
                             </div>
                         </dl>
                     </div>
                 </div>
             </div>
 
-            <!-- Prateleiras -->
+            <!-- Shelves -->
             <div class="space-y-2">
-                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Prateleiras</h4>
+                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Shelves</h4>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                         <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Altura Total:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.height }}cm</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Quantity:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.numShelves }}</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Quantidade:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.shelf_qty }}</dd>
-                            </div>
-                            <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Altura:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.shelf_height }}cm</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Thickness:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.shelfHeight }}cm</dd>
                             </div>
                         </dl>
                     </div>
                     <div>
                         <dl class="space-y-1">
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Largura:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.shelf_width }}cm</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Width:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.shelfWidth }}cm</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Profundidade:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.shelf_depth }}cm</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Depth:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.shelfDepth }}cm</dd>
                             </div>
                             <div class="flex">
-                                <dt class="w-32 font-medium dark:text-gray-300">Tipo de Produto:</dt>
-                                <dd class="dark:text-gray-200">{{ formData.tipo_produto === 'normal' ? 'Normal' : 'Pendurável' }}</dd>
+                                <dt class="w-32 font-medium dark:text-gray-300">Product Type:</dt>
+                                <dd class="dark:text-gray-200">{{ formData.productType === 'normal' ? 'Normal' : 'Hook' }}</dd>
                             </div>
                         </dl>
                     </div>
                 </div>
             </div>
 
-            <!-- Visualização -->
+            <!-- Visualization (Simplified for review) -->
             <div class="space-y-2">
-                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Visualização</h4>
+                <h4 class="border-b pb-1 font-medium dark:border-gray-700 dark:text-gray-200">Preview</h4>
                 <div class="mt-4 flex justify-center rounded-lg border bg-gray-50 p-4 dark:bg-gray-800 dark:border-gray-700">
                     <div class="flex space-x-4">
-                        <div v-for="modulo in parseInt(formData.num_modulos)" :key="modulo" class="w-16 border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700">
+                        <div v-for="moduleIndex in parseInt(formData.numModules || 1)" :key="moduleIndex" class="w-16 border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700" :style="{ height: `${formData.height / 5}px`}">
+                            <div class="absolute bottom-0 left-0 right-0 bg-gray-300 dark:bg-gray-600" :style="{ height: `${formData.baseHeight / 5}px`}"></div>
                             <div
-                                v-for="i in parseInt(formData.shelf_qty)"
+                                v-for="i in parseInt(formData.numShelves || 1)"
                                 :key="i"
-                                class="mx-1 h-6 border-t border-gray-300 dark:border-gray-600"
-                                :class="{ 'bg-gray-200 dark:bg-gray-600': i === parseInt(formData.shelf_qty) }"
+                                class="mx-1 h-1 border-t border-gray-400 bg-gray-200 dark:border-gray-600 dark:bg-gray-400"
+                                :style="{ marginTop: `${(formData.height - formData.baseHeight) / (formData.numShelves || 1) / 5 - 1}px` }"
                             ></div>
                         </div>
                     </div>
@@ -195,14 +188,18 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { CheckIcon } from 'lucide-vue-next';
+import { defineProps } from 'vue';
 
+// Define Props
 const props = defineProps({
     formData: {
-        type: Object,
+        type: Object as () => Record<string, any>,
         required: true,
     },
 });
- 
+
+// No local state or emits needed for review step
+
 </script>

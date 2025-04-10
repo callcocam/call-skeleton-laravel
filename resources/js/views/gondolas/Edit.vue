@@ -30,22 +30,14 @@
             <div class="flex-1 overflow-y-auto p-4 dark:bg-gray-800">
                 <form @submit.prevent="enviarFormulario" class="space-y-4">
                     <!-- Campos do Formulário da Seção -->
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div>
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                        <div class="col-span-2">
                             <Label for="section_name" class="dark:text-gray-300">Nome da Seção</Label>
                             <Input id="section_name" v-model="formData.name" type="text" placeholder="Ex: Seção A-1"
                                 class="mt-1 w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
                             <span v-if="errors?.name" class="mt-1 text-xs text-red-500">{{ errors.name[0] }}</span>
                         </div>
-                        <div>
-                            <Label for="num_modulos" class="dark:text-gray-300">Número de Módulos</Label>
-                            <Input id="num_modulos" v-model.number="formData.num_modulos" type="number" min="1"
-                                class="mt-1 w-full dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
-                            <span v-if="errors?.num_modulos" class="mt-1 text-xs text-red-500">{{ errors.num_modulos[0]
-                                }}</span>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        
                         <div>
                             <Label for="width" class="dark:text-gray-300">Largura da Seção (cm)</Label>
                             <Input id="width" v-model.number="formData.width" type="number" min="0" step="any"

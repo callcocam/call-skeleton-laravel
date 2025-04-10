@@ -1,41 +1,41 @@
 <template>
     <div class="space-y-4">
-        <!-- Informações Básicas -->
+        <!-- Basic Information -->
         <div class="mb-4 flex items-center">
             <div class="rounded-full bg-gray-100 p-2 dark:bg-gray-700">
                 <InfoIcon class="h-5 w-5 dark:text-gray-200" />
             </div>
-            <h3 class="ml-2 text-lg font-medium dark:text-gray-100">Informações Básicas</h3>
+            <h3 class="ml-2 text-lg font-medium dark:text-gray-100">Basic Information</h3>
         </div>
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div class="space-y-2">
-                <Label for="name" class="dark:text-gray-200">Nome da Gôndola *</Label>
-                <Input id="name" v-model="formLocal.gondola_name" required @change="updateForm" class="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
+                <Label for="gondolaName" class="dark:text-gray-200">Gondola Name *</Label>
+                <Input id="gondolaName" v-model="formLocal.gondolaName" required @change="updateForm" class="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
             </div>
 
             <div class="space-y-2">
-                <Label for="location" class="dark:text-gray-200">Localização</Label>
-                <Input id="location" v-model="formLocal.location" placeholder="Ex: Setor de bebidas" @change="updateForm" class="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400" />
-                <p class="text-xs text-gray-500 dark:text-gray-400">Corredor onde a gôndola está localizada</p>
+                <Label for="location" class="dark:text-gray-200">Location</Label>
+                <Input id="location" v-model="formLocal.location" placeholder="E.g.: Beverage Aisle" @change="updateForm" class="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400" />
+                <p class="text-xs text-gray-500 dark:text-gray-400">Aisle where the gondola is located</p>
             </div>
 
             <div class="space-y-2">
-                <Label for="side" class="dark:text-gray-200">Lado do corredor</Label>
-                <Input id="side" v-model="formLocal.side" placeholder="Ex: A, B ou 1, 2" @change="updateForm" class="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400" />
-                <p class="text-xs text-gray-500 dark:text-gray-400">Identificação do lado do corredor</p>
+                <Label for="side" class="dark:text-gray-200">Aisle Side</Label>
+                <Input id="side" v-model="formLocal.side" placeholder="E.g.: A, B or 1, 2" @change="updateForm" class="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400" />
+                <p class="text-xs text-gray-500 dark:text-gray-400">Aisle side identification</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div class="space-y-2">
-                <Label for="scale_factor" class="dark:text-gray-200">Fator de Escala</Label>
-                <Input id="scale_factor" type="number" v-model="formLocal.scale_factor" min="1" @change="updateForm" class="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
-                <p class="text-xs text-gray-500 dark:text-gray-400">Fator para escalar o modelo visual da gôndola</p>
+                <Label for="scaleFactor" class="dark:text-gray-200">Scale Factor</Label>
+                <Input id="scaleFactor" type="number" v-model.number="formLocal.scaleFactor" min="1" @change="updateForm" class="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" />
+                <p class="text-xs text-gray-500 dark:text-gray-400">Factor to scale the visual gondola model</p>
             </div>
 
             <div class="space-y-2 md:col-span-2">
-                <Label class="dark:text-gray-200">Posição Fluxo</Label>
+                <Label class="dark:text-gray-200">Flow Position</Label>
                 <div class="grid grid-cols-2 gap-2">
                     <Button
                         :variant="formLocal.flow === 'left_to_right' ? 'default' : 'outline'"
@@ -43,7 +43,7 @@
                         class="justify-center dark:text-gray-100 dark:border-gray-600"
                         :class="{'dark:bg-primary dark:text-white': formLocal.flow === 'left_to_right', 'dark:bg-gray-700 dark:hover:bg-gray-600': formLocal.flow !== 'left_to_right'}"
                     >
-                        Esquerda para direita
+                        Left to Right
                     </Button>
                     <Button
                         :variant="formLocal.flow === 'right_to_left' ? 'default' : 'outline'"
@@ -51,10 +51,10 @@
                         class="justify-center dark:text-gray-100 dark:border-gray-600"
                         :class="{'dark:bg-primary dark:text-white': formLocal.flow === 'right_to_left', 'dark:bg-gray-700 dark:hover:bg-gray-600': formLocal.flow !== 'right_to_left'}"
                     >
-                        Direita para esquerda
+                        Right to Left
                     </Button>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Define o sentido de fluxo da gôndola</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Defines the gondola flow direction</p>
             </div>
         </div>
 
@@ -62,13 +62,13 @@
             <Label for="status" class="dark:text-gray-200">Status</Label>
             <Select v-model="formLocal.status" @update:modelValue="updateForm">
                 <SelectTrigger class="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
-                    <SelectValue placeholder="Selecione o status" class="dark:text-gray-300" />
+                    <SelectValue placeholder="Select status" class="dark:text-gray-300" />
                 </SelectTrigger>
                 <SelectContent class="dark:bg-gray-800 dark:border-gray-700">
                     <SelectGroup>
                         <SelectLabel class="dark:text-gray-300">Status</SelectLabel>
-                        <SelectItem value="published" class="dark:text-gray-200 dark:hover:bg-gray-700 dark:focus:bg-gray-700">Publicado</SelectItem>
-                        <SelectItem value="draft" class="dark:text-gray-200 dark:hover:bg-gray-700 dark:focus:bg-gray-700">Rascunho</SelectItem>
+                        <SelectItem value="published" class="dark:text-gray-200 dark:hover:bg-gray-700 dark:focus:bg-gray-700">Published</SelectItem>
+                        <SelectItem value="draft" class="dark:text-gray-200 dark:hover:bg-gray-700 dark:focus:bg-gray-700">Draft</SelectItem>
                     </SelectGroup>
                 </SelectContent>
             </Select>
@@ -76,71 +76,68 @@
     </div>
 </template>
 
-<script setup>  
+<script setup lang="ts">
 import { InfoIcon } from 'lucide-vue-next';
-import { onMounted, reactive, watch } from 'vue';
+import { onMounted, reactive, watch, defineProps, defineEmits } from 'vue'; 
 
 const props = defineProps({
     formData: {
-        type: Object,
+        type: Object as () => Record<string, any>,
         required: true,
     },
 });
 
 const emit = defineEmits(['update:form']);
 
-// Cópia local do formulário para manipulação
 const formLocal = reactive({ ...props.formData });
 
-// Função para gerar um código aleatório formatado para o nome da gôndola
-const gerarCodigoGondola = () => {
-    const prefixo = 'GND';
-    const data = new Date();
-    const ano = data.getFullYear().toString().slice(2); // Últimos 2 dígitos do ano
-    const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+const generateGondolaCode = () => {
+    const prefix = 'GND';
+    const date = new Date();
+    const year = date.getFullYear().toString().slice(2);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const random = Math.floor(Math.random() * 10000)
         .toString()
         .padStart(4, '0');
 
-    return `${prefixo}-${ano}${mes}-${random}`;
+    return `${prefix}-${year}${month}-${random}`;
 };
 
-// Inicializar o nome da gôndola se estiver vazio
 onMounted(() => {
-    if (!formLocal.gondola_name) {
-        formLocal.gondola_name = gerarCodigoGondola();
-        updateForm();
+    if (!formLocal.gondolaName) {
+        formLocal.gondolaName = generateGondolaCode();
     }
-
-    // Inicializar flow se ainda não estiver definido
     if (!formLocal.flow) {
         formLocal.flow = 'left_to_right';
     }
+    updateForm();
 });
 
-// Observar mudanças nas props e atualizar o formulário local
 watch(
     () => props.formData,
     (newVal) => {
         Object.assign(formLocal, newVal);
-
-        // Se o nome ainda estiver vazio após atualização, gere um novo código
-        if (!formLocal.gondola_name) {
-            formLocal.gondola_name = gerarCodigoGondola();
-            updateForm();
+        if (!formLocal.gondolaName) {
+            formLocal.gondolaName = generateGondolaCode();
         }
     },
     { deep: true },
 );
 
-// Definir o fluxo da gôndola
-const setFlow = (flow) => {
-    formLocal.flow = flow;
+const setFlow = (flowValue: 'left_to_right' | 'right_to_left') => {
+    formLocal.flow = flowValue;
     updateForm();
 };
 
-// Função para emitir os dados atualizados ao componente pai
 const updateForm = () => {
-    emit('update:form', { ...formLocal });
+    const relevantData = {
+        gondolaName: formLocal.gondolaName,
+        location: formLocal.location,
+        side: formLocal.side,
+        scaleFactor: formLocal.scaleFactor,
+        flow: formLocal.flow,
+        status: formLocal.status,
+    };
+    emit('update:form', relevantData);
 };
 </script>

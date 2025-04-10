@@ -12,8 +12,7 @@
                 <h2 class="text-2xl font-bold tracking-tight dark:text-gray-100">{{ gondola.name }}</h2>
                 <p class="text-sm text-muted-foreground dark:text-gray-400">ID: {{ gondola.id }} | Criado em: {{ gondola.created_at }}</p>
                 <p v-for="section in gondola?.sections" :key="section.id">
-                    <span class="font-semibold text-gray-800 dark:text-gray-100">{{ section.name }}</span>
-                    <span class="text-sm text-gray-500 dark:text-gray-400"> - {{ section.description }}</span>
+                    <span class="font-semibold text-gray-800 dark:text-gray-100">{{ section.name }}</span> 
                 </p>
             </div>
         </div>

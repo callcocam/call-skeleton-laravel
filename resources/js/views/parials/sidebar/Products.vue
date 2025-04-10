@@ -37,7 +37,7 @@
                         v-model="filters.category"
                     >
                         <option value="">Todas as categorias</option>
-                        <option v-for="(cat, i) in categories" :key="i" :value="cat.id">{{ cat.name }}</option>
+                        <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                     </select>
                 </div>
 
@@ -77,14 +77,14 @@
 
         <!-- Lista de produtos com design limpo -->
         <div class="flex-1 overflow-y-auto p-2 dark:bg-gray-800">
-            <div class="mb-2 px-2 py-1 text-sm text-gray-500 dark:text-gray-400">
+            <div v-if="!loading && filteredProducts.length > 0" class="mb-2 px-2 py-1 text-sm text-gray-500 dark:text-gray-400">
                 <span>{{ filteredProducts.length }} produtos encontrados</span>
             </div>
 
-            <ul class="space-y-1">
+            <ul v-if="!loading && filteredProducts.length > 0" class="space-y-1">
                 <li
-                    v-for="(product, index) in filteredProducts"
-                    :key="product.id || index"
+                    v-for="product in filteredProducts"
+                    :key="product.id"
                     class="group cursor-pointer rounded-md bg-white p-2 shadow-sm transition hover:bg-blue-50 dark:bg-gray-700 dark:hover:bg-gray-600"
                     @click="handleProductSelect(product)"
                     draggable="true"
@@ -92,7 +92,7 @@
                 >
                     <div class="flex items-center space-x-3">
                         <div class="flex-shrink-0 overflow-hidden rounded border bg-white p-1 dark:border-gray-600 dark:bg-gray-800">
-                            <img :src="product.image_url" :alt="product.name" class="h-12 w-12 object-contain" @error="handleImageError" />
+                            <img :src="product.image_url || '/images/placeholder.jpg'" :alt="product.name" class="h-12 w-12 object-contain" @error="handleImageError" />
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{{ product.name }}</p>
@@ -117,6 +117,7 @@
             <div v-if="!loading && filteredProducts.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
                 <Package class="h-10 w-10 text-gray-300 dark:text-gray-600" />
                 <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Nenhum produto encontrado</p>
+                <p v-if="Object.values(filters).some(f => f)" class="mt-1 text-xs text-gray-400 dark:text-gray-500">Tente ajustar os filtros.</p>
             </div>
         </div>
     </div>
@@ -124,7 +125,8 @@
 
 <script setup lang="ts">
 import { ChevronDown, Loader, Package, Search, SlidersHorizontal } from 'lucide-vue-next';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import debounce from 'lodash/debounce';
 import { apiService } from '../../../services';
 import { useEditorStore } from '../../../store/editor';
 
@@ -135,103 +137,79 @@ interface Product {
     width: number;
     height: number;
     depth: number;
+    hangable?: boolean;
+    stackable?: boolean;
 }
+
 interface Category {
     id: number;
     name: string;
 }
 
+interface FilterState {
+    search: string;
+    category: number | null | '';
+    hangable: boolean;
+    stackable: boolean;
+}
+
 const props = defineProps({
     categories: {
         type: Array as () => Category[],
-        default: [],
+        default: () => [],
     },
 });
 
 const editorStore = useEditorStore();
 
-const gondolaId = computed(() => editorStore.gondolaId);
+const currentGondolaId = computed(() => editorStore.gondolaId);
 
 const emit = defineEmits(['select-product', 'drag-start', 'view-stats']);
 
-// Estado
 const showFilters = ref(false);
 const loading = ref(false);
-const filters = ref({
+const filteredProducts = ref<Product[]>([]);
+const filters = reactive<FilterState>({
     search: '',
-    category: null,
+    category: '',
     hangable: false,
     stackable: false,
-    flammable: false,
-    perishable: false,
 });
 const gondolas = computed(() => editorStore.gondolas);
-// Vamos pegar todos os produtos que estão na gondola
-const notInGondola = ref([] as string[]);
 
-// Observa os filtros para refazer a busca
-watch(
-    filters,
-    async () => {
-        await fetchProducts();
-    },
-    { deep: true },
-);
+const productsInCurrentGondolaIds = computed(() => {
+    const gondola = editorStore.gondolas.find((g) => g.id === currentGondolaId.value);
+    if (!gondola?.sections) {
+        return [];
+    }
 
-// Produtos filtrados
-const filteredProducts = ref([] as Product[]);
-
-// Manipuladores de eventos
-function handleProductSelect(product) {
-    emit('select-product', product);
-}
-
-function handleDragStart(event, product) {
-    event.dataTransfer.setData('text/product', JSON.stringify(product));
-    event.dataTransfer.effectAllowed = 'copy';
-    emit('drag-start', event, product);
-}
-
-function viewStats(product) {
-    emit('view-stats', product);
-}
-
-function handleImageError(e) {
-    // Substitui imagens quebradas por um placeholder
-    e.target.src = '/images/placeholder.jpg';
-}
-
-// Busca produtos da API
-async function fetchProducts() {
-    try {
-        loading.value = true;
-
-        const gondola = gondolas.value.find((g) => g.id === gondolaId.value);
-        if (gondola) {
-            if (gondola?.sections) {
-                gondola.sections.forEach((section) => {
-                    section.shelves.forEach((shelf) => {
-                        shelf.segments.forEach((segment) => {
-                            notInGondola.value.push(segment.layer.product.id);
-                        });
-                    });
-                });
-            }
-        }
-
-        // Se houver implementação real da API
-        // @ts-ignore
-        const response = await apiService.get('products', {
-            params: {
-                notInGondola: notInGondola.value,
-                search: filters.value.search,
-                category: filters.value.category,
-                hangable: filters.value.hangable,
-                stackable: filters.value.stackable,
-                flammable: filters.value.flammable,
-                perishable: filters.value.perishable,
-            },
+    const productIds = new Set<number>();
+    gondola.sections.forEach(section => {
+        section.shelves?.forEach(shelf => {
+            shelf.segments?.forEach(segment => {
+                if (segment.layer?.product?.id) {
+                    productIds.add(segment.layer.product.id);
+                }
+            });
         });
+    });
+    return Array.from(productIds);
+});
+
+const fetchProducts = debounce(async () => {
+    loading.value = true;
+    try {
+        const params: Record<string, any> = {
+            notInGondola: productsInCurrentGondolaIds.value.length > 0 ? productsInCurrentGondolaIds.value : undefined,
+            search: filters.search || undefined,
+            category: filters.category || undefined,
+            hangable: filters.hangable || undefined,
+            stackable: filters.stackable || undefined,
+        };
+
+        Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
+
+        const response = await apiService.get<Product[]>('products', { params });
         filteredProducts.value = response;
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
@@ -239,76 +217,79 @@ async function fetchProducts() {
     } finally {
         loading.value = false;
     }
+}, 300);
+
+watch(filters, fetchProducts, { deep: true });
+watch(currentGondolaId, fetchProducts);
+
+function handleProductSelect(product: Product) {
+    emit('select-product', product);
 }
 
-/**
- * Limpa todos os filtros
- */
+function handleDragStart(event: DragEvent, product: Product) {
+    if (event.dataTransfer) {
+        event.dataTransfer.setData('text/product', JSON.stringify(product));
+        event.dataTransfer.effectAllowed = 'copy';
+    }
+    emit('drag-start', event, product);
+}
+
+function viewStats(product: Product) {
+    emit('view-stats', product);
+}
+
+function handleImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    target.src = '/images/placeholder.jpg';
+}
+
 function clearFilters() {
-    filters.value = {
-        hangable: false,
-        stackable: false,
-        flammable: false,
-        perishable: false,
-        search: '',
-        category: null,
-    };
+    filters.search = '';
+    filters.category = '';
+    filters.hangable = false;
+    filters.stackable = false;
     showFilters.value = false;
 }
-// Inicializa o componente
-onMounted(async () => {
-    // Carrega categorias e produtos ao montar o componente
-    await fetchProducts();
+
+onMounted(() => {
+    fetchProducts();
 });
 </script>
 
 <style scoped>
-/* Estilo para garantir que a área central possa rolar enquanto as laterais ficam fixas */
 .overflow-y-auto {
-    max-height: 100vh;
+    max-height: calc(100vh - 200px);
     scrollbar-width: thin;
     scrollbar-color: #e2e8f0 #f8fafc;
 }
 
 .overflow-x-auto {
-    scrollbar-width: thin;
-    scrollbar-color: #e2e8f0 #f8fafc;
+    overflow-x: hidden;
 }
 
-.overflow-y-auto::-webkit-scrollbar,
-.overflow-x-auto::-webkit-scrollbar {
+.overflow-y-auto::-webkit-scrollbar {
     width: 8px;
-    height: 8px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track,
-.overflow-x-auto::-webkit-scrollbar-track {
+.overflow-y-auto::-webkit-scrollbar-track {
     background: #f8fafc;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb,
-.overflow-x-auto::-webkit-scrollbar-thumb {
+.overflow-y-auto::-webkit-scrollbar-thumb {
     background-color: #e2e8f0;
     border-radius: 4px;
 }
 
-/* Estilos para o modo escuro da barra de rolagem */
 @media (prefers-color-scheme: dark) {
     .overflow-y-auto {
         scrollbar-color: #4b5563 #1f2937;
     }
 
-    .overflow-x-auto {
-        scrollbar-color: #4b5563 #1f2937;
-    }
-
-    .overflow-y-auto::-webkit-scrollbar-track,
-    .overflow-x-auto::-webkit-scrollbar-track {
+    .overflow-y-auto::-webkit-scrollbar-track {
         background: #1f2937;
     }
 
-    .overflow-y-auto::-webkit-scrollbar-thumb,
-    .overflow-x-auto::-webkit-scrollbar-thumb {
+    .overflow-y-auto::-webkit-scrollbar-thumb {
         background-color: #4b5563;
     }
 }

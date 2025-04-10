@@ -10,30 +10,7 @@
                     <Gondolas v-if="gondolas?.length" />
                     <CreateGondola v-else-if="!gondolas?.length" />
                 </div>
-
-                <div
-                    class="sticky top-0 flex h-screen w-64 flex-shrink-0 flex-col overflow-hidden rounded-lg border bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
-                >
-                    <div class="border-b border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-                        <h3 class="text-center text-lg font-medium text-gray-800 dark:text-gray-100">Propriedades</h3>
-                    </div>
-                    <div class="flex-1 p-3">
-                        <div v-if="selectedProducts.length" class="rounded-md bg-white p-3 shadow-sm dark:bg-gray-700">
-                            <p class="text-gray-800 dark:text-gray-200">{{ selectedProducts.length }} produto(s) selecionado(s)</p>
-                            <div v-for="product in selectedProducts" :key="product.id" class="flex items-center gap-2">
-                                <img :src="product.image_url" alt="" class="h-16 w-16 rounded-md border object-cover dark:border-gray-600" />
-                                <div class="flex flex-col">
-                                    <h4 class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ product.name }}</h4>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">SKU: {{ product.sku }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">Largura: {{ product.width }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="flex h-full items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500">
-                            Selecione um produto para ver suas propriedades
-                        </div>
-                    </div>
-                </div>
+                <Properties />
             </div>
         </div>
     </div>
@@ -45,8 +22,9 @@ import { apiService } from '../services';
 import { useEditorStore } from '../store/editor';
 import Gondolas from './gondolas/Gondolas.vue';
 import CreateGondola from './parials/CreateGondola.vue';
-import Header from './parials/Header.vue';
-import Products from './parials/product/Products.vue';
+import Header from './parials/Header.vue'; 
+import Properties from './parials/sidebar/Properties.vue';
+import Products from './parials/sidebar/Products.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -61,8 +39,7 @@ const selectedProducts = ref<any[]>([]); // Substitua 'any' pelo tipo correto, s
 
 const get = async () => {
     const response = await apiService.get('plannerate/'.concat(id.value));
-    record.value = response.data;
-    console.log('record',response.data.gondolas);
+    record.value = response.data; 
     editorStore.setGondolas(response.data.gondolas);
     editorStore.setGondolaId(route.params.gondolaId as string); // Atualiza o ID da gôndola no store
 };
@@ -75,6 +52,8 @@ watch(
             if (gondolas.value.length > 0) {
                 const firstGondola = gondolas.value[0];
                 if (firstGondola) {
+                    // Atualiza o ID da gôndola no store
+                    editorStore.setGondolaId(firstGondola.id);
                     await router.push({
                         name: 'gondola.view',
                         params: { gondolaId: firstGondola.id },

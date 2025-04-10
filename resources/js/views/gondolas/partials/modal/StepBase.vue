@@ -4,71 +4,71 @@
             <div class="rounded-full bg-gray-100 p-2 dark:bg-gray-700">
                 <BoxIcon class="h-5 w-5 dark:text-gray-200" />
             </div>
-            <h3 class="ml-2 text-lg font-medium dark:text-gray-100">Configurar Base</h3>
+            <h3 class="ml-2 text-lg font-medium dark:text-gray-100">Configure Base</h3>
         </div>
 
-        <!-- Dimensões da Base -->
+        <!-- Base Dimensions -->
         <div class="space-y-2">
-            <h4 class="text-sm font-medium dark:text-gray-200">Dimensões da Base</h4>
+            <h4 class="text-sm font-medium dark:text-gray-200">Base Dimensions</h4>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div class="space-y-2">
-                    <Label for="base_height" class="dark:text-gray-200">Altura da Base (cm)</Label>
+                    <Label for="baseHeight" class="dark:text-gray-200">Base Height (cm)</Label>
                     <Input
-                        id="base_height"
+                        id="baseHeight"
                         type="number"
-                        v-model="formLocal.base_height"
+                        v-model.number="formLocal.baseHeight"
                         min="1"
                         @change="updateForm"
                         class="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Altura da base da gôndola</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Height of the gondola base</p>
                 </div>
 
                 <div class="space-y-2">
-                    <Label for="base_width" class="dark:text-gray-200">Largura da Base (cm)</Label>
+                    <Label for="baseWidth" class="dark:text-gray-200">Base Width (cm)</Label>
                     <Input
-                        id="base_width"
+                        id="baseWidth"
                         type="number"
-                        v-model="formLocal.base_width"
+                        v-model.number="formLocal.baseWidth"
                         min="1"
                         @change="updateForm"
                         class="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Largura da base da gôndola</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Width of the gondola base</p>
                 </div>
 
                 <div class="space-y-2">
-                    <Label for="base_depth" class="dark:text-gray-200">Profundidade da Base (cm)</Label>
+                    <Label for="baseDepth" class="dark:text-gray-200">Base Depth (cm)</Label>
                     <Input
-                        id="base_depth"
+                        id="baseDepth"
                         type="number"
-                        v-model="formLocal.base_depth"
+                        v-model.number="formLocal.baseDepth"
                         min="1"
                         @change="updateForm"
                         class="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                     />
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Profundidade da base da gôndola</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Depth of the gondola base</p>
                 </div>
             </div>
         </div>
 
-        <!-- Visualização da Base -->
+        <!-- Base Visualization -->
         <div class="mt-5 rounded-lg border bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
             <div class="flex justify-center">
                 <div class="relative">
-                    <!-- Base da gôndola (representação visual) -->
+                    <!-- Gondola Base (visual representation) -->
                     <div
                         class="border border-gray-400 bg-gray-300 dark:border-gray-600 dark:bg-gray-600"
                         :style="{
-                            width: `${formLocal.base_width / 3}px`,
-                            height: `${formLocal.base_height / 3}px`,
+                            width: `${(formLocal.baseWidth || 0) / 3}px`,
+                            height: `${(formLocal.baseHeight || 0) / 3}px`,
                             maxWidth: '300px',
                         }"
                     ></div>
-                    <!-- Indicador de profundidade -->
+                    <!-- Depth indicator -->
                     <div class="absolute right-0 top-1/2 flex -translate-y-1/2 translate-x-full transform items-center">
                         <div class="h-px w-6 bg-gray-400 dark:bg-gray-500"></div>
-                        <span class="ml-1 text-xs dark:text-gray-300">{{ formLocal.base_depth }} cm</span>
+                        <span class="ml-1 text-xs dark:text-gray-300">{{ formLocal.baseDepth }} cm</span>
                     </div>
                 </div>
             </div>
@@ -76,59 +76,78 @@
 
         <div class="rounded-lg border border-blue-100 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
             <p class="text-sm text-blue-800 dark:text-blue-300">
-                <span class="font-medium">Dica:</span> A base é a parte inferior da gôndola que sustenta toda a estrutura. Geralmente possui altura
-                menor que as demais partes.
+                <span class="font-medium">Tip:</span> The base is the bottom part of the gondola that supports the entire structure. It usually has a lower height than other parts.
             </p>
         </div>
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { BoxIcon } from 'lucide-vue-next';
-import { onMounted, reactive, watch } from 'vue';
+import { onMounted, reactive, watch, defineProps, defineEmits } from 'vue';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 
+// Define Props
 const props = defineProps({
     formData: {
-        type: Object,
+        type: Object as () => Record<string, any>,
         required: true,
     },
 });
 
+// Define Emits
 const emit = defineEmits(['update:form']);
 
-// Cópia local do formulário para manipulação
-const formLocal = reactive({ ...props.formData });
+// Local reactive copy for manipulation
+// Use English keys
+const formLocal = reactive({
+    baseHeight: props.formData.baseHeight,
+    baseWidth: props.formData.baseWidth,
+    baseDepth: props.formData.baseDepth,
+    // Keep other potentially relevant keys like width for default assignment
+    width: props.formData.width,
+});
 
-// Inicializar valores padrão para a base se não existirem
+// Initialize default base values if they don't exist
 onMounted(() => {
-    if (!formLocal.base_height) {
-        formLocal.base_height = 17; // Valor padrão conforme migration
+    // Use English keys for checks and assignments
+    if (formLocal.baseHeight === undefined) {
+        formLocal.baseHeight = 17; // Default value as per previous logic
     }
 
-    if (!formLocal.base_width) {
-        formLocal.base_width = formLocal.width || 130; // Usar a largura da gôndola ou valor padrão
+    if (formLocal.baseWidth === undefined) {
+        formLocal.baseWidth = formLocal.width || 130; // Use gondola width or default
     }
 
-    if (!formLocal.base_depth) {
-        formLocal.base_depth = 40; // Valor padrão conforme migration
+    if (formLocal.baseDepth === undefined) {
+        formLocal.baseDepth = 40; // Default value as per previous logic
     }
 
+    // Emit initial state
     updateForm();
 });
 
-// Observar mudanças nas props e atualizar o formulário local
+// Watch for prop changes and update the local form
 watch(
     () => props.formData,
     (newVal) => {
-        Object.assign(formLocal, newVal);
+        // Update local state with relevant keys
+        formLocal.baseHeight = newVal.baseHeight ?? formLocal.baseHeight;
+        formLocal.baseWidth = newVal.baseWidth ?? formLocal.baseWidth;
+        formLocal.baseDepth = newVal.baseDepth ?? formLocal.baseDepth;
+        formLocal.width = newVal.width ?? formLocal.width; // Keep track of overall width if needed
     },
     { deep: true },
 );
 
-// Função para emitir os dados atualizados ao componente pai
+// Function to emit updated data to the parent component
 const updateForm = () => {
-    emit('update:form', { ...formLocal });
+    // Emit only the keys relevant to this step
+    emit('update:form', {
+        baseHeight: formLocal.baseHeight,
+        baseWidth: formLocal.baseWidth,
+        baseDepth: formLocal.baseDepth,
+     });
 };
 </script>

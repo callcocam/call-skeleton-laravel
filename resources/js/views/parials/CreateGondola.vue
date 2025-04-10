@@ -15,16 +15,7 @@
                 perfeito para sua loja.
             </p>
             <div class="mt-6">
-                <Button
-                    @click="
-                        $router.push({
-                            name: 'gondola.create',
-                            query: { ...route.query },
-                        })
-                    "
-                    size="default"
-                    class="shadow-sm dark:bg-gray-700 dark:text-gray-100"
-                >
+                <Button @click="() => router.push({ name: 'gondola.create' })" size="default" class="shadow-sm dark:bg-gray-700 dark:text-gray-100">
                     <PlusIcon class="mr-2 h-4 w-4" />
                     Adicionar Gôndola
                 </Button>
@@ -35,8 +26,10 @@
 </template>
 <script setup lang="ts">
 import { PlusIcon, ShoppingBagIcon } from 'lucide-vue-next';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { Button } from '../../components/ui/button';
 
 const route = useRoute();
+
+const router = useRouter();
 </script>
