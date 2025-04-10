@@ -84,9 +84,7 @@
 
 <script setup lang="ts">
 import { BoxIcon } from 'lucide-vue-next';
-import { onMounted, reactive, watch, defineProps, defineEmits } from 'vue';
-import { Input } from '../../../../components/ui/input';
-import { Label } from '../../../../components/ui/label';
+import { onMounted, reactive, watch, defineProps, defineEmits } from 'vue'; 
 
 // Define Props
 const props = defineProps({

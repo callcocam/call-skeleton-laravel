@@ -1,101 +1,143 @@
 // Info.vue - Componente Principal
 <script setup lang="ts">
+// Imports de Bibliotecas Externas
 import { ArrowLeftRight, Grid, Minus, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+
+// Imports Internos
 import { useRedirect } from '../../../composables/useRedirect';
 import { apiService } from '../../../services';
 import { useEditorStore } from '../../../store/editor';
-import Category from './Category.vue';
+import Category from './Category.vue'; // Assumindo que Category e Popover estão corretos
 import Popover from './Popover.vue';
+import { Button } from "./../../../components/ui/button"; // Adicionar import do Button se não for global
 
+// Definição das Props
+/**
+ * Props do componente Info.
+ * @property {object} gondola - O objeto da gôndola atual.
+ * @property {Array} categories - Lista de categorias disponíveis para filtro.
+ */
 const props = defineProps({
     gondola: {
-        type: Object,
+        type: Object as () => Record<string, any>, // Tipagem mais específica
         required: true,
     },
     categories: {
-        type: Array,
+        type: Array as () => any[], // Tipar categoria se possível
         default: () => [],
     },
 });
 
+// Definição dos Emits
+/**
+ * Eventos emitidos pelo componente.
+ * @event update:invertOrder - Emitido ao clicar para inverter a ordem das seções, com o ID da gôndola.
+ * @event update:category - Emitido ao selecionar/limpar uma categoria de filtro.
+ */
 const emit = defineEmits(['update:invertOrder', 'update:category']);
 
+// Hooks e Stores
 const router = useRouter();
-
-const { redirectRemoveGondola } = useRedirect(router);
-
-// Obter a loja do editor
 const editorStore = useEditorStore();
+const { redirectRemoveGondola } = useRedirect(router); // Composables
 
-// Estado local para filtros e opções de visualização
-const scaleFactor = computed(() => editorStore.scaleFactor);
-const showGrid = computed(() => editorStore.showGrid);
+// Estado Local
+/** Filtros aplicados localmente (ex: categoria). */
 const filters = ref({
-    category: null,
+    category: null as any | null, // Tipar o filtro de categoria
 });
 
-// Computado para obter as seções do registro atual
-const sections = computed(() => {
-    return props.gondola?.sections || [];
-});
+// Propriedades Computadas (Ligadas ao Store)
+/** Fator de escala atual do editor. */
+const scaleFactor = computed(() => editorStore.scaleFactor);
+/** Visibilidade da grade no editor. */
+const showGrid = computed(() => editorStore.showGrid);
+/** Seções da gôndola atual. */
+const sections = computed(() => props.gondola?.sections || []);
 
-// Atualizar a escala e emitir o evento
+// Métodos
+/**
+ * Atualiza o fator de escala no store.
+ * @param {number} newScale - O novo valor da escala.
+ */
 const updateScale = (newScale: number) => {
-    editorStore.setScaleFactor(newScale);
+    // Adiciona validação de limites se necessário, embora os botões já tenham :disabled
+    const clampedScale = Math.max(2, Math.min(10, newScale));
+    editorStore.setScaleFactor(clampedScale);
 };
 
-// Atualizar a grade e emitir o evento
-const updateShowGrid = () => {
+/** Alterna a visibilidade da grade no store. */
+const toggleGrid = () => {
     editorStore.toggleGrid();
 };
 
-// Inverter a ordem das seções
-const invertOrder = () => {
+/** Emite evento para inverter a ordem das seções da gôndola pai. */
+const invertSectionOrder = () => {
     emit('update:invertOrder', props.gondola.id);
 };
 
-// Atualizar a categoria selecionada
-const updateCategory = (category) => {
-    filters.value.category = category;
-    emit('update:category', category);
+/**
+ * Atualiza a categoria selecionada no filtro local e emite o evento.
+ * @param {number | null} categoryId - O ID da categoria selecionada ou null.
+ */
+const selectCategory = (categoryId: number | null) => {
+    filters.value.category = categoryId;
+    emit('update:category', categoryId);
 };
 
-// Limpar todos os filtros
-const clearFilters = () => {
+/** Limpa o filtro de categoria localmente e emite o evento. */
+const clearCategoryFilter = () => {
     filters.value.category = null;
+    emit('update:category', null);
 };
-// Adicionar um módulo à gôndola
-const addModuleToGondola = () => {
+
+/** Navega para a tela de edição/adição de seção para a gôndola atual. */
+const navigateToAddSection = () => {
      router.push({
-        name: 'gondola.edit',
+        name: 'gondola.edit', // Rota para adicionar/editar seção (ajustar se necessário)
         params:{
-            id:props.gondola.planogram_d,
+            id: props.gondola.planogram_id, // Corrigido: Usar planogram_id
             gondolaId: props.gondola.id
         }
      })
 };
-// Remover a gôndola
-const removeGondola = async () => {
+
+/**
+ * Confirma e remove a gôndola atual.
+ * Atualiza o store, chama a API e redireciona.
+ */
+const confirmRemoveGondola = async () => {
+    // Usar um modal de confirmação mais robusto seria ideal
     if (!confirm('Tem certeza de que deseja remover esta gôndola?')) {
         return;
     }
     try {
-        editorStore.removeGondola(props.gondola.id);
-        await apiService.delete('gondolas/'.concat(props.gondola.id));
-        redirectRemoveGondola(props.gondola); // Redireciona após a remoção
+        const gondolaId = props.gondola.id;
+        // Otimista: remove do store primeiro para resposta rápida da UI
+        editorStore.removeGondola(gondolaId);
+        // Chama a API para deletar
+        await apiService.delete(`gondolas/${gondolaId}`);
+        // Redireciona após sucesso
+        redirectRemoveGondola(props.gondola); // Passa o objeto gondola se necessário para o redirect
     } catch (error) {
-        console.error('Error removing gondola:', error);
+        console.error('Erro ao remover gôndola:', error);
+        // TODO: Adicionar feedback de erro para o usuário (ex: toast)
+        // Poderia re-adicionar a gôndola ao store em caso de falha na API?
+        // editorStore.addGondola(props.gondola); // Reverter otimismo (complexo)
     }
 };
 </script>
 
 <template>
+    <!-- Cabeçalho Fixo com Controles -->
     <div class="sticky top-0 z-50 border-b bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <div class="p-4">
             <div class="flex items-center justify-between">
+                <!-- Controles de Visualização e Filtros -->
                 <div class="flex flex-col items-center space-x-8 md:flex-row">
+                     <!-- Label Dimensões (Texto estático por enquanto) -->
                     <h3 class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                         <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
@@ -116,7 +158,7 @@ const removeGondola = async () => {
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                @click="updateScale(Math.max(2, scaleFactor - 1))"
+                                @click="updateScale(scaleFactor - 1)"
                                 class="!p-1 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                                 :disabled="scaleFactor <= 2"
                             >
@@ -127,7 +169,7 @@ const removeGondola = async () => {
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                @click="updateScale(Math.min(10, scaleFactor + 1))"
+                                @click="updateScale(scaleFactor + 1)"
                                 class="!p-1 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                                 :disabled="scaleFactor >= 10"
                             >
@@ -136,58 +178,72 @@ const removeGondola = async () => {
                         </div>
                     </div>
 
-                    <!-- Toggle Grid -->
+                    <!-- Botão de Toggle Grid -->
                     <Button
                         type="button"
                         variant="outline"
                         size="icon"
-                        @click="updateShowGrid()"
+                        @click="toggleGrid()"
                         class="ml-4 !p-1 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        :class="{ 'bg-gray-100 dark:bg-gray-700': showGrid }"
+                        :class="{ 'bg-gray-100 dark:bg-gray-700': showGrid }" 
+                        aria-label="Mostrar/Esconder Grade"
                     >
                         <Grid class="h-4 w-4" />
                     </Button>
-                    <!-- Filtros -->
+
+                    <!-- Filtro de Categoria (condicional) -->
                     <div class="flex items-center space-x-2" v-if="categories.length > 0">
                         <label class="text-sm text-gray-600 dark:text-gray-400">Filtros:</label>
-                        <Popover @clear-filters="clearFilters" :has-active-filters="!!filters.category">
+                        <Popover @clear-filters="clearCategoryFilter" :has-active-filters="!!filters.category">
+                             <!-- Componente Category para seleção -->
                             <Category
                                 class="w-full"
                                 :categories="categories"
                                 v-model="filters.category"
-                                @update:model-value="updateCategory"
+                                @update:model-value="selectCategory" 
                                 :clearable="true"
                             />
                         </Popover>
                     </div>
                 </div>
 
-                <!-- Botões agrupados -->
+                <!-- Botões de Ação -->
                 <div class="flex items-center space-x-3">
-                    <!-- Botão para inverter ordem -->
+                    <!-- Botão para inverter ordem das seções -->
                     <Button
                         type="button"
                         variant="secondary"
-                        v-if="sections.length > 0"
-                        @click="invertOrder"
+                        v-if="sections.length > 1" 
+                        @click="invertSectionOrder"
                         class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        aria-label="Inverter Ordem das Seções"
                     >
                         <ArrowLeftRight class="mr-1 h-4 w-4" />
                         <span class="hidden md:block">Inverter Ordem</span>
                     </Button>
 
-                    <Button type="button" variant="secondary" class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" @click="addModuleToGondola">
+                     <!-- Botão para adicionar seção/módulo -->
+                    <Button
+                         type="button"
+                         variant="secondary"
+                         class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                         @click="navigateToAddSection"
+                         aria-label="Adicionar Seção"
+                     >
                         <Plus class="mr-1 h-4 w-4" />
-                        <span class="hidden md:block">Adicionar Modulo</span>
+                        <span class="hidden md:block">Adicionar Seção</span> 
                     </Button>
+
+                     <!-- Botão para remover gôndola -->
                     <Button
                         type="button"
                         variant="destructive"
-                        class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        @click="removeGondola"
+                        class="flex items-center" 
+                        @click="confirmRemoveGondola"
+                        aria-label="Remover Gôndola"
                     >
                         <Trash2 class="mr-1 h-4 w-4" />
-                        <span class="hidden md:block">Remover Gindolas</span>
+                        <span class="hidden md:block">Remover Gôndola</span> 
                     </Button>
                 </div>
             </div>

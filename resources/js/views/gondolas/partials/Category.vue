@@ -1,18 +1,5 @@
 // Category.vue - Componente modificado para usar v-model corretamente
-<script setup lang="ts">
-import { Button } from '../../../components/ui/button';
-import {
-    Combobox,
-    ComboboxAnchor,
-    ComboboxEmpty,
-    ComboboxGroup,
-    ComboboxInput,
-    ComboboxItem,
-    ComboboxItemIndicator,
-    ComboboxList,
-    ComboboxTrigger,
-    // @ts-ignore
-} from '../../../components/ui/combobox';
+<script setup lang="ts"> 
 import { Check, ChevronsUpDown, Search, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 

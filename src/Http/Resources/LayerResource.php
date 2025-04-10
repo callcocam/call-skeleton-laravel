@@ -24,7 +24,7 @@ class LayerResource extends JsonResource
             'height' => $this->height,
             'quantity' => $this->quantity,
             'spacing' => $this->spacing,
-            // 'product' => new ProductResource($this->whenLoaded('product')),
+            'settings' => $this->settings, 
             'segment' => new SegmentResource($this->whenLoaded('segment')),
         ];
 

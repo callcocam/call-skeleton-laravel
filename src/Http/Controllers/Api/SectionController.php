@@ -15,6 +15,7 @@ use Callcocam\Plannerate\Http\Requests\Section\UpdateSectionRequest;
 use Callcocam\Plannerate\Http\Resources\SectionResource;
 use Callcocam\Plannerate\Models\Gondola;
 use Callcocam\Plannerate\Models\Section;
+use Callcocam\Plannerate\Services\ShelfPositioningService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -167,6 +168,12 @@ class SectionController extends Controller
                 ->max('ordering') ?? 0;
             $validatedData['ordering'] = $lastOrdering + 1;
 
+            // Criar seções se fornecidas
+            $shelfService =  new ShelfPositioningService();
+            if (!isset($validatedData['settings'])) $validatedData['settings'] = [];
+            $sectionSettings =   [];
+            $sectionSettings['holes'] = $shelfService->calculateHoles($validatedData, $gondola->scale_factor);
+            $validatedData['settings'] = $sectionSettings;
             // Criar a seção
             $section = Section::create($validatedData);
 

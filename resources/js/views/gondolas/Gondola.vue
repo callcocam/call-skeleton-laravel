@@ -1,48 +1,99 @@
 <template>
     <div>
-        <div v-if="isLoading" class="flex h-full items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500">
-            <p>Carregando...</p>
+        <!-- Estado de Carregamento -->
+        <div v-if="isLoading" class="flex h-screen items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500">
+            <!-- TODO: Usar um componente de spinner/loading mais robusto -->
+            <p>Carregando Gôndola...</p>
         </div>
-        <div v-else class="flex h-full w-full flex-col gap-6 overflow-x-auto overflow-y-auto">
-            <Info :gondola="gondola" v-if="gondola" />
-            <div class="flex h-full items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500" v-if="!gondola">
-                <p>Selecione uma gôndola para ver suas propriedades</p>
+        <!-- Conteúdo Principal -->
+        <div v-else class="flex h-full w-full flex-col gap-6 overflow-hidden">
+            <!-- Barra de Informações/Controles (passa a gondola carregada) -->
+            <Info :gondola="gondolaData" v-if="gondolaData" />
+
+            <!-- Mensagem se nenhuma gôndola for encontrada/carregada -->
+            <div class="flex h-full flex-grow items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500" v-if="!gondolaData">
+                <p>Gôndola não encontrada ou ID inválido.</p>
+                 <!-- TODO: Adicionar botão para voltar ou selecionar outra gôndola -->
             </div>
-            <div v-else class="flex flex-col gap-4">
-                <h2 class="text-2xl font-bold tracking-tight dark:text-gray-100">{{ gondola.name }}</h2>
-                <p class="text-sm text-muted-foreground dark:text-gray-400">ID: {{ gondola.id }} | Criado em: {{ gondola.created_at }}</p>
-                <p v-for="section in gondola?.sections" :key="section.id">
-                    <span class="font-semibold text-gray-800 dark:text-gray-100">{{ section.name }}</span> 
-                </p>
+
+            <!-- Container das Seções (apenas se gondolaData existir) -->
+            <div v-else class="flex flex-grow flex-col overflow-auto">
+                 <!-- Container com capacidade de mover/zoom -->
+                 <!-- <MovableContainer> -->
+                      <!-- Componente que renderiza as seções -->
+                     <Sections :gondola="gondolaData"  :scale-factor="scaleFactor" />
+                 <!-- </MovableContainer> -->
             </div>
         </div>
+        <!-- Permite que rotas filhas (como o modal de edição) sejam renderizadas -->
         <router-view :key="route.fullPath" />
     </div>
 </template>
+
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+// Imports de Bibliotecas Externas
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useEditorStore } from '../../store/editor';
 
+// Imports Internos
 import { apiService } from '../../services';
-import Info from './partials/Info.vue';
+import { useEditorStore } from '../../store/editor';
+import MovableContainer from '../../components/MovableContainer.vue'; // Container com Pan/Zoom
+import Info from './partials/Info.vue'; // Barra de informações/controles
+import Sections from './sections/Sections.vue'; // Componente que exibe as seções
 
+// Hooks e Stores
 const route = useRoute();
-const router = useRouter();
-const id = ref<string>(route.params.gondolaId as string);
-
+const router = useRouter(); // Pode ser usado para navegação programática se necessário
+const editorStore = useEditorStore(); // Store para estado global do editor (escala, grid, etc.)
+const scaleFactor = computed(()=>editorStore.scaleFactor)
+// Estado Reativo
+/** ID da gôndola obtido da rota. */
+const gondolaId = ref<string>(route.params.gondolaId as string);
+/** Indica se os dados da gôndola estão sendo carregados. */
 const isLoading = ref<boolean>(false);
-const editorStore = useEditorStore();
+/** Armazena os dados da gôndola carregados da API. */
+const gondolaData = ref<Record<string, any> | null>(null); // Usar um tipo/interface mais específico se disponível
 
-const gondola = ref<any>(null); // Substitua 'any' pelo tipo correto, se possível
-
-const get = async () => {
-    const response = await apiService.get('gondolas/'.concat(id.value)); 
-    gondola.value = response.data;
-};
-onMounted(async () => {
+// Métodos
+/** Busca os dados da gôndola da API usando o gondolaId da rota. */
+const fetchGondolaData = async () => {
+    if (!gondolaId.value) {
+        console.error("ID da Gôndola não encontrado na rota.");
+        // Poderia redirecionar ou mostrar erro mais claramente
+        gondolaData.value = null;
+        return;
+    }
     isLoading.value = true;
-    await get();
-    isLoading.value = false;
+    try {
+        // Chama a API para obter dados da gôndola específica
+        const response = await apiService.get(`gondolas/${gondolaId.value}`);
+        gondolaData.value = response.data; // Armazena os dados recebidos
+        // Opcional: Atualizar o store com a gôndola carregada, se necessário para outros componentes
+        // editorStore.setCurrentGondola(response.data);
+    } catch (error) {
+        console.error("Erro ao buscar dados da gôndola:", error);
+        gondolaData.value = null; // Limpa os dados em caso de erro
+        // TODO: Mostrar mensagem de erro para o usuário (ex: toast)
+    } finally {
+        isLoading.value = false; // Garante que o loading termine
+    }
+};
+
+// Hook de Ciclo de Vida
+/** Ao montar o componente, busca os dados da gôndola. */
+onMounted(() => {
+    fetchGondolaData();
 });
+
+// TODO: Adicionar watcher para route.params.gondolaId se o ID puder mudar sem desmontar o componente
+// watch(() => route.params.gondolaId, (newId) => { ... fetchGondolaData(); ... });
+
 </script>
+
+<style scoped>
+/* Adicionar altura mínima ou flex-grow para garantir que o container ocupe espaço */
+.flex-grow {
+    flex-grow: 1;
+}
+</style>
