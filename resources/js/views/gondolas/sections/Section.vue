@@ -1,24 +1,17 @@
 <template>
     <div :style="sectionStyle">
         <!-- Conteúdo da Seção (Prateleiras) -->
-        <div class="absolute inset-0 overflow-hidden">
-            <!-- Renderiza as prateleiras dinamicamente -->
-            <Shelf
-                v-for="shelf in section.shelves"
-                :key="shelf.id"
-                :shelf="shelf"
-                :scale-factor="scaleFactor"
-                :section-width="props.section.width"
-                :section-height="props.section.height"
-                :base-height="baseHeight"
-                :rack-width="section.rackWidth || section.cremalheira_width || 4"
-                @drop-product="handleProductDropOnShelf"
-            />
-
-            <!-- Base da Seção -->
-            <!-- <diss="absolute bottom-0 left-0 right-0 border-t border-gray-400 bg-gray-300 dark:border-gray-600 dark:bg-gray-600"
-            :style="baseStyle"></div> -->
-        </div>
+        <Shelf
+            v-for="shelf in section.shelves"
+            :key="shelf.id"
+            :shelf="shelf"
+            :scale-factor="scaleFactor"
+            :section-width="props.section.width"
+            :section-height="props.section.height"
+            :base-height="baseHeight"
+            :rack-width="section.rackWidth || section.cremalheira_width || 4"
+            @drop-product="handleProductDropOnShelf"
+        />
     </div>
 </template>
 
@@ -26,8 +19,9 @@
 import { computed, defineEmits, defineProps, ref } from 'vue';
 import { apiService } from '../../../services';
 import { useGondolaStore } from '../../../store/gondola';
+import { useToast } from './../../../components/ui/toast';
 import Shelf from './Shelf.vue'; // Importar o componente Shelf
-import { Product, Segment,  Shelf as ShelfType } from './types';
+import { Product, Segment, Shelf as ShelfType } from './types';
 
 // Definir Props
 const props = defineProps({
@@ -45,6 +39,8 @@ const props = defineProps({
 // Definir Emits (se a Section precisar emitir eventos para cima)
 const emit = defineEmits(['update:segments']); // Exemplo: se precisar emitir atualizações de segmentos
 const gondolaStore = useGondolaStore(); // Instanciar o gondola store
+// Services
+const { toast } = useToast();
 // --- Computeds para Estilos ---
 const draggingSection = ref(false);
 // Altura da base em pixels
@@ -89,6 +85,7 @@ const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPositi
     // Exemplo de chamada API (pseudo-código):
     // gondolaStore.updateShelf(shelf, {});
     const newSegment: Segment = {
+        gondolaId: gondolaStore.currentGondola.id,
         id: `segment-${Date.now()}-${shelf.segments?.length}`,
         width: parseInt(props.section.width.toString()),
         ordering: (shelf.segments.length || 0) + 1,
@@ -109,15 +106,33 @@ const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPositi
             status: 'published',
         },
     };
-    console.log('Novo segmento:', newSegment);
-    apiService.post(`shelves/${shelf.id}/segments`, {
-        segment: newSegment,
-    }).then((response) => {
-        console.log('Segmento criado com sucesso:', response.data);
-        // Atualizar a lista de segmentos na prateleira correspondente em props.section.shelves
-        // Ou emitir um evento para o componente pai recarregar os dados
-        // emit('update:segments', { shelfId: eventData.shelfId, newSegment: response.data });
-    });
+    // Adiciona o novo segmento à prateleira
+    try {
+        apiService
+            .post(`shelves/${shelf.id}/segments`, {
+                segment: newSegment,
+            })
+            .then((response) => {
+                // Atualizar o estado local ou emitir um evento para atualizar a UI
+                // Atualizar a lista de segmentos na prateleira correspondente em props.section.shelves
+                gondolaStore.updateShelf(response.data.id, response.data);
+                // Ou emitir um evento para o componente pai recarregar os dados
+
+                toast({
+                    title: 'Success',
+                    description: response.message,
+                    variant: 'default',
+                });
+                // emit('update:segments', { shelfId: eventData.shelfId, newSegment: response.data });
+            });
+    } catch (error) {
+        console.error('Erro ao adicionar segmento à prateleira:', error);
+        toast({
+            title: 'Error',
+            description: 'Failed to add segment to shelf.',
+            variant: 'destructive',
+        });
+    }
 };
 
 // Função auxiliar (exemplo)

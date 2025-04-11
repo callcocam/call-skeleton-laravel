@@ -1,25 +1,30 @@
 <template>
-    <div
-        class="shelf-container shelf relative flex items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800"
-        :style="shelfStyle"
-    >
+    <div class="shelf relative flex items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800" :style="shelfStyle">
         <!-- TODO: Renderizar Segmentos/Produtos aqui -->
-        <Segment v-for="segment in segments" :key="segment.segment_id" :shelf="shelf" :segment="segment" :scale-factor="scaleFactor" />
-        <div
-            class="flex h-full w-full items-center justify-center"
-            @dragover.prevent="handleDragOver"
-            @drop.prevent="handleDrop"
-            @dragleave="handleDragLeave"
+        <draggable
+            v-model="sortableSegments"
+            item-key="id"
+            handle=".drag-segment-handle"
+            class="relative flex w-full items-end justify-around"
+            :style="segmentsContainerStyle"
         >
-            <span class="text-xs text-gray-100 dark:text-gray-700">Shelf (Pos: {{ shelf.shelf_position.toFixed(1) }}cm)</span>
+            <template #item="{ element: segment }">
+                <Segment :key="segment.id" :shelf="shelf" :segment="segment" :scale-factor="scaleFactor" />
+            </template>
+        </draggable>
+        <div class="absolute inset-0 bottom-0 z-0 flex h-full w-full items-center justify-center">
+            <ShelfContent :shelf="shelf" @drop-product="$emit('drop-product')" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineEmits, defineProps } from 'vue';
+import { computed, defineEmits, defineProps, ref, watch } from 'vue';
+import draggable from 'vuedraggable';
+import { useGondolaStore } from '../../../store/gondola';
 import Segment from './Segment.vue';
-import { Shelf } from './types';
+import ShelfContent from './ShelfContent.vue';
+import { Segment as SegmentType, Shelf } from './types';
 
 // Definir Props
 const props = defineProps<{
@@ -30,12 +35,23 @@ const props = defineProps<{
     baseHeight: number;
     rackWidth: number; // Nova prop para a largura da cremalheira
 }>();
-
+const dragShelfActive = ref(false); // Estado para rastrear se a prateleira está sendo arrastada
+const shelftext = ref(`Shelf (Pos: ${props.shelf.shelf_position.toFixed(1)}cm)`); // Texto da prateleira
 // Definir Emits
 const emit = defineEmits(['drop-product']); // Para quando um produto é solto na prateleira
-
-// --- Computeds para Estilos --- 
-const segments = computed(() => props.shelf.segments);
+watch(dragShelfActive, (newValue) => {
+    if (newValue) {
+        // Adicionar lógica para quando a prateleira está sendo arrastada
+        console.log('Prateleira arrastada');
+        shelftext.value = `Arrastando Prateleira (Pos: ${props.shelf.shelf_position.toFixed(1)}cm)`;
+    } else {
+        // Adicionar lógica para quando a prateleira não está mais sendo arrastada
+        console.log('Prateleira não arrastada');
+        shelftext.value = `Shelf (Pos: ${props.shelf.shelf_position.toFixed(1)}cm)`;
+    }
+});
+const gondolaStore = useGondolaStore(); // Instanciar o gondola store
+// --- Computeds para Estilos ---
 const shelfStyle = computed(() => {
     // Convertemos a posição da prateleira para pixels usando o fator de escala
     const topPosition = props.shelf.shelf_position * props.scaleFactor;
@@ -53,44 +69,38 @@ const shelfStyle = computed(() => {
 
 // --- Lógica de Drag and Drop (para produtos) ---
 
-const handleDragOver = (event: DragEvent) => {
-    // Permite que itens sejam soltos aqui
-    event.preventDefault();
-    if (event.dataTransfer) {
-        event.dataTransfer.dropEffect = 'copy'; // Ou 'move' se for o caso
-    }
-    // TODO: Adicionar feedback visual (ex: mudar borda)
-    if (event.currentTarget) {
-        (event.currentTarget as HTMLElement).classList.add('drag-over');
-    }
-};
+/**
+ * Referência local aos segmentos para o draggable
+ * Aplica ordenamento e garante IDs para todos os segmentos
+ */
+const sortableSegments = computed<SegmentType[]>({
+    get() {
+        // Garantir que todos os segmentos tenham IDs
+        return props.shelf.segments;
+    },
+    set(newSegments: SegmentType[]) {
+        // Garantir que a ordenação está atualizada antes de emitir o evento
+        const reorderedSegments = newSegments.map((segment, index) => ({
+            ...segment,
+            ordering: index + 1,
+        }));
+        // Emitir evento para o componente pai (Section) lidar com a atualização
+        console.log('Reordenando segmentos:', reorderedSegments);
 
-const handleDragLeave = (event: DragEvent) => {
-    // Remove o feedback visual quando o item não está mais sobre a prateleira
-    if (event.currentTarget) {
-        (event.currentTarget as HTMLElement).classList.remove('drag-over');
-    }
-};
-
-const handleDrop = (event: DragEvent) => {
-    event.preventDefault();
-    if (event.dataTransfer) {
-        const productData = event.dataTransfer.getData('text/product');
-        if (productData) {
-            try {
-                const product = JSON.parse(productData);
-                // Emitir evento para o componente pai (Section) lidar com a adição
-                emit('drop-product', product, props.shelf, { x: event.offsetX, y: event.offsetY });
-            } catch (e) {
-                console.error('Erro ao processar dados do produto solto:', e);
-            }
-            // TODO: Remover feedback visual
-            if (event.currentTarget) {
-                (event.currentTarget as HTMLElement).classList.remove('drag-over');
-            }
-        }
-    }
-};
+        gondolaStore.updateShelf(props.shelf.id, {
+            segments: reorderedSegments,
+        });
+    },
+});
+/**
+ * Computed property para estilo do container de segmentos
+ * Define a altura baseada na altura da prateleira
+ */
+const segmentsContainerStyle = computed(() => {
+    return {
+        height: `${props.shelf.shelf_height * props.scaleFactor}px`,
+    };
+});
 </script>
 
 <style scoped>
@@ -118,8 +128,7 @@ const handleDrop = (event: DragEvent) => {
         border-color 0.2s ease-in-out,
         background-color 0.2s ease-in-out;
     /* Aumentar a area de drop */
-    padding: 30px 0 0 0;
+    padding: 0 0 30px 0;
     /* Adicionar um efeito de escala */
-    transform: scale(1.02);
 }
 </style>

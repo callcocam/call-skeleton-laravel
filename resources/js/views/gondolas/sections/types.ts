@@ -41,7 +41,7 @@ interface Segment {
 
 // Interface para uma prateleira
 interface Shelf {
-    id: string | number;
+    id: string;
     shelf_height: number;
     shelf_position: number;
     quantity: number;

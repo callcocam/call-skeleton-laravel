@@ -176,7 +176,8 @@ export const useGondolaStore = defineStore('gondola', {
                     sections: updatedSections
                 };
                 // 2. Em seguida, enviamos a atualização para o backend
-                // const response = await apiService.put(`shelves/${shelfId}`, shelfData);
+                const response = await apiService.put(`shelves/${shelfId}`, shelfData);
+                console.log('Resposta do servidor:', response.data);
                 // 3. Opcionalmente, você pode atualizar o estado novamente com a resposta do servidor
                 // se necessário para garantir consistência
                 // return response.data;
@@ -188,7 +189,69 @@ export const useGondolaStore = defineStore('gondola', {
                 throw error;
             }
         },
-        
+        /**
+         * Atualiza o segmento de uma prateleira
+         * @param shelfId ID da prateleira
+         * @param segmentId ID do segmento a ser atualizado
+         * @param segmentData Dados atualizados do segmento
+         */
+        async updateSegment(shelfId: string, segmentId: string, segmentData: any, reorder: boolean = false) {
+            if (!this.currentGondola || !shelfId || !segmentId || !segmentData) return;
+            try {
+                // 1. Primeiro, atualizamos o estado localmente para feedback imediato
+                const updatedSections = this.currentGondola.sections.map((section: any) => {
+                    // Procura a prateleira correta em cada seção
+                    if (section.shelves) {
+                        const updatedShelves = section.shelves.map((shelf: any) => {
+                            if (shelf.id === shelfId) {
+                                // Procura o segmento correto na prateleira
+                                const updatedSegments = shelf.segments.map((segment: any) => {
+                                    if (segment.id === segmentId) {
+                                        // Retorna um novo objeto com os dados do segmento atualizados
+                                        return { ...segment, ...segmentData };
+                                    }
+                                    return segment;
+                                });
+                                // Retorna uma nova prateleira com os segmentos atualizados
+                                return { ...shelf, segments: updatedSegments };
+                            }
+                            return shelf;
+                        });
+                        // Retorna uma nova seção com as prateleiras atualizadas
+                        return { ...section, shelves: updatedShelves };
+                    }
+                    return section;
+                });
+                // Atualiza o estado da gôndola com as seções atualizadas
+                this.currentGondola = {
+                    ...this.currentGondola,
+                    sections: updatedSections
+                };
+                // 2. Em seguida, enviamos a atualização para o backend
+                // Se o segmento for reordenado, envie a atualização de ordem
+                if (reorder) {
+                    const response = await apiService.put(`segments/${shelfId}/reorder`, {
+                        ordering: segmentData
+                    });
+                    console.log('Resposta do servidor:', response.data);
+                } else {
+                    // Caso contrário, envie a atualização normal
+                    const response = await apiService.put(`segments/${segmentId}`, segmentData);
+                    console.log('Resposta do servidor:', response.data);
+                }
+                // 3. Opcionalmente, você pode atualizar o estado novamente com a resposta do servidor
+                // se necessário para garantir consistência
+                // return response.data;
+            } catch (error: any) {
+                console.error(`Erro ao atualizar segmento ${segmentId} da prateleira ${shelfId}:`, error);
+                // Em caso de erro, você pode querer desfazer a alteração local
+                // ou recarregar a gôndola inteira
+                // this.fetchGondola(this.currentGondola.id);
+                throw error;
+            }
+        },
+
+
         /**
          * Atualiza a posição vertical de uma prateleira
          * @param shelfId ID da prateleira

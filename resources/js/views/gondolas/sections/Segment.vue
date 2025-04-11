@@ -34,8 +34,8 @@ const segmentQuantity = ref(props.segment.quantity);
  */
 const segmentStyle = computed(() => {
     // Calculate segment dimensions
-    const layerHeight = props.segment.layer.product.height * segmentQuantity.value * props.scaleFactor;
-    const layerWidth = props.segment.layer.product.width * props.shelf.quantity * props.scaleFactor;
+    const layerHeight = (props.segment.layer.product.height * segmentQuantity.value) * props.scaleFactor;
+    const layerWidth = (props.segment.layer.product.width * props.segment.layer.quantity) * props.scaleFactor;
 
     // Conditional style when segment is selected
     const selectedStyle = segmentSelected.value
@@ -44,13 +44,13 @@ const segmentStyle = computed(() => {
               boxShadow: '0 0 5px rgba(0, 0, 255, 0.5)',
               outline: 'none',
           }
-        : {};
-console.log('Layer width:', layerWidth, 'Layer height:', layerHeight); // Debug: Check calculated dimensions
+        : {}; 
     // Return complete style object
     return {
         height: `${layerHeight}px`,
         width: `${layerWidth}px`,
         marginBottom: `${props.shelf.shelf_height * props.scaleFactor}px`,
+        border: '2px solid #ccc',
         ...selectedStyle,
     };
 });
