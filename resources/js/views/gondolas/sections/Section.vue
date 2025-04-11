@@ -16,9 +16,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineEmits, defineProps, ref } from 'vue';
+import { computed, defineEmits, defineProps, ref, onMounted, onUnmounted } from 'vue';
 import { apiService } from '../../../services';
 import { useGondolaStore } from '../../../store/gondola';
+import { useProductStore } from '../../../store/product';
 import { useToast } from './../../../components/ui/toast';
 import Shelf from './Shelf.vue'; // Importar o componente Shelf
 import { Product, Segment, Shelf as ShelfType } from './types';
@@ -39,6 +40,7 @@ const props = defineProps({
 // Definir Emits (se a Section precisar emitir eventos para cima)
 const emit = defineEmits(['update:segments']); // Exemplo: se precisar emitir atualizações de segmentos
 const gondolaStore = useGondolaStore(); // Instanciar o gondola store
+const productStore = useProductStore(); // Instantiate product store
 // Services
 const { toast } = useToast();
 // --- Computeds para Estilos ---
@@ -88,7 +90,7 @@ const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPositi
         gondolaId: gondolaStore.currentGondola.id,
         id: `segment-${Date.now()}-${shelf.segments?.length}`,
         width: parseInt(props.section.width.toString()),
-        ordering: (shelf.segments.length || 0) + 1,
+        ordering: (shelf.segments?.length || 0) + 1,
         quantity: 1,
         spacing: 0,
         position: 0,
@@ -144,6 +146,37 @@ const calculatePositionX = (dropX: number): number => {
     return (dropX / shelfPixelWidth) * shelfCmWidth;
 }
 */
+
+// --- Event Handlers for Global Listeners ---
+
+const handleKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+        productStore.clearSelection();
+    }
+};
+
+const handleClickOutside = (event: MouseEvent) => {
+    // Check if the click target or any of its parents has the class 'layer'
+    // We assume layers are the selectable elements we want to ignore clicks inside of.
+    const clickedElement = event.target as HTMLElement;
+    if (!clickedElement.closest('.layer')) {
+        // If the click was outside any element with the 'layer' class (or its children),
+        // clear the selection.
+        productStore.clearSelection();
+    }
+};
+
+// --- Lifecycle Hooks for Listeners ---
+
+onMounted(() => {
+    window.addEventListener('keydown', handleKeydown);
+    document.addEventListener('click', handleClickOutside, true); // Use capture phase to intercept clicks early
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown);
+    document.removeEventListener('click', handleClickOutside, true);
+});
 </script>
 
 <style scoped>

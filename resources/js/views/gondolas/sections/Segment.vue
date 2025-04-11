@@ -1,5 +1,5 @@
 <template>
-    <div class="segment border segment drag-segment-handle group relative flex " :style="segmentStyle">
+    <div class="segment drag-segment-handle group relative flex " :style="segmentStyle">
         <Layer
             v-for="(quantity, index) in segmentQuantity"
             :key="index"
@@ -49,8 +49,7 @@ const segmentStyle = computed(() => {
     return {
         height: `${layerHeight}px`,
         width: `${layerWidth}px`,
-        marginBottom: `${props.shelf.shelf_height * props.scaleFactor}px`,
-        border: '2px solid #ccc',
+        marginBottom: `${props.shelf.shelf_height * props.scaleFactor}px`, 
         ...selectedStyle,
     };
 });

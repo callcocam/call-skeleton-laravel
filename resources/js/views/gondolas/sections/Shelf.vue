@@ -13,7 +13,7 @@
             </template>
         </draggable>
         <div class="absolute inset-0 bottom-0 z-0 flex h-full w-full items-center justify-center">
-            <ShelfContent :shelf="shelf" @drop-product="$emit('drop-product')" />
+            <ShelfContent :shelf="shelf" @drop-product="(product: Product, shelf: Shelf, dropPosition: any) => $emit('drop-product',product, shelf,  dropPosition)" />
         </div>
     </div>
 </template>
@@ -24,7 +24,7 @@ import draggable from 'vuedraggable';
 import { useGondolaStore } from '../../../store/gondola';
 import Segment from './Segment.vue';
 import ShelfContent from './ShelfContent.vue';
-import { Segment as SegmentType, Shelf } from './types';
+import { Segment as SegmentType, Shelf, Product} from './types';
 
 // Definir Props
 const props = defineProps<{
