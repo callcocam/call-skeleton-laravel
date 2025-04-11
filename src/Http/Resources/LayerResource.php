@@ -24,13 +24,15 @@ class LayerResource extends JsonResource
             'height' => $this->height,
             'quantity' => $this->quantity,
             'spacing' => $this->spacing,
-            'settings' => $this->settings, 
+            'settings' => $this->settings,
             'segment' => new SegmentResource($this->whenLoaded('segment')),
         ];
 
         if (class_exists('App\Http\Resources\ProductResource')) {
-            $data['product'] = app('App\Http\Resources\ProductResource', [$this->whenLoaded('product')]);
+            $data['product'] = app('App\Http\Resources\ProductResource', [
+                'resource' => $this->whenLoaded('product'),
+            ]);
         }
         return $data;
-    } 
+    }
 }

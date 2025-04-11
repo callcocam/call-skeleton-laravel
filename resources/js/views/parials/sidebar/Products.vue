@@ -92,7 +92,7 @@
                 >
                     <div class="flex items-center space-x-3">
                         <div class="flex-shrink-0 overflow-hidden rounded border bg-white p-1 dark:border-gray-600 dark:bg-gray-800">
-                            <img :src="product.image_url || '/images/placeholder.jpg'" :alt="product.name" class="h-12 w-12 object-contain" @error="handleImageError" />
+                            <img :src="product.image_url" :alt="product.name" class="h-12 w-12 object-contain" @error="handleImageError" />
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{{ product.name }}</p>
@@ -209,7 +209,7 @@ const fetchProducts = debounce(async () => {
 
         Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
 
-        const response = await apiService.get<Product[]>('products', { params });
+        const response = await apiService.get<Product[]>('products', { params }); 
         filteredProducts.value = response;
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);

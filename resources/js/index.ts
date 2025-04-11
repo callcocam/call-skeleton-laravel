@@ -36,7 +36,7 @@ const install = (app: App, options: PluginOptions = {}) => {
             app.component(originalName, definition.default);
         }
         componentRegistry.push(originalName);
-        console.log('Component registered:', originalName);
+        // console.log('Component registered:', originalName);
     });
 
     app.use(router);

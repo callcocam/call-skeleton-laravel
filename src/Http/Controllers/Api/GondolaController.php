@@ -120,7 +120,14 @@ class GondolaController extends Controller
         try {
             // Verificar se o planograma existe 
 
-            $gondola = Gondola::with(['sections', 'sections.shelves'])
+            $gondola = Gondola::with([
+                'sections',
+                'sections.shelves',
+                'sections.shelves.segments',
+                'sections.shelves.segments.layer',
+                'sections.shelves.segments.layer.product',
+                'sections.shelves.segments.layer.product.image'
+            ])
                 ->findOrFail($id);
 
             return (new GondolaResource($gondola))

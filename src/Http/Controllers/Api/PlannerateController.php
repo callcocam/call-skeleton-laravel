@@ -137,8 +137,8 @@ class PlannerateController extends Controller
             'gondolas.sections',
             'gondolas.sections.shelves',
             'gondolas.sections.shelves.segments',
-            'gondolas.sections.shelves.segments.layers',
-            'gondolas.sections.shelves.segments.layers.product'
+            'gondolas.sections.shelves.segments.layer',
+            'gondolas.sections.shelves.segments.layer.product'
             ])->findOrFail($id);
  
 

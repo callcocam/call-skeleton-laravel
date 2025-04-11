@@ -283,10 +283,10 @@ watch(
                 hole_width: 2,
                 hole_spacing: 2,
                 shelf_width: 125, // Ajustado para ser um pouco menor que a largura da seção
-                shelf_height: 4,
-                shelf_depth: 40,
-                num_shelves: 4,
-                product_type: 'normal',
+    shelf_height: 4,
+    shelf_depth: 40,
+    num_shelves: 4,
+    product_type: 'normal',
             });
             errors.value = {};
             // Atualizar gondolaId caso a rota mude enquanto o modal está fechado
@@ -312,8 +312,8 @@ onMounted(() => {
 // Função para fechar o modal
 const fecharModal = () => {
     // Garante que volte para a visualização da gôndola correta
-    router.push({
-        name: 'gondola.view',
+        router.push({
+            name: 'gondola.view',
         params: { id: planogramId.value, gondolaId: gondolaId.value },
     }); 
 };

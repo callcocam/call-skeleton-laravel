@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router';
 import { useRedirect } from '../../../composables/useRedirect';
 import { apiService } from '../../../services';
 import { useEditorStore } from '../../../store/editor';
+import { useGondolaStore } from '../../../store/gondola'; // Importar o store da gôndola
 import Category from './Category.vue'; // Assumindo que Category e Popover estão corretos
 import Popover from './Popover.vue';
 import { Button } from "./../../../components/ui/button"; // Adicionar import do Button se não for global
@@ -16,14 +17,9 @@ import { Button } from "./../../../components/ui/button"; // Adicionar import do
 // Definição das Props
 /**
  * Props do componente Info.
- * @property {object} gondola - O objeto da gôndola atual.
  * @property {Array} categories - Lista de categorias disponíveis para filtro.
  */
 const props = defineProps({
-    gondola: {
-        type: Object as () => Record<string, any>, // Tipagem mais específica
-        required: true,
-    },
     categories: {
         type: Array as () => any[], // Tipar categoria se possível
         default: () => [],
@@ -41,6 +37,7 @@ const emit = defineEmits(['update:invertOrder', 'update:category']);
 // Hooks e Stores
 const router = useRouter();
 const editorStore = useEditorStore();
+const gondolaStore = useGondolaStore(); // Usar o store da gôndola
 const { redirectRemoveGondola } = useRedirect(router); // Composables
 
 // Estado Local
@@ -49,13 +46,15 @@ const filters = ref({
     category: null as any | null, // Tipar o filtro de categoria
 });
 
-// Propriedades Computadas (Ligadas ao Store)
+// Propriedades Computadas (Ligadas aos Stores)
 /** Fator de escala atual do editor. */
 const scaleFactor = computed(() => editorStore.scaleFactor);
 /** Visibilidade da grade no editor. */
 const showGrid = computed(() => editorStore.showGrid);
-/** Seções da gôndola atual. */
-const sections = computed(() => props.gondola?.sections || []);
+/** Gôndola atual do store. */
+const currentGondola = computed(() => gondolaStore.currentGondola);
+/** Seções da gôndola atual (do store). */
+const sections = computed(() => currentGondola.value?.sections || []);
 
 // Métodos
 /**
@@ -75,7 +74,10 @@ const toggleGrid = () => {
 
 /** Emite evento para inverter a ordem das seções da gôndola pai. */
 const invertSectionOrder = () => {
-    emit('update:invertOrder', props.gondola.id);
+    // Adiciona verificação se a gôndola existe
+    if (currentGondola.value) {
+        emit('update:invertOrder', currentGondola.value.id);
+    }
 };
 
 /**
@@ -95,13 +97,16 @@ const clearCategoryFilter = () => {
 
 /** Navega para a tela de edição/adição de seção para a gôndola atual. */
 const navigateToAddSection = () => {
-     router.push({
-        name: 'gondola.edit', // Rota para adicionar/editar seção (ajustar se necessário)
-        params:{
-            id: props.gondola.planogram_id, // Corrigido: Usar planogram_id
-            gondolaId: props.gondola.id
-        }
-     })
+     // Adiciona verificação se a gôndola existe
+     if (currentGondola.value) {
+        router.push({
+            name: 'gondola.edit', // Rota para adicionar/editar seção (ajustar se necessário)
+            params:{
+                id: currentGondola.value.planogram_id, // Usar planogram_id do store
+                gondolaId: currentGondola.value.id // Usar id do store
+            }
+        });
+     }
 };
 
 /**
@@ -109,23 +114,30 @@ const navigateToAddSection = () => {
  * Atualiza o store, chama a API e redireciona.
  */
 const confirmRemoveGondola = async () => {
+    // Adiciona verificação se a gôndola existe
+    if (!currentGondola.value) return;
+
     // Usar um modal de confirmação mais robusto seria ideal
     if (!confirm('Tem certeza de que deseja remover esta gôndola?')) {
         return;
     }
     try {
-        const gondolaId = props.gondola.id;
-        // Otimista: remove do store primeiro para resposta rápida da UI
-        editorStore.removeGondola(gondolaId);
+        const gondolaToRemove = currentGondola.value; // Guarda a referência antes de limpar
+        const gondolaId = gondolaToRemove.id;
+
+        // Limpa o store localmente *antes* da chamada API (Otimista)
+        gondolaStore.clearGondola(); // Limpa a gondola do store
+
         // Chama a API para deletar
         await apiService.delete(`gondolas/${gondolaId}`);
+
         // Redireciona após sucesso
-        redirectRemoveGondola(props.gondola); // Passa o objeto gondola se necessário para o redirect
+        redirectRemoveGondola(gondolaToRemove); // Passa o objeto gondola removido se necessário para o redirect
     } catch (error) {
         console.error('Erro ao remover gôndola:', error);
         // TODO: Adicionar feedback de erro para o usuário (ex: toast)
-        // Poderia re-adicionar a gôndola ao store em caso de falha na API?
-        // editorStore.addGondola(props.gondola); // Reverter otimismo (complexo)
+        // Em caso de erro, talvez buscar a gôndola novamente ou forçar um reload
+        // gondolaStore.fetchGondola(gondolaId); // Tentativa de reverter (complexo)
     }
 };
 </script>
@@ -137,7 +149,7 @@ const confirmRemoveGondola = async () => {
             <div class="flex items-center justify-between">
                 <!-- Controles de Visualização e Filtros -->
                 <div class="flex flex-col items-center space-x-8 md:flex-row">
-                     <!-- Label Dimensões (Texto estático por enquanto) -->
+                     <!-- Label Dimensões (Poderia vir do store agora) -->
                     <h3 class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                         <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
@@ -147,7 +159,7 @@ const confirmRemoveGondola = async () => {
                                 d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
                             />
                         </svg>
-                        Dimensões da Gôndola
+                        {{ currentGondola?.name || 'Gôndola' }} <!-- Exibe nome da gôndola do store -->
                     </h3>
 
                     <!-- Controle de Escala -->
@@ -207,8 +219,8 @@ const confirmRemoveGondola = async () => {
                     </div>
                 </div>
 
-                <!-- Botões de Ação -->
-                <div class="flex items-center space-x-3">
+                <!-- Botões de Ação (verificar se currentGondola existe para habilitar/mostrar) -->
+                <div class="flex items-center space-x-3" v-if="currentGondola">
                     <!-- Botão para inverter ordem das seções -->
                     <Button
                         type="button"

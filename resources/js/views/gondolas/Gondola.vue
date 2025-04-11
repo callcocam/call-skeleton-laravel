@@ -1,30 +1,30 @@
 <template>
     <div>
-        <!-- Estado de Carregamento -->
-        <div v-if="isLoading" class="flex h-screen items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500">
-            <!-- TODO: Usar um componente de spinner/loading mais robusto -->
+        <!-- Estado de Carregamento (do Store) -->
+        <div v-if="gondolaStore.isLoading" class="flex h-screen items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500">
             <p>Carregando Gôndola...</p>
         </div>
+        <!-- Estado de Erro (do Store) -->
+        <div v-else-if="gondolaStore.error" class="flex h-screen flex-col items-center justify-center p-4 text-center text-red-500 dark:text-red-400">
+             <p class="font-semibold">Erro ao carregar Gôndola</p>
+             <p class="mt-2 text-sm">{{ gondolaStore.error }}</p>
+             <!-- TODO: Adicionar botão para tentar novamente ou voltar -->
+        </div>
         <!-- Conteúdo Principal -->
-        <div v-else class="flex h-full w-full flex-col gap-6 overflow-hidden">
-            <!-- Barra de Informações/Controles (passa a gondola carregada) -->
-            <Info :gondola="gondolaData" v-if="gondolaData" />
-
-            <!-- Mensagem se nenhuma gôndola for encontrada/carregada -->
-            <div class="flex h-full flex-grow items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500" v-if="!gondolaData">
-                <p>Gôndola não encontrada ou ID inválido.</p>
-                 <!-- TODO: Adicionar botão para voltar ou selecionar outra gôndola -->
-            </div>
-
-            <!-- Container das Seções (apenas se gondolaData existir) -->
-            <div v-else class="flex flex-grow flex-col overflow-auto">
-                 <!-- Container com capacidade de mover/zoom -->
+         <!-- Passa a gôndola do store para os filhos -->
+        <div v-else-if="gondolaStore.currentGondola" class="flex h-full w-full flex-col gap-6 overflow-hidden">
+            <Info :gondola="gondolaStore.currentGondola" />
+            <div class="flex flex-grow flex-col overflow-auto">
                  <!-- <MovableContainer> -->
-                      <!-- Componente que renderiza as seções -->
-                     <Sections :gondola="gondolaData"  :scale-factor="scaleFactor" />
+                     <Sections :gondola="gondolaStore.currentGondola" :scale-factor="scaleFactor" />
                  <!-- </MovableContainer> -->
             </div>
         </div>
+        <!-- Mensagem se nenhuma gôndola for encontrada após carregar -->
+        <div v-else class="flex h-full flex-grow items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500">
+                <p>Gôndola não encontrada ou ID inválido.</p>
+        </div>
+
         <!-- Permite que rotas filhas (como o modal de edição) sejam renderizadas -->
         <router-view :key="route.fullPath" />
     </div>
@@ -32,62 +32,62 @@
 
 <script setup lang="ts">
 // Imports de Bibliotecas Externas
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue'; // Adicionado watch
 import { useRoute, useRouter } from 'vue-router';
 
 // Imports Internos
-import { apiService } from '../../services';
+// Removido apiService daqui, pois a chamada está no store
 import { useEditorStore } from '../../store/editor';
-import MovableContainer from '../../components/MovableContainer.vue'; // Container com Pan/Zoom
-import Info from './partials/Info.vue'; // Barra de informações/controles
-import Sections from './sections/Sections.vue'; // Componente que exibe as seções
+import { useGondolaStore } from '../../store/gondola'; // Importar o novo store
+import MovableContainer from '../../components/MovableContainer.vue';
+import Info from './partials/Info.vue';
+import Sections from './sections/Sections.vue';
 
 // Hooks e Stores
 const route = useRoute();
-const router = useRouter(); // Pode ser usado para navegação programática se necessário
-const editorStore = useEditorStore(); // Store para estado global do editor (escala, grid, etc.)
-const scaleFactor = computed(()=>editorStore.scaleFactor)
-// Estado Reativo
-/** ID da gôndola obtido da rota. */
-const gondolaId = ref<string>(route.params.gondolaId as string);
-/** Indica se os dados da gôndola estão sendo carregados. */
-const isLoading = ref<boolean>(false);
-/** Armazena os dados da gôndola carregados da API. */
-const gondolaData = ref<Record<string, any> | null>(null); // Usar um tipo/interface mais específico se disponível
+const router = useRouter();
+const editorStore = useEditorStore();
+const gondolaStore = useGondolaStore(); // Instanciar o gondola store
 
-// Métodos
-/** Busca os dados da gôndola da API usando o gondolaId da rota. */
+// Computeds (para props que não vêm do gondolaStore)
+const scaleFactor = computed(() => editorStore.scaleFactor);
+
+// Estado Reativo (apenas ID da rota)
+const gondolaId = ref<string>(route.params.gondolaId as string);
+
+// Remover refs locais para isLoading e gondolaData
+// const isLoading = ref<boolean>(false);
+// const gondolaData = ref<Record<string, any> | null>(null);
+
+// Remover função local fetchGondolaData
+/*
 const fetchGondolaData = async () => {
-    if (!gondolaId.value) {
-        console.error("ID da Gôndola não encontrado na rota.");
-        // Poderia redirecionar ou mostrar erro mais claramente
-        gondolaData.value = null;
-        return;
-    }
-    isLoading.value = true;
-    try {
-        // Chama a API para obter dados da gôndola específica
-        const response = await apiService.get(`gondolas/${gondolaId.value}`);
-        gondolaData.value = response.data; // Armazena os dados recebidos
-        // Opcional: Atualizar o store com a gôndola carregada, se necessário para outros componentes
-        // editorStore.setCurrentGondola(response.data);
-    } catch (error) {
-        console.error("Erro ao buscar dados da gôndola:", error);
-        gondolaData.value = null; // Limpa os dados em caso de erro
-        // TODO: Mostrar mensagem de erro para o usuário (ex: toast)
-    } finally {
-        isLoading.value = false; // Garante que o loading termine
-    }
+    ...
 };
+*/
 
 // Hook de Ciclo de Vida
-/** Ao montar o componente, busca os dados da gôndola. */
+/** Ao montar o componente, chama a ação fetchGondola do store. */
 onMounted(() => {
-    fetchGondolaData();
+    // Chamar a ação do store para buscar os dados
+    gondolaStore.fetchGondola(gondolaId.value);
 });
 
-// TODO: Adicionar watcher para route.params.gondolaId se o ID puder mudar sem desmontar o componente
-// watch(() => route.params.gondolaId, (newId) => { ... fetchGondolaData(); ... });
+// Watcher para o ID da rota (se gondolaId puder mudar)
+watch(() => route.params.gondolaId, (newId) => {
+     if (newId && typeof newId === 'string') {
+        gondolaId.value = newId;
+        // Limpa a gôndola antiga e busca a nova
+        // gondolaStore.clearGondola(); // Opcional: fetchGondola já limpa
+        gondolaStore.fetchGondola(newId);
+     }
+}, { immediate: false }); // immediate: false para não rodar na montagem inicial (já coberto pelo onMounted)
+
+// Limpar store ao desmontar (opcional, depende se quer manter ao navegar para trás)
+// import { onUnmounted } from 'vue';
+// onUnmounted(() => {
+//     gondolaStore.clearGondola();
+// });
 
 </script>
 

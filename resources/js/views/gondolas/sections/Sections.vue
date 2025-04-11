@@ -52,6 +52,7 @@ import { round } from 'lodash';
 // import {VueDraggableNext } from 'vue-draggable-next'
 import draggable from 'vuedraggable';
 import { useEditorStore } from '../../../store/editor';
+import { useGondolaStore } from '../../../store/gondola';
 
 interface Category {
     id: string | number;
@@ -59,10 +60,6 @@ interface Category {
 }
 
 const props = defineProps({
-    gondola: {
-        type: Object,
-        required: true,
-    },
     selectedCategory: {
         type: Object as () => Category | null,
         default: null,
@@ -72,13 +69,19 @@ const props = defineProps({
 const emit = defineEmits(['sections-reordered', 'shelves-updated', 'move-shelf-to-section', 'segment-select']);
 
 const editorStore = useEditorStore();
+const gondolaStore = useGondolaStore();
+
 const scaleFactor = computed(() => {
     return editorStore.scaleFactor;
 });
 
-const sortableSections = ref([...(props.gondola.sections || [])]);
-watch(() => props.gondola.sections, (newSections) => {
-    sortableSections.value = [...(newSections || [])];
+const gondolaSections = computed(() => gondolaStore.currentGondola?.sections || []);
+
+const sortableSections = ref([...gondolaSections.value]);
+watch(gondolaSections, (newSections) => {
+    if (JSON.stringify(newSections) !== JSON.stringify(sortableSections.value)) {
+        sortableSections.value = [...(newSections || [])];
+    }
 }, { deep: true });
 
 const lastSectionData = computed(() => {
@@ -87,15 +90,21 @@ const lastSectionData = computed(() => {
 });
 
 const onDragEnd = () => {
+    const currentGondola = gondolaStore.currentGondola;
+    if (!currentGondola) {
+        console.warn("Tentativa de reordenar seções sem uma gôndola carregada.");
+        return;
+    }
     const orderedIds = sortableSections.value.map(s => s.id);
-    emit('sections-reordered', sortableSections.value, props.gondola.id);
+    emit('sections-reordered', sortableSections.value, currentGondola.id);
     // TODO: Chamar API para salvar a nova ordem das seções
-    // apiService.post(`gondolas/${props.gondola.id}/sections/reorder`, { section_ids: orderedIds });
+    // console.log(`Chamando API para reordenar seções da gôndola ${currentGondola.id}`, orderedIds);
+    // apiService.post(`gondolas/${currentGondola.id}/sections/reorder`, { section_ids: orderedIds });
 };
 
-const deleteSection = (section: any) => {
-     
-    sortableSections.value = sortableSections.value.filter((s: any) => s.id !== section.id);
+const deleteSection = (sectionToDelete: any) => {
+    sortableSections.value = sortableSections.value.filter((s: any) => s.id !== sectionToDelete.id);
+    console.warn(`Seção ${sectionToDelete.id} removida visualmente. Implementar chamada API e atualização do store.`);
 };
 
 const handleMoveShelfToSection = (shelf: any, sectionId: number) => {
