@@ -1,56 +1,41 @@
 <template>
-    <div class="shelf-container shelf relative flex items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800"
-        :style="shelfStyle">
-
+    <div
+        class="shelf-container shelf relative flex items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800"
+        :style="shelfStyle"
+    >
         <!-- TODO: Renderizar Segmentos/Produtos aqui -->
-        <div class="flex h-full w-full items-center justify-center" @dragover.prevent="handleDragOver"
-            @drop.prevent="handleDrop" @dragleave="handleDragLeave">
-            <span class="text-xs text-gray-100 dark:text-gray-700">Shelf (Pos: {{ shelf.shelf_position.toFixed(1)
-                }}cm)</span>
+        <Segment v-for="segment in segments" :key="segment.segment_id" :shelf="shelf" :segment="segment" :scale-factor="scaleFactor" />
+        <div
+            class="flex h-full w-full items-center justify-center"
+            @dragover.prevent="handleDragOver"
+            @drop.prevent="handleDrop"
+            @dragleave="handleDragLeave"
+        >
+            <span class="text-xs text-gray-100 dark:text-gray-700">Shelf (Pos: {{ shelf.shelf_position.toFixed(1) }}cm)</span>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineEmits, defineProps } from 'vue';
+import Segment from './Segment.vue';
+import { Shelf } from './types';
 
 // Definir Props
-const props = defineProps({
-    shelf: {
-        type: Object as () => Record<string, any>,
-        required: true,
-    },
-    scaleFactor: {
-        type: Number,
-        required: true,
-        default: 1,
-    },
-    sectionWidth: {
-        type: Number,
-        required: true,
-    },
-    sectionHeight: {
-        type: Number,
-        required: true,
-    },
-    baseHeight: {
-        type: Number,
-        required: true,
-    },
-    // Nova prop para a largura da cremalheira
-    rackWidth: {
-        type: Number,
-        required: true,
-        default: 4, // Valor padrão caso não seja passado
-    },
-});
+const props = defineProps<{
+    shelf: Shelf;
+    scaleFactor: number;
+    sectionWidth: number;
+    sectionHeight: number;
+    baseHeight: number;
+    rackWidth: number; // Nova prop para a largura da cremalheira
+}>();
 
 // Definir Emits
 const emit = defineEmits(['drop-product']); // Para quando um produto é solto na prateleira
 
-// --- Computeds para Estilos ---
-console.log('Shelf props:', props.shelf.segments); // Debug: Verificar as props recebidas
-const segments = computed(() => props.shelf.segments)
+// --- Computeds para Estilos --- 
+const segments = computed(() => props.shelf.segments);
 const shelfStyle = computed(() => {
     // Convertemos a posição da prateleira para pixels usando o fator de escala
     const topPosition = props.shelf.shelf_position * props.scaleFactor;

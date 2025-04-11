@@ -26,6 +26,7 @@ class ShelfResource extends JsonResource
             'shelf_height' => $this->shelf_height,
             'shelf_depth' => $this->shelf_depth,
             'shelf_position' => $this->shelf_position,
+            'quantity' => $this->quantity,
             'ordering' => $this->ordering,
             'spacing' => $this->spacing,
             'settings' => $this->settings,

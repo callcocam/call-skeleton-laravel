@@ -27,6 +27,7 @@ import { computed, defineEmits, defineProps, ref } from 'vue';
 import { apiService } from '../../../services';
 import { useGondolaStore } from '../../../store/gondola';
 import Shelf from './Shelf.vue'; // Importar o componente Shelf
+import { Product, Segment,  Shelf as ShelfType } from './types';
 
 // Definir Props
 const props = defineProps({
@@ -79,7 +80,7 @@ const baseStyle = computed(() => ({
  * Lida com o evento drop-product emitido por um componente Shelf.
  * @param {object} eventData - Dados do evento { product, shelfId, dropPosition }.
  */
-const handleProductDropOnShelf = (product: Product, shelf: Shelf, dropPosition: any) => {
+const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPosition: any) => {
     console.log('Produto solto na prateleira:', shelf);
     // TODO: Implementar lógica para criar/adicionar o segmento do produto
     // - Calcular a posição X relativa dentro da prateleira baseado em eventData.dropPosition.x

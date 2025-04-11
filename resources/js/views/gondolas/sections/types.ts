@@ -17,7 +17,7 @@ interface Layer {
     product_id?: string | number;
     product_name?: string;
     product_image?: string;
-    product?: Product;
+    product: Product;
     height: number;
     spacing: number;
     quantity: number;
@@ -35,7 +35,7 @@ interface Segment {
     position: number;
     preserveState: boolean;
     status: string;
-    layer?: Layer;
+    layer: Layer;
     [key: string]: any; // Para propriedades adicionais do segmento
 }
 
@@ -44,6 +44,10 @@ interface Shelf {
     id: string | number;
     shelf_height: number;
     shelf_position: number;
+    quantity: number;
+    spacing: number;
     segments: Segment[];
     [key: string]: any; // Para propriedades adicionais da prateleira
 }
+
+export type { Product, Layer, Segment, Shelf };
