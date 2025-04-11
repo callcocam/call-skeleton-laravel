@@ -78,8 +78,7 @@ const baseStyle = computed(() => ({
  * Lida com o evento drop-product emitido por um componente Shelf.
  * @param {object} eventData - Dados do evento { product, shelfId, dropPosition }.
  */
-const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPosition: any) => {
-    console.log('Produto solto na prateleira:', shelf);
+const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPosition: any) => { 
     // TODO: Implementar lógica para criar/adicionar o segmento do produto
     // - Calcular a posição X relativa dentro da prateleira baseado em eventData.dropPosition.x
     // - Chamar API para criar o segmento

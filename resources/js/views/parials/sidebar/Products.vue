@@ -3,7 +3,7 @@
         class="sticky top-0 flex h-screen w-72 flex-shrink-0 flex-col overflow-hidden rounded-lg border bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
     >
         <div class="border-b border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-            <h3 class="text-center text-lg font-medium text-gray-800 dark:text-gray-100">Produtos</h3>
+            <h3 class="text-center text-lg font-medium text-gray-800 dark:text-gray-100">Produtos Disponíveis</h3>
 
             <!-- Campo de busca com design aprimorado -->
             <div class="relative mt-3">
@@ -76,12 +76,12 @@
         </div>
 
         <!-- Lista de produtos com design limpo -->
-        <div class="flex-1 overflow-y-auto p-2 dark:bg-gray-800">
-            <div v-if="!loading && filteredProducts.length > 0" class="mb-2 px-2 py-1 text-sm text-gray-500 dark:text-gray-400">
+        <div class="flex-1 overflow-y-auto p-2 dark:bg-gray-800">  
+            <div v-if="!productStore.isLoading && filteredProducts.length > 0" class="mb-2 px-2 py-1 text-sm text-gray-500 dark:text-gray-400">
                 <span>{{ filteredProducts.length }} produtos encontrados</span>
             </div>
 
-            <ul v-if="!loading && filteredProducts.length > 0" class="space-y-1">
+            <ul v-if="!productStore.isLoading && filteredProducts.length > 0" class="space-y-1">
                 <li
                     v-for="product in filteredProducts"
                     :key="product.id"
@@ -108,16 +108,26 @@
             </ul>
 
             <!-- Loading state -->
-            <div v-if="loading" class="flex items-center justify-center py-10">
+            <div v-if="productStore.isLoading" class="flex items-center justify-center py-10">
                 <Loader class="h-6 w-6 animate-spin text-primary" />
                 <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">Carregando...</span>
             </div>
 
             <!-- Empty state -->
-            <div v-if="!loading && filteredProducts.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
+            <div v-if="!productStore.isLoading && filteredProducts.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
                 <Package class="h-10 w-10 text-gray-300 dark:text-gray-600" />
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Nenhum produto encontrado</p>
-                <p v-if="Object.values(filters).some(f => f)" class="mt-1 text-xs text-gray-400 dark:text-gray-500">Tente ajustar os filtros.</p>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Nenhum produto disponível encontrado</p>
+                <p v-if="Object.values(filters).some((f) => f)" class="mt-1 text-xs text-gray-400 dark:text-gray-500">Tente ajustar os filtros.</p>
+            </div>
+
+            <!-- Load More button -->
+            <div v-if="!loading && hasMorePages" class="flex justify-center py-4">
+                <button
+                    @click="loadMore"
+                    class="rounded-md bg-gray-100 px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+                >
+                    Carregar mais produtos
+                </button>
             </div>
         </div>
     </div>
@@ -126,29 +136,20 @@
 <script setup lang="ts">
 import { ChevronDown, Loader, Package, Search, SlidersHorizontal } from 'lucide-vue-next';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import debounce from 'lodash/debounce';
+import { useProductStore, Product } from '../../../store/product';
+import { useGondolaStore } from '../../../store/gondola';
 import { apiService } from '../../../services';
-import { useEditorStore } from '../../../store/editor';
-
-interface Product {
-    id: number;
-    name: string;
-    image_url?: string;
-    width: number;
-    height: number;
-    depth: number;
-    hangable?: boolean;
-    stackable?: boolean;
-}
+import { storeToRefs } from 'pinia';
+import debounce from 'lodash/debounce';
 
 interface Category {
-    id: number;
+    id: number | string;
     name: string;
 }
 
 interface FilterState {
     search: string;
-    category: number | null | '';
+    category: number | string | null | '';
     hangable: boolean;
     stackable: boolean;
 }
@@ -159,68 +160,103 @@ const props = defineProps({
         default: () => [],
     },
 });
+ 
+const productStore = useProductStore();
+const gondolaStore = useGondolaStore();
 
-const editorStore = useEditorStore();
-
-const currentGondolaId = computed(() => editorStore.gondolaId);
+const { productIdsInGondola } = storeToRefs(gondolaStore);
+const { isLoading: productStoreLoading } = storeToRefs(productStore);
 
 const emit = defineEmits(['select-product', 'drag-start', 'view-stats']);
 
 const showFilters = ref(false);
-const loading = ref(false);
-const filteredProducts = ref<Product[]>([]);
 const filters = reactive<FilterState>({
     search: '',
     category: '',
     hangable: false,
     stackable: false,
 });
-const gondolas = computed(() => editorStore.gondolas);
 
-const productsInCurrentGondolaIds = computed(() => {
-    const gondola = editorStore.gondolas.find((g) => g.id === currentGondolaId.value);
-    if (!gondola?.sections) {
-        return [];
-    }
+const loading = ref(false);
+const filteredProducts = ref<Product[]>([]);
+const currentPage = ref(1);
+const hasMorePages = ref(true);
+const LIST_LIMIT = 20;
 
-    const productIds = new Set<number>();
-    gondola.sections.forEach(section => {
-        section.shelves?.forEach(shelf => {
-            shelf.segments?.forEach(segment => {
-                if (segment.layer?.product?.id) {
-                    productIds.add(segment.layer.product.id);
-                }
-            });
-        });
-    });
-    return Array.from(productIds);
-});
+interface PaginatedProductsResponse {
+    data: Product[];
+    meta: {
+        current_page: number;
+        last_page: number;
+    };
+}
 
-const fetchProducts = debounce(async () => {
+const fetchProducts = debounce(async (page = 1, append = false) => {
+    if (loading.value) return;
     loading.value = true;
+    console.log(`Fetching products: page=${page}, append=${append}`);
+
     try {
         const params: Record<string, any> = {
-            notInGondola: productsInCurrentGondolaIds.value.length > 0 ? productsInCurrentGondolaIds.value : undefined,
             search: filters.search || undefined,
             category: filters.category || undefined,
             hangable: filters.hangable || undefined,
             stackable: filters.stackable || undefined,
+            notInGondola: productIdsInGondola.value,
+            page: page,
+            limit: LIST_LIMIT,
         };
 
-        Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
+        Object.keys(params).forEach((key) => {
+            if (params[key] === undefined || params[key] === '' || (Array.isArray(params[key]) && params[key].length === 0)) {
+                 delete params[key];
+            }
+        });
 
-        const response = await apiService.get<Product[]>('products', { params }); 
-        filteredProducts.value = response;
+        const response = await apiService.get<PaginatedProductsResponse>('products', { params });
+        console.log('API Response:', response);
+
+        const newProducts = response.data || [];
+        if (append) {
+            filteredProducts.value.push(...newProducts);
+        } else {
+            filteredProducts.value = newProducts;
+        }
+
+        if (response.meta) { 
+            currentPage.value = response.meta.current_page;
+            hasMorePages.value = response.meta.current_page < response.meta.last_page;
+        } else {
+            hasMorePages.value = newProducts.length === LIST_LIMIT;
+        }
+
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
-        filteredProducts.value = [];
+        if (!append) {
+             filteredProducts.value = [];
+        }
+        hasMorePages.value = false;
     } finally {
         loading.value = false;
     }
 }, 300);
 
-watch(filters, fetchProducts, { deep: true });
-watch(currentGondolaId, fetchProducts);
+watch(filters, () => {
+    console.log('Filters changed, fetching page 1...');
+    fetchProducts(1, false);
+}, { deep: true });
+
+watch(productIdsInGondola, () => {
+    console.log('Product IDs in gondola changed, fetching page 1...');
+    fetchProducts(1, false);
+});
+
+function loadMore() {
+    if (!loading.value && hasMorePages.value) {
+        console.log('Loading more products...');
+        fetchProducts(currentPage.value + 1, true);
+    }
+}
 
 function handleProductSelect(product: Product) {
     emit('select-product', product);
@@ -252,7 +288,8 @@ function clearFilters() {
 }
 
 onMounted(() => {
-    fetchProducts();
+    console.log('Component mounted, fetching initial products...');
+    fetchProducts(1, false);
 });
 </script>
 

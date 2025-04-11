@@ -1,11 +1,14 @@
 import { defineStore } from 'pinia';
 import { apiService } from '../services';
+import { useProductStore } from './product';
 
 interface GondolaState {
     currentGondola: any | null;
     currentSection: any | null;
     currentShelf: any | null;
     currentProduct: any | null;
+    notInGondola: any | null;
+    productIdsInGondola: string[];
     isLoading: boolean;
     error: string | null;
 }
@@ -16,12 +19,14 @@ export const useGondolaStore = defineStore('gondola', {
         currentSection: null,
         currentShelf: null,
         currentProduct: null,
+        notInGondola: null,
+        productIdsInGondola: [],
         isLoading: false,
         error: null
     }),
 
     getters: {
-        // Adicione getters conforme necessário
+        getProductIdsInGondola: (state: GondolaState): string[] => state.productIdsInGondola,
     },
 
     actions: {
@@ -44,6 +49,8 @@ export const useGondolaStore = defineStore('gondola', {
 
                 // Atualiza o estado com o resultado
                 this.currentGondola = response.data;
+
+                this.productsInCurrentGondolaIds();
             } catch (error: any) {
                 this.error = error.message || 'Erro ao carregar gôndola';
                 console.error('Erro ao carregar gôndola:', error);
@@ -73,7 +80,29 @@ export const useGondolaStore = defineStore('gondola', {
             this.currentGondola = null;
             this.error = null;
         },
-
+        productsInCurrentGondolaIds() {
+            const gondola = this.currentGondola;
+            if (!gondola?.sections) {
+                this.productIdsInGondola = [];
+                return [];
+            }
+            
+            const productIds = new Set<string>();
+            gondola.sections.forEach((section: any) => {
+                section.shelves?.forEach((shelf: any) => {
+                    shelf.segments?.forEach((segment: any) => {
+                        if (segment.layer?.product?.id) {
+                            productIds.add(String(segment.layer.product.id));
+                        }
+                    });
+                });
+            });
+            
+            const finalIds = Array.from(productIds);
+            this.productIdsInGondola = finalIds;
+            
+            return finalIds;
+        },
         /**
          * addiciona uma prateleira a uma seção
          * @param sectionId ID da seção
@@ -98,6 +127,8 @@ export const useGondolaStore = defineStore('gondola', {
                     ...this.currentGondola,
                     sections: updatedSections
                 };
+                
+                this.productsInCurrentGondolaIds(); // Recalculate used IDs
 
                 // 2. Em seguida, enviamos a nova prateleira para o backend
                 // const response = await apiService.post(`sections/${sectionId}/shelves`, shelf);
@@ -133,6 +164,9 @@ export const useGondolaStore = defineStore('gondola', {
                     ...this.currentGondola,
                     sections: updatedSections
                 };
+                
+                this.productsInCurrentGondolaIds(); // Recalculate used IDs
+
                 // 2. Em seguida, enviamos a remoção para o backend
                 // const response = await apiService.delete(`shelves/${shelfId}`);
                 // 3. Opcionalmente, você pode atualizar o estado novamente com a resposta do servidor
@@ -175,9 +209,11 @@ export const useGondolaStore = defineStore('gondola', {
                     ...this.currentGondola,
                     sections: updatedSections
                 };
+                
+                this.productsInCurrentGondolaIds(); // Recalculate used IDs
+
                 // 2. Em seguida, enviamos a atualização para o backend
-                const response = await apiService.put(`shelves/${shelfId}`, shelfData);
-                console.log('Resposta do servidor:', response.data);
+                const response = await apiService.put(`shelves/${shelfId}`, shelfData); 
                 // 3. Opcionalmente, você pode atualizar o estado novamente com a resposta do servidor
                 // se necessário para garantir consistência
                 // return response.data;
@@ -227,6 +263,9 @@ export const useGondolaStore = defineStore('gondola', {
                     ...this.currentGondola,
                     sections: updatedSections
                 };
+                
+                this.productsInCurrentGondolaIds(); // Recalculate used IDs
+
                 // 2. Em seguida, enviamos a atualização para o backend
                 // Se o segmento for reordenado, envie a atualização de ordem
                 if (reorder) {
@@ -314,6 +353,7 @@ export const useGondolaStore = defineStore('gondola', {
                 ...this.currentGondola,
                 ...gondolaData
             };
+            this.productsInCurrentGondolaIds(); // This now updates productIdsInGondola
         }
     }
 });

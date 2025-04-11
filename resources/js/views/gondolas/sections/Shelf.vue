@@ -84,8 +84,7 @@ const sortableSegments = computed<SegmentType[]>({
             ...segment,
             ordering: index + 1,
         }));
-        // Emitir evento para o componente pai (Section) lidar com a atualização
-        console.log('Reordenando segmentos:', reorderedSegments);
+        // Emitir evento para o componente pai (Section) lidar com a atualização 
 
         gondolaStore.updateShelf(props.shelf.id, {
             segments: reorderedSegments,
