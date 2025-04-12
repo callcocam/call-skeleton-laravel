@@ -1,5 +1,5 @@
 <template>
-    <div :style="sectionStyle" @dragover.prevent="handleSectionDragOver" @drop.prevent="handleSectionDrop" @dragleave="handleSectionDragLeave">
+    <div :style="sectionStyle" :data-section-id="section.id" @dragover.prevent="handleSectionDragOver" @drop.prevent="handleSectionDrop" @dragleave="handleSectionDragLeave">
         <!-- Conteúdo da Seção (Prateleiras) -->
         <Shelf
             v-for="shelf in section.shelves"
@@ -10,6 +10,8 @@
             :section-height="props.section.height"
             :base-height="baseHeight"
             :rack-width="section.rackWidth || section.cremalheira_width || 4"
+            :sections-container="sectionsContainer"
+            :section-index="sectionIndex"
             @drop-product="handleProductDropOnShelf"
             @drag-shelf="handleShelfDragStart"
         />
@@ -23,20 +25,16 @@ import { useGondolaStore } from '../../../store/gondola';
 import { useProductStore } from '../../../store/product';
 import { useToast } from './../../../components/ui/toast';
 import Shelf from './Shelf.vue'; // Importar o componente Shelf
-import { Product, Segment, Shelf as ShelfType } from './types';
+import { Product, Segment, Shelf as ShelfType, Section } from './types';
 
 // Definir Props
-const props = defineProps({
-    section: {
-        type: Object as () => Record<string, any>,
-        required: true,
-    },
-    scaleFactor: {
-        type: Number,
-        required: true,
-        default: 1,
-    },
-});
+const props = defineProps<{
+    section: Section;
+    scaleFactor: number;
+    selectedCategory: any; // Defina o tipo correto para selectedCategory
+    sectionsContainer: HTMLElement | null; // Referência ao container das seções
+    sectionIndex: number; // Índice da seção atual
+}>();
 
 // Definir Emits (se a Section precisar emitir eventos para cima)
 const emit = defineEmits(['update:segments']); // Exemplo: se precisar emitir atualizações de segmentos
@@ -90,7 +88,7 @@ const handleShelfDragStart = (shelf: ShelfType) => {
 
 // Quando algo está sendo arrastado sobre a seção
 const handleSectionDragOver = (event: DragEvent) => {
-    if (!event.dataTransfer) return; 
+    if (!event.dataTransfer) return;
     // Verificar o tipo de dados sendo arrastado
     const isShelf = event.dataTransfer.types.includes('text/shelf');
 

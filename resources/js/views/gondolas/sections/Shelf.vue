@@ -43,6 +43,9 @@
             :section-width="sectionWidth"
             :section-height="sectionHeight"
             :shelf-element="shelfElement"
+            :base-height="baseHeight"
+            :sections-container="sectionsContainer"
+            :section-index="sectionIndex"
         />
     </div>
 </template>
@@ -54,8 +57,6 @@ import { useGondolaStore } from '../../../store/gondola';
 import Segment from './Segment.vue';
 import ShelfContent from './ShelfContent.vue';
 import ShelfControls from './ShelfControls.vue'; // Importar o componente ShelfControls
-import ShelfXMove from './ShelfXMove.vue'; // Importar o componente ShelfXMove
-import ShelfHMove from './ShelfHMove.vue'; // Importar o componente ShelfHMove
 import { Product, Segment as SegmentType, Shelf } from './types';
 
 // Definir Props
@@ -66,6 +67,8 @@ const props = defineProps<{
     sectionHeight: number;
     baseHeight: number;
     rackWidth: number; // Nova prop para a largura da cremalheira
+    sectionsContainer: HTMLElement | null; // Referência ao container das seções
+    sectionIndex: number; // Índice da seção atual
 }>();
 
 const shelfElement = ref<HTMLElement | null>(null);
@@ -77,6 +80,19 @@ const gondolaStore = useGondolaStore(); // Instanciar o gondola store
 const shelfStyle = computed(() => {
     // Convertemos a posição da prateleira para pixels usando o fator de escala
     const topPosition = props.shelf.shelf_position * props.scaleFactor;
+    if (props.shelf?.shelf_x_position !== undefined) {
+        const leftPosition = props.shelf.shelf_x_position;
+        console.log('leftPosition', leftPosition);
+        // Aplicamos a posição sem o sinal negativo para corrigir a direção do movimento
+        return {
+            position: 'absolute' as const,
+            left: `${leftPosition}px`, // CORRIGIDO: Removido o sinal negativo
+            width: `${props.sectionWidth * props.scaleFactor}px`,
+            height: `${props.shelf.shelf_height * props.scaleFactor}px`,
+            top: `${topPosition}px`,
+            zIndex: '1',
+        };
+    }
 
     // Retornamos o estilo final com tipagem correta (as CSSProperties)
     return {

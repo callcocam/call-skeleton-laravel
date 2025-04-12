@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import { apiService } from '../services';
 import { useProductStore } from './product';
+import { Shelf } from '../views/gondolas/sections/types';
+import { useToast } from '../components/ui/toast';
 
 interface GondolaState {
     currentGondola: any | null;
@@ -210,7 +212,7 @@ export const useGondolaStore = defineStore('gondola', {
                     sections: updatedSections
                 };
 
-                
+
                 if (save) {
                     this.productsInCurrentGondolaIds(); // Recalculate used IDs
                     // 2. Em seguida, enviamos a atualização para o backend
@@ -356,6 +358,121 @@ export const useGondolaStore = defineStore('gondola', {
                 ...gondolaData
             };
             this.productsInCurrentGondolaIds(); // This now updates productIdsInGondola
+        },
+
+        /**
+         * Atualiza a ordem das prateleiras dentro de uma seção específica.
+         * @param sectionId ID da seção
+         * @param orderedShelves Array de prateleiras ordenadas
+         */
+        updateShelvesOrder(sectionId: string, orderedShelves: Shelf[]) {
+            if (!this.currentGondola || !sectionId || !orderedShelves) return;
+
+            const updatedSections = this.currentGondola.sections.map((section: any) => {
+                if (section.id === sectionId) {
+                    return {
+                        ...section,
+                        shelves: orderedShelves
+                    };
+                }
+                return section;
+            });
+
+            this.currentGondola = {
+                ...this.currentGondola,
+                sections: updatedSections
+            };
+
+            this.productsInCurrentGondolaIds();
+        },
+
+        /**
+         * Transfere uma prateleira de uma seção para outra.
+         * @param shelfId ID da prateleira a ser movida.
+         * @param oldSectionId ID da seção de origem.
+         * @param newSectionId ID da seção de destino.
+         * @param newRelativeX Nova posição X da prateleira, relativa à seção de destino.
+         */
+        transferShelf(shelfId: string, oldSectionId: string, newSectionId: string, newRelativeX: number) {
+            if (!this.currentGondola?.sections || !shelfId || !oldSectionId || !newSectionId) {
+                console.error('Missing data for shelf transfer.');
+                return;
+            }
+
+            const { toast } = useToast();
+            let shelfToMove: Shelf | null = null;
+            let oldSectionIndex = -1;
+            let newSectionIndex = -1;
+
+            // Cria uma cópia profunda para manipulação segura
+            const newSections = JSON.parse(JSON.stringify(this.currentGondola.sections));
+
+            // Encontra as seções e a prateleira
+            newSections.forEach((section: any, index: number) => {
+                if (section.id === oldSectionId) {
+                    oldSectionIndex = index;
+                    const shelfIndex = section.shelves?.findIndex((s: Shelf) => s.id === shelfId);
+                    if (shelfIndex !== undefined && shelfIndex > -1) {
+                        // Remove a prateleira da seção antiga e guarda o objeto
+                        shelfToMove = section.shelves.splice(shelfIndex, 1)[0];
+                    }
+                }
+                if (section.id === newSectionId) {
+                    newSectionIndex = index;
+                }
+            });
+
+            // Verifica se tudo foi encontrado e a prateleira foi removida
+            if (oldSectionIndex === -1 || newSectionIndex === -1 || !shelfToMove) {
+                console.error('Could not find sections or shelf for transfer.', { oldSectionIndex, newSectionIndex, shelfToMove });
+                return;
+            }
+
+            // Atualiza os dados da prateleira movida (com casting explícito)
+            if (shelfToMove) {
+                (shelfToMove as Shelf).section_id = newSectionId;
+                (shelfToMove as Shelf).shelf_x_position = newRelativeX;
+                // (shelfToMove as Shelf).ordering = newSections[newSectionIndex].shelves?.length + 1 || 1; 
+            }
+
+            // Adiciona a prateleira à nova seção
+            if (!newSections[newSectionIndex].shelves) {
+                newSections[newSectionIndex].shelves = [];
+            }
+            // Adiciona apenas se shelfToMove não for null (garantido pelo check acima, mas bom ter)
+            if (shelfToMove) {
+                newSections[newSectionIndex].shelves.push(shelfToMove);
+            }
+
+            // Opcional: Reordenar as prateleiras na seção de destino se necessário
+            // newSections[newSectionIndex].shelves.sort((a, b) => a.ordering - b.ordering);
+
+            // Atualiza o estado da gôndola
+            this.currentGondola = {
+                ...this.currentGondola,
+                sections: newSections
+            };
+
+            console.log(`Shelf ${shelfId} transferred from section ${oldSectionId} to ${newSectionId}`);
+
+            // TODO: Chamar API para persistir a transferência no backend
+            // Exemplo:
+            apiService.patch(`shelves/${shelfId}/transfer`, { section_id: newSectionId, shelf_x_position: newRelativeX }).then((response) => {
+                toast({
+                    title: 'Prateleira transferida com sucesso',
+                    description: 'A prateleira foi transferida para a seção ' + newSectionId + ' com sucesso',
+                    variant: 'default'
+                });
+            }).catch((error) => {
+                console.error('Erro ao transferir prateleira:', error);
+                toast({
+                    title: 'Erro ao transferir prateleira',
+                    description: 'Ocorreu um erro ao transferir a prateleira',
+                    variant: 'destructive'
+                });
+            });
+            // Atualiza a lista de produtos em uso, pois a estrutura mudou
+            this.productsInCurrentGondolaIds();
         }
     }
 });

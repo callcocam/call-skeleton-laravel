@@ -50,4 +50,48 @@ interface Shelf {
     [key: string]: any; // Para propriedades adicionais da prateleira
 }
 
-export type { Product, Layer, Segment, Shelf };
+// Interface para a prateleira com a camada
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+interface Section {
+    id: string;
+    gondola_id: string;
+    name: string;
+    slug: string;
+    width: number;
+    height: number;
+    num_shelves: number;
+    base_height: number;
+    base_depth: number;
+    base_width: number; 
+    hole_height: number;
+    hole_width: number;
+    hole_spacing: number;
+    shelf_height: number;
+    cremalheira_width: number;
+    ordering: number;
+    settings: {
+        [key: string]: any; // Para propriedades adicionais da seção
+    };
+    shelves: Shelf[];
+    [key: string]: any; // Para propriedades adicionais da seção
+}
+
+export type { Product, Layer, Segment, Shelf, Section };

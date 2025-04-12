@@ -177,4 +177,15 @@ class ShelfController extends Controller
             ], 500);
         }
     }
+
+    public function transfer(Request $request, Shelf $shelf)
+    {
+        $validated = $request->all();
+        $shelf->update($validated);
+        return response()->json([
+            'message' => 'Prateleira transferida com sucesso',
+            'data' => new ShelfResource($shelf),
+        ], 200);
+    }
+    
 }
