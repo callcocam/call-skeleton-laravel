@@ -1,5 +1,5 @@
 <template>
-    <div :style="sectionStyle">
+    <div :style="sectionStyle" @dragover.prevent="handleSectionDragOver" @drop.prevent="handleSectionDrop" @dragleave="handleSectionDragLeave">
         <!-- Conteúdo da Seção (Prateleiras) -->
         <Shelf
             v-for="shelf in section.shelves"
@@ -11,12 +11,13 @@
             :base-height="baseHeight"
             :rack-width="section.rackWidth || section.cremalheira_width || 4"
             @drop-product="handleProductDropOnShelf"
+            @drag-shelf="handleShelfDragStart"
         />
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineEmits, defineProps, ref, onMounted, onUnmounted } from 'vue';
+import { computed, defineEmits, defineProps, onMounted, onUnmounted, ref } from 'vue';
 import { apiService } from '../../../services';
 import { useGondolaStore } from '../../../store/gondola';
 import { useProductStore } from '../../../store/product';
@@ -43,8 +44,14 @@ const gondolaStore = useGondolaStore(); // Instanciar o gondola store
 const productStore = useProductStore(); // Instantiate product store
 // Services
 const { toast } = useToast();
-// --- Computeds para Estilos ---
+
+// --- Estado para controle de drag and drop ---
+const dropTargetActive = ref(false);
+const draggingShelf = ref<ShelfType | null>(null);
 const draggingSection = ref(false);
+
+// --- Computeds para Estilos ---
+
 // Altura da base em pixels
 const baseHeight = computed(() => {
     const baseHeightCm = props.section.base_height || 0;
@@ -58,10 +65,11 @@ const sectionStyle = computed(() => {
         height: `${props.section.height * props.scaleFactor}px`,
         position: 'relative' as const,
         borderWidth: '2px',
-        borderStyle: draggingSection.value ? 'dashed' : 'solid',
-        borderColor: draggingSection.value ? 'rgba(59, 130, 246, 0.5)' : 'transparent',
-        backgroundColor: draggingSection.value ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+        borderStyle: dropTargetActive.value ? 'dashed' : 'solid',
+        borderColor: dropTargetActive.value ? 'rgba(59, 130, 246, 0.5)' : 'transparent',
+        backgroundColor: dropTargetActive.value ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
         overflow: 'visible' as const,
+        transition: 'border-color 0.2s ease-in-out, background-color 0.2s ease-in-out',
     };
 });
 
@@ -72,19 +80,104 @@ const baseStyle = computed(() => ({
     bottom: `-${(props.section?.baseHeight || props.section?.base_height || 17) * props.scaleFactor}px`,
 }));
 
-// --- Lógica de Eventos ---
+// --- Lógica de Drag and Drop das Prateleiras ---
+
+// Quando uma prateleira começa a ser arrastada
+const handleShelfDragStart = (shelf: ShelfType) => {
+    draggingShelf.value = shelf;
+    console.log('Iniciando arrasto da prateleira:', shelf.id);
+};
+
+// Quando algo está sendo arrastado sobre a seção
+const handleSectionDragOver = (event: DragEvent) => {
+    if (!event.dataTransfer) return; 
+    // Verificar o tipo de dados sendo arrastado
+    const isShelf = event.dataTransfer.types.includes('text/shelf');
+
+    if (isShelf) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+
+        // Ativar feedback visual
+        dropTargetActive.value = true;
+    }
+};
+
+// Quando o elemento arrastado sai da área da seção
+const handleSectionDragLeave = (event: DragEvent) => {
+    dropTargetActive.value = false;
+};
+
+// Quando algo é solto na seção
+const handleSectionDrop = (event: DragEvent) => {
+    if (!event.dataTransfer) return;
+
+    const shelfData = event.dataTransfer.getData('text/shelf');
+
+    if (shelfData) {
+        try {
+            const shelf = JSON.parse(shelfData);
+
+            // Calcular a nova posição baseada na posição do mouse
+            const mouseY = event.offsetY;
+            const newPosition = mouseY / props.scaleFactor;
+
+            // Verificar se a posição é válida (dentro dos limites da seção)
+            // Obtém a altura da prateleira para garantir que ela não ultrapasse o limite inferior
+            const shelfHeight = draggingShelf.value?.shelf_height || 0;
+
+            if (newPosition >= 0 && newPosition <= props.section.height - shelfHeight) {
+                // Atualizar a posição da prateleira via API
+                try {
+                    apiService
+                        .patch(`shelves/${shelf.id}`, {
+                            shelf_position: newPosition,
+                        })
+                        .then((response) => {
+                            // Atualizar o estado local
+                            gondolaStore.updateShelf(shelf.id, {
+                                shelf_position: newPosition,
+                            });
+
+                            toast({
+                                title: 'Success',
+                                description: 'Shelf position updated',
+                                variant: 'default',
+                            });
+                        });
+                } catch (error) {
+                    console.error('Erro ao atualizar posição da prateleira:', error);
+                    toast({
+                        title: 'Error',
+                        description: 'Failed to update shelf position',
+                        variant: 'destructive',
+                    });
+                }
+            } else {
+                toast({
+                    title: 'Warning',
+                    description: 'Invalid shelf position',
+                    variant: 'default',
+                });
+            }
+        } catch (e) {
+            console.error('Erro ao processar dados da prateleira:', e);
+        }
+
+        // Resetar estado
+        draggingShelf.value = null;
+        dropTargetActive.value = false;
+    }
+};
+
+// --- Lógica de Eventos para Produtos ---
 
 /**
  * Lida com o evento drop-product emitido por um componente Shelf.
  * @param {object} eventData - Dados do evento { product, shelfId, dropPosition }.
  */
-const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPosition: any) => { 
-    // TODO: Implementar lógica para criar/adicionar o segmento do produto
-    // - Calcular a posição X relativa dentro da prateleira baseado em eventData.dropPosition.x
-    // - Chamar API para criar o segmento
-    // - Atualizar o estado local/emitir evento para atualizar a UI
-    // Exemplo de chamada API (pseudo-código):
-    // gondolaStore.updateShelf(shelf, {});
+const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPosition: any) => {
+    // Lógica existente para adicionar produtos
     const newSegment: Segment = {
         gondolaId: gondolaStore.currentGondola.id,
         id: `segment-${Date.now()}-${shelf.segments?.length}`,
@@ -107,6 +200,7 @@ const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPositi
             status: 'published',
         },
     };
+
     // Adiciona o novo segmento à prateleira
     try {
         apiService
@@ -114,17 +208,13 @@ const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPositi
                 segment: newSegment,
             })
             .then((response) => {
-                // Atualizar o estado local ou emitir um evento para atualizar a UI
-                // Atualizar a lista de segmentos na prateleira correspondente em props.section.shelves
                 gondolaStore.updateShelf(response.data.id, response.data);
-                // Ou emitir um evento para o componente pai recarregar os dados
 
                 toast({
                     title: 'Success',
                     description: response.message,
                     variant: 'default',
                 });
-                // emit('update:segments', { shelfId: eventData.shelfId, newSegment: response.data });
             });
     } catch (error) {
         console.error('Erro ao adicionar segmento à prateleira:', error);
@@ -135,16 +225,6 @@ const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPositi
         });
     }
 };
-
-// Função auxiliar (exemplo)
-/*
-const calculatePositionX = (dropX: number): number => {
-    // Converter a posição X do drop (em pixels) para a unidade de medida do backend (ex: cm)
-    const shelfPixelWidth = (props.section.width - (props.section.rackWidth || 4) * 2) * props.scaleFactor;
-    const shelfCmWidth = props.section.width - (props.section.rackWidth || 4) * 2;
-    return (dropX / shelfPixelWidth) * shelfCmWidth;
-}
-*/
 
 // --- Event Handlers for Global Listeners ---
 
@@ -182,5 +262,11 @@ onUnmounted(() => {
 /* Adiciona um z-index para garantir que a base fique atrás do conteúdo */
 .section-container > .absolute.bottom-0 {
     z-index: -1;
+}
+
+/* Estilos para feedback visual durante arrasto */
+.section-drag-over {
+    background-color: rgba(59, 130, 246, 0.05);
+    border: 2px dashed rgba(59, 130, 246, 0.5);
 }
 </style>
