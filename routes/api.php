@@ -7,8 +7,9 @@ use Callcocam\Plannerate\Http\Controllers\Api\SegmentController;
 use Callcocam\Plannerate\Http\Controllers\Api\ShelfController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('api')
+Route::middleware(['api', 'auth:sanctum'])
     ->prefix('api')
+    ->name('api.')
     ->group(function () {
         Route::resource('plannerate', PlannerateController::class);
         Route::resource('gondolas', GondolaController::class);

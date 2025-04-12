@@ -12,8 +12,12 @@ use Illuminate\Support\Facades\Route;
 
 use Callcocam\Plannerate\Http\Controllers\PlannerateController;
 
-Route::group(['middleware' => ['web', 'auth', 'verified']], function () {
-    Route::get(sprintf("%s/{any?}", Plannerate::getPath()), [PlannerateController::class, 'index'])
-        ->name(Plannerate::getRoute())
-        ->where('any', '.*');
-});
+Route::prefix(Plannerate::getPath())
+    ->middleware([
+        'web',
+        'auth', 
+    ])->group(function () {
+        Route::get("/{vue_capture?}", [PlannerateController::class, 'index'])
+            ->where('vue_capture', '[\/\w\.\,\-]*')
+            ->name(Plannerate::getRoute());
+    });

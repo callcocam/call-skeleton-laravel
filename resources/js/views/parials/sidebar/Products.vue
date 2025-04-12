@@ -76,7 +76,7 @@
         </div>
 
         <!-- Lista de produtos com design limpo -->
-        <div class="flex-1 overflow-y-auto p-2 dark:bg-gray-800">  
+        <div class="flex-1 overflow-y-auto p-2 dark:bg-gray-800">
             <div v-if="!productStore.isLoading && filteredProducts.length > 0" class="mb-2 px-2 py-1 text-sm text-gray-500 dark:text-gray-400">
                 <span>{{ filteredProducts.length }} produtos encontrados</span>
             </div>
@@ -135,12 +135,11 @@
 
 <script setup lang="ts">
 import { ChevronDown, Loader, Package, Search, SlidersHorizontal } from 'lucide-vue-next';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { useProductStore, Product } from '../../../store/product';
-import { useGondolaStore } from '../../../store/gondola';
-import { apiService } from '../../../services';
 import { storeToRefs } from 'pinia';
-import debounce from 'lodash/debounce';
+import { onMounted, reactive, ref, watch } from 'vue';
+import { apiService } from '../../../services';
+import { useGondolaStore } from '../../../store/gondola';
+import { Product, useProductStore } from '../../../store/product';
 
 interface Category {
     id: number | string;
@@ -160,12 +159,11 @@ const props = defineProps({
         default: () => [],
     },
 });
- 
+
 const productStore = useProductStore();
 const gondolaStore = useGondolaStore();
 
 const { productIdsInGondola } = storeToRefs(gondolaStore);
-const { isLoading: productStoreLoading } = storeToRefs(productStore);
 
 const emit = defineEmits(['select-product', 'drag-start', 'view-stats']);
 
@@ -191,7 +189,7 @@ interface PaginatedProductsResponse {
     };
 }
 
-const fetchProducts = debounce(async (page = 1, append = false) => {
+const fetchProducts = async (page = 1, append = false) => {
     if (loading.value) return;
     loading.value = true;
     console.log(`Fetching products: page=${page}, append=${append}`);
@@ -209,12 +207,12 @@ const fetchProducts = debounce(async (page = 1, append = false) => {
 
         Object.keys(params).forEach((key) => {
             if (params[key] === undefined || params[key] === '' || (Array.isArray(params[key]) && params[key].length === 0)) {
-                 delete params[key];
+                delete params[key];
             }
         });
 
         const response = await apiService.get<PaginatedProductsResponse>('products', { params });
-        console.log('API Response:', response);
+        // console.log('API Response:', response);
 
         const newProducts = response.data || [];
         if (append) {
@@ -223,37 +221,41 @@ const fetchProducts = debounce(async (page = 1, append = false) => {
             filteredProducts.value = newProducts;
         }
 
-        if (response.meta) { 
+        if (response.meta) {
             currentPage.value = response.meta.current_page;
             hasMorePages.value = response.meta.current_page < response.meta.last_page;
         } else {
             hasMorePages.value = newProducts.length === LIST_LIMIT;
         }
-
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
         if (!append) {
-             filteredProducts.value = [];
+            filteredProducts.value = [];
         }
         hasMorePages.value = false;
     } finally {
         loading.value = false;
     }
-}, 300);
+};
 
-watch(filters, () => {
-    console.log('Filters changed, fetching page 1...');
-    fetchProducts(1, false);
-}, { deep: true });
+watch(
+    filters,
+    async () => {
+        // console.log('Filters changed, fetching page 1...');
+        await fetchProducts(1, false);
+    },
+    { deep: true },
+);
 
 watch(productIdsInGondola, () => {
-    console.log('Product IDs in gondola changed, fetching page 1...');
-    fetchProducts(1, false);
+    // console.log('Product IDs in gondola changed, fetching page 1...');
+    setTimeout(async () => { 
+        await fetchProducts(1, false);
+    }, 300); // Pequeno delay
 });
 
 function loadMore() {
-    if (!loading.value && hasMorePages.value) {
-        console.log('Loading more products...');
+    if (!loading.value && hasMorePages.value) { 
         fetchProducts(currentPage.value + 1, true);
     }
 }
@@ -288,8 +290,8 @@ function clearFilters() {
 }
 
 onMounted(() => {
-    console.log('Component mounted, fetching initial products...');
-    fetchProducts(1, false);
+    // console.log('Component mounted, fetching initial products...');
+    // fetchProducts(1, false);
 });
 </script>
 

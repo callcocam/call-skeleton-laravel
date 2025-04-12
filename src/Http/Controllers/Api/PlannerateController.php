@@ -57,7 +57,11 @@ class PlannerateController extends Controller
                 $query->where('department_id', request()->input('department_id'));
             }
 
-            $data = $query->paginate(request()->input('per_page', 15));
+            $data = $query
+            ->with([ 
+                'gondolas', 
+            ])
+            ->paginate(request()->input('per_page', 15));
 
 
             return PlanogramResource::collection($data)

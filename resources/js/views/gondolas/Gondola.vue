@@ -26,7 +26,7 @@
         </div>
 
         <!-- Permite que rotas filhas (como o modal de edição) sejam renderizadas -->
-        <router-view :key="route.fullPath" />
+        <router-view :key="route.fullPath.concat('-gondola')" />
     </div>
 </template>
 

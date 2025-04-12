@@ -108,69 +108,15 @@ const deleteSection = (sectionToDelete: any) => {
 };
 
 const handleMoveShelfToSection = (shelf: any, sectionId: number) => {
-    router.put(
-        // @ts-ignore
-        route('planogram.shelves.update-section', shelf.id),
-        {
-            section_id: sectionId,
-            new_position: round(shelf.shelf_position),
-        },
-        {
-            preserveState: false,
-            preserveScroll: true,
-            onSuccess: () => {
-                // Handle success if needed
-            },
-            onError: () => {
-                // Handle error if needed
-            },
-            onFinish: () => {
-                // Reset the state if needed
-            },
-        },
-    );
+   
 };
 
 const handleMoveSegmentToSection = (segment: any, sectionId: number) => {
-    router.put(
-        // @ts-ignore
-        route('planogram.segments.reorder', segment.shelfId),
-        segment,
-        {
-            preserveState: false,
-            preserveScroll: true,
-            onSuccess: () => {
-                // Handle success if needed
-            },
-            onError: () => {
-                // Handle error if needed
-            },
-            onFinish: () => {
-                // Reset the state if needed
-            },
-        },
-    );
+    
 };
 
 const updateSegmentQuantity = (segment: any) => {
-    router.put(
-        // @ts-ignore
-        route('planogram.segments.update', segment.segmentId),
-        segment.data,
-        {
-            preserveState: false,
-            preserveScroll: true,
-            onSuccess: () => {
-                // Handle success if
-            },
-            onError: () => {
-                // Handle error if needed
-            },
-            onFinish: () => {
-                // Reset the state if needed
-            },
-        },
-    );
+   
 };
 </script>
 

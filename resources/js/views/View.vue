@@ -1,7 +1,7 @@
 <template>
     <div class="px-10">
         <Header v-if="record" :planogram="record" />
-        <div>
+        <div v-if="gondolas?.length" >
             <div class="flex h-full w-full gap-6 overflow-hidden">
                 <!-- Barra lateral esquerda com componente Products separado -->
                 <Products v-if="gondolas?.length" />
@@ -34,35 +34,37 @@ const isLoading = ref<boolean>(false);
 const editorStore = useEditorStore();
 
 const record = ref<any>(null); // Substitua 'any' pelo tipo correto, se possível
-const gondolas = computed(() => editorStore.gondolas);
-const selectedProducts = ref<any[]>([]); // Substitua 'any' pelo tipo correto, se possível
+const gondolas = computed(() => editorStore.gondolas); 
 
 const get = async () => {
     const response = await apiService.get('plannerate/'.concat(id.value));
     record.value = response.data; 
     editorStore.setGondolas(response.data.gondolas);
-    editorStore.setGondolaId(route.params.gondolaId as string); // Atualiza o ID da gôndola no store
+    // editorStore.setGondolaId(route.params.gondolaId as string); // Atualiza o ID da gôndola no store
 };
 
-watch(
-    () => route.params,
-    async (newId) => {
-        if (!route.params.gondolaId) {
-            // Se não houver gondolaId na rota, redireciona para a primeira gôndola
-            if (gondolas.value.length > 0) {
-                const firstGondola = gondolas.value[0];
-                if (firstGondola) {
-                    // Atualiza o ID da gôndola no store
-                    editorStore.setGondolaId(firstGondola.id);
-                    await router.push({
-                        name: 'gondola.view',
-                        params: { gondolaId: firstGondola.id },
-                    });
-                }
-            }
-        }
-    },
-);
+// watch(
+//     () => route.params,
+//     async (newId) => {
+//         if (!route.params.gondolaId) {
+//             // Se não houver gondolaId na rota, redireciona para a primeira gôndola
+//             if (gondolas.value.length > 0) {
+//                 const firstGondola = gondolas.value[0];
+//                 if (firstGondola) {
+//                     // Atualiza o ID da gôndola no store
+//                     editorStore.setGondolaId(firstGondola.id);
+//                     await router.push({
+//                         name: 'gondola.view',
+//                         params: {
+//                             id: id.value,
+//                              gondolaId: firstGondola.id 
+//                             },
+//                     });
+//                 }
+//             }
+//         }
+//     },
+// );
 
 onMounted(async () => {
     isLoading.value = true;

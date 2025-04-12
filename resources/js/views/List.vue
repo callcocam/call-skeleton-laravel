@@ -36,8 +36,8 @@
                             <SelectTrigger class="w-full">
                                 <SelectValue placeholder="Selecione o status" />
                             </SelectTrigger>
-                            <SelectContent> 
-                                <SelectItem value="draft">Rascunho</SelectItem> 
+                            <SelectContent>
+                                <SelectItem value="draft">Rascunho</SelectItem>
                                 <SelectItem value="published">Publicado</SelectItem>
                             </SelectContent>
                         </Select>
@@ -117,7 +117,7 @@
                                             variant="ghost"
                                             size="icon"
                                             class="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                            @click="viewPlanogram(item.id)"
+                                            @click="viewPlanogram(item)"
                                         >
                                             <EyeIcon class="h-4 w-4" />
                                         </Button>
@@ -330,7 +330,16 @@ const goToPage = (page: number) => {
     getData();
 };
 
-const viewPlanogram = (id: string) => {
+const viewPlanogram = (item: any) => { 
+    // Verifica se o item possui a propriedade "gondolas" e se é um array
+    //pegar o id do primeiro item das dondolas
+    let gondolaId = null;
+    const id = item.id;
+    if (item?.gondolas && item.gondolas.length > 0) {
+        gondolaId = item.gondolas[0].id;
+        router.push({ name: 'gondola.view', params: { id, gondolaId } });
+        return;
+    }
     router.push({ name: 'plannerate.view', params: { id } });
 };
 

@@ -5,7 +5,7 @@
             <NavigationMenuList>
                 <NavigationMenuItem class="flex items-center" v-for="gondola in gondolas" :key="gondola.id">
                     <NavigationMenuLink as-child>
-                        <router-link :to="getLink(gondola)"
+                        <router-link :to="getLink(gondola, id)"
                             class="flex items-center gap-2 rounded-md p-2 text-sm font-medium text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
                             active-class="bg-gray-100 dark:bg-gray-700">
                             {{ gondola.name }}
@@ -14,7 +14,7 @@
                 </NavigationMenuItem>
             </NavigationMenuList>
         </NavigationMenu>
-        <router-view :key="route.fullPath" />
+        <router-view :key="route.fullPath.concat('-gondolas')" />
     </div>
 </template>
 <script setup lang="ts">
@@ -31,8 +31,8 @@ const gondolas = computed(() => {
     return editorStore.gondolas;
 }); 
 
-const getLink = (gondola: any) => ({
+const getLink = (gondola: any, id:any) => ({
     name: 'gondola.view',
-    params: { gondolaId: gondola.id },
+    params: {id, gondolaId: gondola.id },
 })
 </script>

@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import NotFound from '../views/NotFound.vue';
 
 // Define your routes
 const routes: Array<RouteRecordRaw> = [
     {
         path: '/plannerate',
-        name: 'plannerate',
+        name: 'plannerate.home',
         component: () => import('../views/Home.vue'),
         redirect: { name: 'plannerate.index' },
         children: [
@@ -64,20 +65,21 @@ const routes: Array<RouteRecordRaw> = [
         ]
     },
 
+    { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
     // Add more routes as needed
 ];
 
 // Create the router instance
 const router = createRouter({
     // @ts-ignore
-    history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHistory(),
     routes
 });
 
 // Navigation guards (optional)
-router.beforeEach((to, from, next) => {
-    // Add your navigation guard logic here
-    next();
-});
+// router.beforeEach((to, from, next) => {
+//     // Add your navigation guard logic here
+//     next();
+// });
 
 export default router;

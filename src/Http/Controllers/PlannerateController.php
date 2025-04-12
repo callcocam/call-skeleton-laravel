@@ -19,18 +19,25 @@ class PlannerateController extends Controller
 
     public function index()
     {
- 
+
         return Inertia::render('plannerate/Index', [
             'title' => 'Planejamento de Tarefas',
             'description' => 'Planejamento de Tarefas',
             'breadcrumbs' => [
                 ['title' => 'Planejamento de Tarefas', 'url' => route(Plannerate::getRoute())],
-            ], 
+            ],
         ]);
     }
 
-    public function store(Request $request)
+    public function gondola()
     {
-        // Implementar a lógica para armazenar um novo planograma
+        return Inertia::render('plannerate/Gondola', [
+            'title' => 'Gôndola',
+            'description' => 'Gôndola',
+            'breadcrumbs' => [
+                ['title' => 'Planejamento de Tarefas', 'url' => route(Plannerate::getRoute())],
+                ['title' => 'Gôndola', 'url' => route(Plannerate::getRoute() . '.gondola')],
+            ],
+        ]);
     }
 }
