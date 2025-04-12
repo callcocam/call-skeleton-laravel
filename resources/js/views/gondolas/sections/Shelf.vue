@@ -1,52 +1,20 @@
 <template>
-    <div
-        class="shelf relative flex items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800"
-        :style="shelfStyle"
-        ref="shelfElement"
-    >
+    <div class="shelf relative flex items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800"
+        :style="shelfStyle" ref="shelfElement">
         <!-- TODO: Renderizar Segmentos/Produtos aqui -->
-        <draggable
-            v-model="sortableSegments"
-            item-key="id"
-            handle=".drag-segment-handle"
-            class="relative flex w-full items-end justify-around"
-            :style="segmentsContainerStyle"
-        >
+        <draggable v-model="sortableSegments" item-key="id" handle=".drag-segment-handle"
+            class="relative flex w-full items-end justify-around" :style="segmentsContainerStyle">
             <template #item="{ element: segment }">
                 <Segment :key="segment.id" :shelf="shelf" :segment="segment" :scale-factor="scaleFactor" />
             </template>
         </draggable>
         <div class="absolute inset-0 bottom-0 z-0 flex h-full w-full items-center justify-center">
-            <ShelfContent
-                :shelf="shelf"
-                @drop-product="(product: Product, shelf: Shelf, dropPosition: any) => $emit('drop-product', product, shelf, dropPosition)"
-            />
-        </div>
-        <!-- <ShelfXMove
-            :shelf="shelf"
-            :scale-factor="scaleFactor"
-            :section-width="props.sectionWidth"
-            :section-height="props.sectionHeight"
-            :base-height="props.baseHeight"
-            :shelfElement="shelfElement"
-        /> -->
-        <!-- <ShelfHMove
-            :shelf="shelf"
-            :scale-factor="scaleFactor"
-            :section-width="sectionWidth"
-            :section-height="sectionHeight"
-            :shelf-element="shelfElement"
-        /> -->
-        <ShelfControls
-            :shelf="shelf"
-            :scale-factor="scaleFactor"
-            :section-width="sectionWidth"
-            :section-height="sectionHeight"
-            :shelf-element="shelfElement"
-            :base-height="baseHeight"
-            :sections-container="sectionsContainer"
-            :section-index="sectionIndex"
-        />
+            <ShelfContent :shelf="shelf"
+                @drop-product="(product: Product, shelf: Shelf, dropPosition: any) => $emit('drop-product', product, shelf, dropPosition)" />
+        </div> 
+        <ShelfControls :shelf="shelf" :scale-factor="scaleFactor" :section-width="sectionWidth"
+            :section-height="sectionHeight" :shelf-element="shelfElement" :base-height="baseHeight"
+            :sections-container="sectionsContainer" :section-index="sectionIndex" />
     </div>
 </template>
 
@@ -82,7 +50,6 @@ const shelfStyle = computed(() => {
     const topPosition = props.shelf.shelf_position * props.scaleFactor;
     if (props.shelf?.shelf_x_position !== undefined) {
         const leftPosition = props.shelf.shelf_x_position;
-        console.log('leftPosition', leftPosition);
         // Aplicamos a posição sem o sinal negativo para corrigir a direção do movimento
         return {
             position: 'absolute' as const,
@@ -97,7 +64,7 @@ const shelfStyle = computed(() => {
     // Retornamos o estilo final com tipagem correta (as CSSProperties)
     return {
         position: 'absolute' as const, // Use 'as const' para tipar corretamente
-        left: '-5px',
+        left: '-4px',
         width: `${props.sectionWidth * props.scaleFactor + 4}px`,
         height: `${props.shelf.shelf_height * props.scaleFactor}px`,
         top: `${topPosition}px`,

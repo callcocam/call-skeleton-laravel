@@ -64,11 +64,7 @@ const initialMouseX = ref(0);
 const initialMouseY = ref(0);
 const initialShelfX = ref(0);
 const initialShelfY = ref(0);
-
-// Estado para rastrear se estamos no modo de transferência de seção
-const isOverSectionBoundary = ref(false);
-const potentialTargetSection = ref<string | null>(null);
-
+ 
 // Estado para rastrear a seção alvo potencial
 const potentialTargetSectionId = ref<string | null>(null);
 // Estado para feedback visual na seção alvo
@@ -130,11 +126,11 @@ const handleHorizontalDragStart = (e: MouseEvent, direction: 'left' | 'right') =
     initialMouseX.value = e.clientX; // CORRIGIDO: Usar clientX em vez de offsetX
     initialShelfX.value = props.shelf.shelf_x_position || 0;
 
-    console.log('Iniciando arrasto horizontal:', {
-        direction,
-        initialMouseX: initialMouseX.value,
-        initialShelfX: initialShelfX.value
-    });
+    // console.log('Iniciando arrasto horizontal:', {
+    //     direction,
+    //     initialMouseX: initialMouseX.value,
+    //     initialShelfX: initialShelfX.value
+    // });
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
@@ -229,7 +225,7 @@ const handleHorizontalMove = (e: MouseEvent) => {
 
             // Verifica se mais da metade da prateleira está sobre a outra seção
             if (overlapWidth > shelfRect.width * 0.1) {
-                console.log(`Overlapping section ${sectionId}`);
+                // console.log(`Overlapping section ${sectionId}`);
                 potentialTargetSectionId.value = sectionId;
                 targetSectionElement.value = sectionEl; // Guarda o elemento para highlight
                 sectionEl.classList.add('section-drop-target-highlight'); // Adiciona classe para feedback
@@ -271,7 +267,7 @@ const handleMouseUp = () => {
             const currentShelfData = props.shelf;
 
             if (targetSectionId && targetSectionId !== currentShelfData.section_id) {
-                console.log(`Transferring shelf ${currentShelfData.id} to section ${targetSectionId}`);
+                // console.log(`Transferring shelf ${currentShelfData.id} to section ${targetSectionId}`);
 
                 // ALWAYS set position to 0 relative to the new section
                 const newRelativeX = 0;
@@ -282,7 +278,7 @@ const handleMouseUp = () => {
 
             } else {
                 // Soltou na mesma seção ou fora de uma zona de transferência válida
-                console.log(`Persisting shelf ${currentShelfData.id} horizontal position in section ${currentShelfData.section_id}`);
+                // console.log(`Persisting shelf ${currentShelfData.id} horizontal position in section ${currentShelfData.section_id}`);
                 gondolaStore.updateShelf(currentShelfData.id, { shelf_x_position: currentShelfData.shelf_x_position });
             }
         }
