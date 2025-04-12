@@ -97,7 +97,7 @@ const shelfStyle = computed(() => {
     // Retornamos o estilo final com tipagem correta (as CSSProperties)
     return {
         position: 'absolute' as const, // Use 'as const' para tipar corretamente
-        left: '-4px',
+        left: '-5px',
         width: `${props.sectionWidth * props.scaleFactor + 4}px`,
         height: `${props.shelf.shelf_height * props.scaleFactor}px`,
         top: `${topPosition}px`,

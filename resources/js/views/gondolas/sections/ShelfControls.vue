@@ -228,7 +228,7 @@ const handleHorizontalMove = (e: MouseEvent) => {
             const overlapWidth = overlapRight - overlapLeft;
 
             // Verifica se mais da metade da prateleira está sobre a outra seção
-            if (overlapWidth > shelfRect.width * 0.5) {
+            if (overlapWidth > shelfRect.width * 0.1) {
                 console.log(`Overlapping section ${sectionId}`);
                 potentialTargetSectionId.value = sectionId;
                 targetSectionElement.value = sectionEl; // Guarda o elemento para highlight
