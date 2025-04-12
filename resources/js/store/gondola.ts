@@ -86,7 +86,7 @@ export const useGondolaStore = defineStore('gondola', {
                 this.productIdsInGondola = [];
                 return [];
             }
-            
+
             const productIds = new Set<string>();
             gondola.sections.forEach((section: any) => {
                 section.shelves?.forEach((shelf: any) => {
@@ -97,10 +97,10 @@ export const useGondolaStore = defineStore('gondola', {
                     });
                 });
             });
-            
+
             const finalIds = Array.from(productIds);
             this.productIdsInGondola = finalIds;
-            
+
             return finalIds;
         },
         /**
@@ -127,7 +127,7 @@ export const useGondolaStore = defineStore('gondola', {
                     ...this.currentGondola,
                     sections: updatedSections
                 };
-                
+
                 this.productsInCurrentGondolaIds(); // Recalculate used IDs
 
                 // 2. Em seguida, enviamos a nova prateleira para o backend
@@ -164,7 +164,7 @@ export const useGondolaStore = defineStore('gondola', {
                     ...this.currentGondola,
                     sections: updatedSections
                 };
-                
+
                 this.productsInCurrentGondolaIds(); // Recalculate used IDs
 
                 // 2. Em seguida, enviamos a remoção para o backend
@@ -185,7 +185,7 @@ export const useGondolaStore = defineStore('gondola', {
          * @param shelfId ID da prateleira
          * @param shelfData Dados atualizados da prateleira
          */
-        async updateShelf(shelfId: string, shelfData: any) {
+        async updateShelf(shelfId: string, shelfData: any, save: boolean = true) {
             if (!this.currentGondola || !shelfId || !shelfData) return;
             try {
                 // 1. Primeiro, atualizamos o estado localmente para feedback imediato
@@ -209,11 +209,13 @@ export const useGondolaStore = defineStore('gondola', {
                     ...this.currentGondola,
                     sections: updatedSections
                 };
-                
-                this.productsInCurrentGondolaIds(); // Recalculate used IDs
 
-                // 2. Em seguida, enviamos a atualização para o backend
-                const response = await apiService.put(`shelves/${shelfId}`, shelfData); 
+                
+                if (save) {
+                    this.productsInCurrentGondolaIds(); // Recalculate used IDs
+                    // 2. Em seguida, enviamos a atualização para o backend
+                    const response = await apiService.put(`shelves/${shelfId}`, shelfData);
+                }
                 // 3. Opcionalmente, você pode atualizar o estado novamente com a resposta do servidor
                 // se necessário para garantir consistência
                 // return response.data;
@@ -263,7 +265,7 @@ export const useGondolaStore = defineStore('gondola', {
                     ...this.currentGondola,
                     sections: updatedSections
                 };
-                
+
                 this.productsInCurrentGondolaIds(); // Recalculate used IDs
 
                 // 2. Em seguida, enviamos a atualização para o backend

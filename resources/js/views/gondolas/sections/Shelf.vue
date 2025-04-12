@@ -1,5 +1,9 @@
 <template>
-    <div class="shelf relative flex items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800" :style="shelfStyle">
+    <div
+        class="shelf relative flex items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800"
+        :style="shelfStyle"
+        ref="shelfElement"
+    >
         <!-- TODO: Renderizar Segmentos/Produtos aqui -->
         <draggable
             v-model="sortableSegments"
@@ -13,18 +17,46 @@
             </template>
         </draggable>
         <div class="absolute inset-0 bottom-0 z-0 flex h-full w-full items-center justify-center">
-            <ShelfContent :shelf="shelf" @drop-product="(product: Product, shelf: Shelf, dropPosition: any) => $emit('drop-product',product, shelf,  dropPosition)" />
+            <ShelfContent
+                :shelf="shelf"
+                @drop-product="(product: Product, shelf: Shelf, dropPosition: any) => $emit('drop-product', product, shelf, dropPosition)"
+            />
         </div>
+        <!-- <ShelfXMove
+            :shelf="shelf"
+            :scale-factor="scaleFactor"
+            :section-width="props.sectionWidth"
+            :section-height="props.sectionHeight"
+            :base-height="props.baseHeight"
+            :shelfElement="shelfElement"
+        /> -->
+        <!-- <ShelfHMove
+            :shelf="shelf"
+            :scale-factor="scaleFactor"
+            :section-width="sectionWidth"
+            :section-height="sectionHeight"
+            :shelf-element="shelfElement"
+        /> -->
+        <ShelfControls
+            :shelf="shelf"
+            :scale-factor="scaleFactor"
+            :section-width="sectionWidth"
+            :section-height="sectionHeight"
+            :shelf-element="shelfElement"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineEmits, defineProps, ref, watch } from 'vue';
+import { computed, defineEmits, defineProps, ref } from 'vue';
 import draggable from 'vuedraggable';
 import { useGondolaStore } from '../../../store/gondola';
 import Segment from './Segment.vue';
 import ShelfContent from './ShelfContent.vue';
-import { Segment as SegmentType, Shelf, Product} from './types';
+import ShelfControls from './ShelfControls.vue'; // Importar o componente ShelfControls
+import ShelfXMove from './ShelfXMove.vue'; // Importar o componente ShelfXMove
+import ShelfHMove from './ShelfHMove.vue'; // Importar o componente ShelfHMove
+import { Product, Segment as SegmentType, Shelf } from './types';
 
 // Definir Props
 const props = defineProps<{
@@ -35,21 +67,11 @@ const props = defineProps<{
     baseHeight: number;
     rackWidth: number; // Nova prop para a largura da cremalheira
 }>();
-const dragShelfActive = ref(false); // Estado para rastrear se a prateleira está sendo arrastada
-const shelftext = ref(`Shelf (Pos: ${props.shelf.shelf_position.toFixed(1)}cm)`); // Texto da prateleira
+
+const shelfElement = ref<HTMLElement | null>(null);
+
 // Definir Emits
 const emit = defineEmits(['drop-product']); // Para quando um produto é solto na prateleira
-watch(dragShelfActive, (newValue) => {
-    if (newValue) {
-        // Adicionar lógica para quando a prateleira está sendo arrastada
-        console.log('Prateleira arrastada');
-        shelftext.value = `Arrastando Prateleira (Pos: ${props.shelf.shelf_position.toFixed(1)}cm)`;
-    } else {
-        // Adicionar lógica para quando a prateleira não está mais sendo arrastada
-        console.log('Prateleira não arrastada');
-        shelftext.value = `Shelf (Pos: ${props.shelf.shelf_position.toFixed(1)}cm)`;
-    }
-});
 const gondolaStore = useGondolaStore(); // Instanciar o gondola store
 // --- Computeds para Estilos ---
 const shelfStyle = computed(() => {
@@ -84,7 +106,7 @@ const sortableSegments = computed<SegmentType[]>({
             ...segment,
             ordering: index + 1,
         }));
-        // Emitir evento para o componente pai (Section) lidar com a atualização 
+        // Emitir evento para o componente pai (Section) lidar com a atualização
 
         gondolaStore.updateShelf(props.shelf.id, {
             segments: reorderedSegments,
