@@ -14,7 +14,11 @@ Route::middleware(['api', 'auth:sanctum'])
     ->group(function () {
         Route::resource('plannerate', PlannerateController::class);
         Route::resource('gondolas', GondolaController::class);
+        Route::post('gondolas/{gondola}/sections/reorder', [GondolaController::class, 'reorder'])
+            ->name('gondolas.sections.reorder');
         Route::resource('sections', SectionController::class);
+        Route::post('sections/{gondola}/shelves/reorder', [SectionController::class, 'updateInvertOrder'])
+            ->name('sections.updateInvertOrder');
         Route::resource('shelves', ShelfController::class)
             ->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::resource('segments', SegmentController::class)

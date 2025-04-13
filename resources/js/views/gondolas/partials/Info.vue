@@ -10,9 +10,9 @@ import { useRedirect } from '../../../composables/useRedirect';
 import { apiService } from '../../../services';
 import { useEditorStore } from '../../../store/editor';
 import { useGondolaStore } from '../../../store/gondola'; // Importar o store da gôndola
+import { Button } from './../../../components/ui/button'; // Adicionar import do Button se não for global
 import Category from './Category.vue'; // Assumindo que Category e Popover estão corretos
 import Popover from './Popover.vue';
-import { Button } from "./../../../components/ui/button"; // Adicionar import do Button se não for global
 
 // Definição das Props
 /**
@@ -76,7 +76,10 @@ const toggleGrid = () => {
 const invertSectionOrder = () => {
     // Adiciona verificação se a gôndola existe
     if (currentGondola.value) {
-        emit('update:invertOrder', currentGondola.value.id);
+        apiService.post(`sections/${currentGondola.value.id}/shelves/reorder`).then((response) => {
+            // Emitir evento para o componente pai (Sections) lidar com a atualização
+            gondolaStore.invertSectionOrder(response.data); 
+        });
     }
 };
 
@@ -97,16 +100,16 @@ const clearCategoryFilter = () => {
 
 /** Navega para a tela de edição/adição de seção para a gôndola atual. */
 const navigateToAddSection = () => {
-     // Adiciona verificação se a gôndola existe
-     if (currentGondola.value) {
+    // Adiciona verificação se a gôndola existe
+    if (currentGondola.value) {
         router.push({
             name: 'gondola.edit', // Rota para adicionar/editar seção (ajustar se necessário)
-            params:{
+            params: {
                 id: currentGondola.value.planogram_id, // Usar planogram_id do store
-                gondolaId: currentGondola.value.id // Usar id do store
-            }
+                gondolaId: currentGondola.value.id, // Usar id do store
+            },
         });
-     }
+    }
 };
 
 /**
@@ -149,7 +152,7 @@ const confirmRemoveGondola = async () => {
             <div class="flex items-center justify-between">
                 <!-- Controles de Visualização e Filtros -->
                 <div class="flex flex-col items-center space-x-8 md:flex-row">
-                     <!-- Label Dimensões (Poderia vir do store agora) -->
+                    <!-- Label Dimensões (Poderia vir do store agora) -->
                     <h3 class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                         <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
@@ -159,7 +162,8 @@ const confirmRemoveGondola = async () => {
                                 d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
                             />
                         </svg>
-                        {{ currentGondola?.name || 'Gôndola' }} <!-- Exibe nome da gôndola do store -->
+                        {{ currentGondola?.name || 'Gôndola' }}
+                        <!-- Exibe nome da gôndola do store -->
                     </h3>
 
                     <!-- Controle de Escala -->
@@ -197,7 +201,7 @@ const confirmRemoveGondola = async () => {
                         size="icon"
                         @click="toggleGrid()"
                         class="ml-4 !p-1 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                        :class="{ 'bg-gray-100 dark:bg-gray-700': showGrid }" 
+                        :class="{ 'bg-gray-100 dark:bg-gray-700': showGrid }"
                         aria-label="Mostrar/Esconder Grade"
                     >
                         <Grid class="h-4 w-4" />
@@ -207,12 +211,12 @@ const confirmRemoveGondola = async () => {
                     <div class="flex items-center space-x-2" v-if="categories.length > 0">
                         <label class="text-sm text-gray-600 dark:text-gray-400">Filtros:</label>
                         <Popover @clear-filters="clearCategoryFilter" :has-active-filters="!!filters.category">
-                             <!-- Componente Category para seleção -->
+                            <!-- Componente Category para seleção -->
                             <Category
                                 class="w-full"
                                 :categories="categories"
                                 v-model="filters.category"
-                                @update:model-value="selectCategory" 
+                                @update:model-value="selectCategory"
                                 :clearable="true"
                             />
                         </Popover>
@@ -225,7 +229,7 @@ const confirmRemoveGondola = async () => {
                     <Button
                         type="button"
                         variant="secondary"
-                        v-if="sections.length > 1" 
+                        v-if="sections.length > 1"
                         @click="invertSectionOrder"
                         class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                         aria-label="Inverter Ordem das Seções"
@@ -234,28 +238,22 @@ const confirmRemoveGondola = async () => {
                         <span class="hidden md:block">Inverter Ordem</span>
                     </Button>
 
-                     <!-- Botão para adicionar seção/módulo -->
-                    <Button
-                         type="button"
-                         variant="secondary"
-                         class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                         @click="navigateToAddSection"
-                         aria-label="Adicionar Seção"
-                     >
-                        <Plus class="mr-1 h-4 w-4" />
-                        <span class="hidden md:block">Adicionar Seção</span> 
-                    </Button>
-
-                     <!-- Botão para remover gôndola -->
+                    <!-- Botão para adicionar seção/módulo -->
                     <Button
                         type="button"
-                        variant="destructive"
-                        class="flex items-center" 
-                        @click="confirmRemoveGondola"
-                        aria-label="Remover Gôndola"
+                        variant="secondary"
+                        class="flex items-center dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        @click="navigateToAddSection"
+                        aria-label="Adicionar Seção"
                     >
+                        <Plus class="mr-1 h-4 w-4" />
+                        <span class="hidden md:block">Adicionar Seção</span>
+                    </Button>
+
+                    <!-- Botão para remover gôndola -->
+                    <Button type="button" variant="destructive" class="flex items-center" @click="confirmRemoveGondola" aria-label="Remover Gôndola">
                         <Trash2 class="mr-1 h-4 w-4" />
-                        <span class="hidden md:block">Remover Gôndola</span> 
+                        <span class="hidden md:block">Remover Gôndola</span>
                     </Button>
                 </div>
             </div>

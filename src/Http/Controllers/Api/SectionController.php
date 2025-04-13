@@ -446,4 +446,46 @@ class SectionController extends Controller
             ], 500);
         }
     }
+
+
+
+    public function updateInvertOrder(Request $request, Gondola $gondola)
+    {
+        $sections =  $gondola->sections()
+        ->with(
+            'shelves',
+            'shelves.segments',
+            'shelves.segments.layer',
+            'shelves.segments.layer.product',
+            'shelves.segments.layer.product.image',
+        )
+        ->orderBy('ordering', 'desc')->get();
+        if (empty($sections)) {
+            return response()->json([
+                'message' => 'Nenhuma seção encontrada para reordenar.',
+            ], 404);
+        }
+        try {
+            $count = $sections->count();
+            $order = [];
+            foreach ($sections as $index => $section) {
+                $section->update(['ordering' =>  $count - $index]);
+                $order[] = [
+                    'id' => $section->id,
+                    'ordering' => $count - $index,
+                ];
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao reordenar seções',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => 'Seções reordenadas com sucesso',
+            'data' => SectionResource::collection($sections),
+            'order' => $order,
+        ], 200);
+    }
 }

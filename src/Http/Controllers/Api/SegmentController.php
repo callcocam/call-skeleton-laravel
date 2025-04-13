@@ -11,6 +11,7 @@ namespace Callcocam\Plannerate\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Callcocam\Plannerate\Http\Resources\SegmentResource;
 use Callcocam\Plannerate\Http\Resources\ShelfResource;
+use Callcocam\Plannerate\Models\Gondola;
 use Callcocam\Plannerate\Models\Segment;
 use Callcocam\Plannerate\Models\Shelf;
 use Illuminate\Http\Request;
@@ -144,7 +145,7 @@ class SegmentController extends Controller
     {
         try {
             DB::beginTransaction();
-            $validated = $request->all(); 
+            $validated = $request->all();
             return response()->json([
                 'message' => 'Segmento reordenado com sucesso',
                 'data' => new ShelfResource($shelf),

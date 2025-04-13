@@ -481,4 +481,38 @@ class GondolaController extends Controller
             ], 500);
         }
     }
+
+    public function reorder(Request $request, Gondola $gondola): JsonResponse
+    {
+        try {
+            $sections = $request->input('sectionIds');
+
+            foreach ($sections as $order =>  $section) {
+                $sectionModel = $gondola->sections()->findOrFail($section);
+                $sectionModel->update(['ordering' => $order]);
+            }
+
+            return response()->json([
+                'message' => 'Gôndola reordenada com sucesso',
+                'status' => 'success'
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Gôndola ou seção não encontrada',
+                'status' => 'error'
+            ], 404);
+        } catch (Throwable $e) {
+            Log::error('Erro ao reordenar gôndola', [
+                'exception' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'message' => 'Ocorreu um erro ao reordenar a gôndola',
+                'status' => 'error'
+            ], 500);
+        }
+    }
+    
 }

@@ -106,96 +106,35 @@ export const useGondolaStore = defineStore('gondola', {
             return finalIds;
         },
         /**
-         * addiciona uma prateleira a uma seção
-         * @param sectionId ID da seção
-         * @param shelf Dados da prateleira a ser adicionada
-         * @returns {Promise<void>}
+         * Atualiza a ordernação das seções 
+         * @param sesionData seção a ser atualizada 
          */
-        async addShelfToSection(sectionId: string, shelf: any) {
-            if (!this.currentGondola || !sectionId || !shelf) return;
-
-            try {
-                // 1. Primeiro, atualizamos o estado localmente para feedback imediato
-                const updatedSections = this.currentGondola.sections.map((section: any) => {
-                    if (section.id === sectionId) {
-                        // Adiciona a nova prateleira à seção
-                        return { ...section, shelves: [...(section.shelves || []), shelf] };
-                    }
-                    return section;
-                });
-
-                // Atualiza o estado da gôndola com as seções atualizadas
-                this.currentGondola = {
+        invertSectionOrder(sectionData: any) {
+            if (!this.currentGondola || !sectionData) return;
+            // Atualiza o estado da gôndola com as seções atualizadas
+            this.$patch({
+                currentGondola: {
                     ...this.currentGondola,
-                    sections: updatedSections
-                };
-
-                this.productsInCurrentGondolaIds(); // Recalculate used IDs
-
-                // 2. Em seguida, enviamos a nova prateleira para o backend
-                // const response = await apiService.post(`sections/${sectionId}/shelves`, shelf);
-
-                // 3. Opcionalmente, você pode atualizar o estado novamente com a resposta do servidor
-                // se necessário para garantir consistência
-
-                // return response.data;
-            } catch (error: any) {
-                console.error('Erro ao adicionar prateleira:', error);
-                throw error;
-            }
+                    sections: sectionData
+                }
+            });
+            this.productsInCurrentGondolaIds(); // Recalculate used IDs
         },
-        /**
-         * remove uma prateleira de uma seção
-         * @param sectionId ID da seção
-         * @param shelfId ID da prateleira a ser removida
-         */
-        async removeShelfFromSection(sectionId: string, shelfId: string) {
-            if (!this.currentGondola || !sectionId || !shelfId) return;
-            try {
-                // 1. Primeiro, atualizamos o estado localmente para feedback imediato
-                const updatedSections = this.currentGondola.sections.map((section: any) => {
-                    if (section.id === sectionId) {
-                        // Filtra as prateleiras para remover a prateleira especificada
-                        const updatedShelves = section.shelves.filter((shelf: any) => shelf.id !== shelfId);
-                        return { ...section, shelves: updatedShelves };
-                    }
-                    return section;
-                });
-                // Atualiza o estado da gôndola com as seções atualizadas
-                this.currentGondola = {
-                    ...this.currentGondola,
-                    sections: updatedSections
-                };
 
-                this.productsInCurrentGondolaIds(); // Recalculate used IDs
-
-                // 2. Em seguida, enviamos a remoção para o backend
-                // const response = await apiService.delete(`shelves/${shelfId}`);
-                // 3. Opcionalmente, você pode atualizar o estado novamente com a resposta do servidor
-                // se necessário para garantir consistência
-                // return response.data;
-            } catch (error: any) {
-                console.error('Erro ao remover prateleira:', error);
-                // Em caso de erro, você pode querer desfazer a alteração local
-                // ou recarregar a gôndola inteira
-                // this.fetchGondola(this.currentGondola.id);
-                throw error;
-            }
-        },
         /**
          * Atualiza os dados de uma prateleira
          * @param shelfId ID da prateleira
          * @param shelfData Dados atualizados da prateleira
          */
         async updateShelf(shelfId: string, shelfData: any, save: boolean = true) {
-            if (!this.currentGondola || !shelfId || !shelfData) return; 
+            if (!this.currentGondola || !shelfId || !shelfData) return;
             try {
                 // 1. Primeiro, atualizamos o estado localmente para feedback imediato
                 const updatedSections = this.currentGondola.sections.map((section: any) => {
                     // Procura a prateleira correta em cada seção
                     if (section.shelves) {
                         const updatedShelves = section.shelves.map((shelf: any) => {
-                            if (shelf.id === shelfId) { 
+                            if (shelf.id === shelfId) {
                                 // Retorna um novo objeto com os dados atualizados
                                 return { ...shelf, ...shelfData };
                             }

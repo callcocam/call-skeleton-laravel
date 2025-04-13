@@ -54,6 +54,7 @@ import { Button } from '@/components/ui/button';
 import draggable from 'vuedraggable';
 import { useEditorStore } from '../../../store/editor';
 import { useGondolaStore } from '../../../store/gondola';
+import { apiService } from '../../../services';
 
 interface Category {
     id: string | number;
@@ -106,7 +107,7 @@ const onDragEnd = () => {
     emit('sections-reordered', sortableSections.value, currentGondola.id);
     // TODO: Chamar API para salvar a nova ordem das seções
     // console.log(`Chamando API para reordenar seções da gôndola ${currentGondola.id}`, orderedIds);
-    // apiService.post(`gondolas/${currentGondola.id}/sections/reorder`, { section_ids: orderedIds });
+    apiService.post(`gondolas/${currentGondola.id}/sections/reorder`, { sectionIds: orderedIds });
 };
 
 const deleteSection = (sectionToDelete: any) => {
