@@ -95,39 +95,35 @@ const handleLayerClick = (event: MouseEvent) => {
 
 // Function to increase quantity
 const onIncreaseQuantity = async () => {
-    layerQuantity.value++;
     layerSpacing.value = props.layer.spacing;
     emit('increase', {
         ...props.layer,
-        quantity: layerQuantity.value,
+        quantity: (layerQuantity.value += 1),
     });
 };
 // Function to decrease quantity
 const onDecreaseQuantity = async () => {
     if (layerQuantity.value > 1) {
-        layerQuantity.value--;
         layerSpacing.value = props.layer.spacing;
         emit('decrease', {
             ...props.layer,
-            quantity: layerQuantity.value,
+            quantity: (layerQuantity.value -= 1),
         });
     }
 };
 // Function to increase spacing
 const onSpacingIncrease = async () => {
-    layerSpacing.value++;
     emit('spacingIncrease', {
         ...props.layer,
-        spacing: layerSpacing.value,
+        spacing: layerSpacing.value++,
     });
 };
 // Function to decrease spacing
 const onSpacingDecrease = async () => {
     if (layerSpacing.value > 0) {
-        layerSpacing.value--;
         emit('spacingDecrease', {
             ...props.layer,
-            spacing: layerSpacing.value,
+            spacing: layerSpacing.value--,
         });
     }
 };

@@ -33,6 +33,7 @@ class ShelfResource extends JsonResource
             'status' => $this->status,
             'segments' => SegmentResource::collection($this->whenLoaded('segments')),
             'section' => new SectionResource($this->whenLoaded('section')),
+            'reload' => now()->format('Y-m-d H:i:s'),
         ];
     }
 }

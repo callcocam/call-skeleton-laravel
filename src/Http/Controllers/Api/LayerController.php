@@ -9,7 +9,7 @@
 namespace Callcocam\Plannerate\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-
+use Callcocam\Plannerate\Http\Requests\Layer\Api\UpdateLayerRequest;
 use Callcocam\Plannerate\Http\Resources\LayerResource;
 use Callcocam\Plannerate\Models\Layer;
 use Illuminate\Http\Request;
@@ -99,9 +99,9 @@ class LayerController extends Controller
      * @param Layer $layer
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, Layer $layer)
+    public function update(UpdateLayerRequest $request, Layer $layer)
     {
-        $validated = $request->all();
+        $validated = $request->validated();
 
         // Processa atualização normal
         try {

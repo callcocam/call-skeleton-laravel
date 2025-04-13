@@ -133,8 +133,20 @@ export const useProductStore = defineStore('product', {
                     // Atualiza a quantidade no gondolaStore
                     gondolaStore.updateShelf(shelfData.id, shelfData, false)
                 }).catch((error: any) => {
-                    this.error = error.response?.data?.message || error.message || 'Failed to update layer quantity';
-                    console.error('Error updating layer quantity:', error);
+                    apiService.get(`/shelves/${shelfData.id}`)
+                        .then((response: any) => {
+                            const resetShelf = response.data;
+                            console.log('Updated layer:', resetShelf);
+                           setTimeout(() => {
+                                gondolaStore.updateShelf(resetShelf.id, resetShelf, false);
+                            }
+                            , 1000);
+                        }).catch((error: any) => {
+                            this.error = error.response?.data?.message || error.message || 'Failed to fetch updated layer';
+                            console.error('Error fetching updated layer:', error);
+                        });
+                }).finally(() => {
+
                 });
             }
         },
