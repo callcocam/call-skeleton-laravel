@@ -2,7 +2,8 @@ import { defineStore } from 'pinia';
 // Remove direct axios import if no longer needed elsewhere, or keep if used for other things
 // import axios from 'axios'; 
 import { apiService } from '../services'; // Import your apiService
-
+import { useGondolaStore } from './gondola';
+import { Layer } from '../views/gondolas/sections/types';
 // Interface para representar um produto
 export interface Product {
     id: string;
@@ -52,7 +53,7 @@ export const useProductStore = defineStore('product', {
          */
         getSelectedProducts: (state: ProductState): Product[] => {
             console.warn('getSelectedProducts getter needs revision after removing allProducts state.');
-            return []; 
+            return [];
         },
 
         /**
@@ -112,6 +113,53 @@ export const useProductStore = defineStore('product', {
             this.selectedProductIds.clear();
         },
 
+        // updateLayerQuantity
+        /**
+         * Atualiza a quantidade de um produto selecionado.
+         * @param layer Layer da camada a ser atualizada.
+         * @param quantity Nova quantidade do produto.
+         */
+        updateLayerQuantity(layer: Layer, quantity: number) {
+            const productId = this.selectedProductIds.has(layer.product_id) ? layer.product_id : '';
+            const gondolaStore = useGondolaStore(); 
+            console.log('layer', layer);
+            if (productId) {
+                this.setProductContextData(productId, { quantity });
+                // Atualiza a quantidade no backend
+                apiService.put(`/layers/${layer.id}`, {
+                    quantity: quantity,
+                    spacing: this.productContextData.get(productId)?.spacing || 0,
+                }).then(() => {
+
+                }).catch((error: any) => {
+                    this.error = error.response?.data?.message || error.message || 'Failed to update layer quantity';
+                    console.error('Error updating layer quantity:', error);
+                });
+            }
+        },
+        /**
+         * Atualiza o espaçamento de um produto selecionado.
+         * @param layer Layer da camada a ser atualizada.
+         * @param spacing Novo espaçamento do produto.
+         */
+        updateLayerSpacing(layer: Layer, spacing: number) {
+            const productId = this.selectedProductIds.has(layer.product_id) ? layer.product_id : '';
+            if (productId) {
+                this.setProductContextData(productId, { spacing });
+                // Atualiza o espaçamento no backend
+                apiService.put(`/layers/${layer.id}`, {
+                    quantity: this.productContextData.get(productId)?.quantity || 1,
+                    spacing: spacing,
+                })
+                    .then(() => {
+                    })
+                    .catch((error: any) => {
+                        console.error('Error updating layer spacing:', error);
+                    });
+            }
+        },
+
+
         /**
          * Define ou atualiza os dados contextuais (quantidade, espaçamento) para um produto.
          * Se o produto já tiver dados, os novos valores serão mesclados.
@@ -138,7 +186,7 @@ export const useProductStore = defineStore('product', {
             try {
                 const dataToSend = Object.fromEntries(this.productContextData);
                 console.log('Data to send (placeholder):', dataToSend);
-                await new Promise(resolve => setTimeout(resolve, 1000)); 
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 console.log('Simulated API call successful (using apiService pattern)');
             } catch (error: any) {
                 this.error = error.response?.data?.message || error.message || 'Failed to sync with backend';

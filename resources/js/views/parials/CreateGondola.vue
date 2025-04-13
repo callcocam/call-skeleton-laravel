@@ -15,21 +15,37 @@
                 perfeito para sua loja.
             </p>
             <div class="mt-6">
-                <Button @click="() => router.push({ name: 'gondola.create' })" size="default" class="shadow-sm dark:bg-gray-700 dark:text-gray-100">
+                <Button @click="openAddGondolaModal" size="default" class="shadow-sm dark:bg-gray-700 dark:text-gray-100">
                     <PlusIcon class="mr-2 h-4 w-4" />
                     Adicionar Gôndola
                 </Button>
             </div>
         </div>
-        <router-view />
+        <router-view :key="route.fullPath.concat('create-gondola')" />
     </div>
 </template>
 <script setup lang="ts">
 import { PlusIcon, ShoppingBagIcon } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
 import { Button } from '../../components/ui/button';
+import { computed } from 'vue';
 
 const route = useRoute();
 
 const router = useRouter();
+
+const gondolaId = computed(() => route.params.id);
+
+// Função para abrir o modal de adicionar gôndola
+const openAddGondolaModal = () => {
+    const query = {
+        ...route.query,
+    };
+    console.log('query', route.params);
+    router.push({
+        name: 'plannerate.gondola.create',
+        params: { id: gondolaId.value },
+        query,
+    });
+};
 </script>

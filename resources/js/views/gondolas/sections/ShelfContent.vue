@@ -91,5 +91,7 @@ const handleDrop = (event: DragEvent) => {
     padding: 0 0 30px 0;
     /* Adicionar um efeito de escala */
     cursor: grab;
+    z-index: 9999;
+    transform: translateY(-50%);
 }
 </style>

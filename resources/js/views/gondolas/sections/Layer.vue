@@ -1,6 +1,6 @@
 <template>
-    <div 
-        class="layer group flex justify-between cursor-pointer"
+    <div
+        class="layer group flex cursor-pointer justify-between border"
         :style="layerStyle"
         :class="{ 'layer--selected': isSelected }"
         @click="handleLayerClick"
@@ -15,10 +15,10 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useProductStore } from '../../../store/product'; // Corrected relative path
 import Product from './Product.vue';
 import { Layer, Segment } from './types';
-import { useProductStore } from '../../../store/product'; // Corrected relative path
 
 const props = defineProps<{
     layer: Layer;
@@ -26,10 +26,19 @@ const props = defineProps<{
     scaleFactor: number;
 }>();
 
+const emit = defineEmits<{
+    (e: 'increase', layer: Layer): void;
+    (e: 'decrease', layer: Layer): void;
+    (e: 'spacingIncrease', layer: Layer): void;
+    (e: 'spacingDecrease', layer: Layer): void;
+}>();
+
 const productStore = useProductStore();
 
 const layerSpacing = ref(props.layer.spacing);
 const layerQuantity = ref(props.layer.quantity || 1);
+const debounceTimer = ref<ReturnType<typeof setTimeout> | null>(null);
+const segmentSelected = ref(false);
 
 const layerStyle = computed(() => {
     const topPosition = props.layer.layer_position * props.scaleFactor;
@@ -40,7 +49,7 @@ const layerStyle = computed(() => {
         height: `${props.layer.layer_height * props.scaleFactor}px`,
         top: `${topPosition}px`,
         zIndex: '2',
-        // Add a default border or background for visual clarity 
+        // Add a default border or background for visual clarity
     };
 });
 
@@ -64,6 +73,7 @@ const handleLayerClick = (event: MouseEvent) => {
 
     if (isCtrlOrMetaPressed) {
         // Toggle selection for this product (adds if not present, removes if present)
+        segmentSelected.value = !segmentSelected.value; // Toggle the segment selection
         productStore.toggleProductSelection(productIdAsString);
     } else {
         // Check current selection state for the clicked product
@@ -73,6 +83,7 @@ const handleLayerClick = (event: MouseEvent) => {
         if (isCurrentlySelected && selectionSize === 1) {
             // Clicked on the item that was already the only selected item -> Deselect it
             productStore.clearSelection();
+            segmentSelected.value = false; // Set the segment as selected
         } else {
             // Clicked on an unselected item, or on one of multiple selected items
             // -> Clear previous selection and select only this one
@@ -82,6 +93,80 @@ const handleLayerClick = (event: MouseEvent) => {
     }
 };
 
+// Function to increase quantity
+const onIncreaseQuantity = async () => {
+    layerQuantity.value++;
+    layerSpacing.value = props.layer.spacing;
+    emit('increase', {
+        ...props.layer,
+        quantity: layerQuantity.value,
+    });
+};
+// Function to decrease quantity
+const onDecreaseQuantity = async () => {
+    if (layerQuantity.value > 1) {
+        layerQuantity.value--;
+        layerSpacing.value = props.layer.spacing;
+        emit('decrease', {
+            ...props.layer,
+            quantity: layerQuantity.value,
+        });
+    }
+};
+// Function to increase spacing
+const onSpacingIncrease = async () => {
+    layerSpacing.value++;
+    emit('spacingIncrease', {
+        ...props.layer,
+        spacing: layerSpacing.value,
+    });
+};
+// Function to decrease spacing
+const onSpacingDecrease = async () => {
+    if (layerSpacing.value > 0) {
+        layerSpacing.value--;
+        emit('spacingDecrease', {
+            ...props.layer,
+            spacing: layerSpacing.value,
+        });
+    }
+};
+
+// ----------------------------------------------------
+// Lifecycle hooks
+// ----------------------------------------------------
+// Registra o ouvinte de eventos quando o componente é montado
+onMounted(() => {
+    // Adiciona listener de teclado para o documento inteiro
+    document.addEventListener('keydown', async (event) => {
+        if (isSelected.value) {
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                await onIncreaseQuantity();
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                await onDecreaseQuantity();
+            }
+            //Verifica se a tecla pressionada é a tecla de espaço
+            else if (event.key === ' ') {
+                event.preventDefault();
+                // Chama a função de aumentar a quantidade
+                await onSpacingIncrease();
+            }
+            //Verifica se a tecla pressionada é a tecla de espaço
+            else if (event.key === 'Backspace') {
+                event.preventDefault();
+                // Chama a função de diminuir a quantidade
+                await onSpacingDecrease();
+            }
+        }
+    });
+});
+
+// Remove o ouvinte de eventos quando o componente é desmontado
+onUnmounted(() => {
+    if (debounceTimer.value) clearTimeout(debounceTimer.value);
+});
 </script>
 
 <style scoped>
@@ -90,6 +175,6 @@ const handleLayerClick = (event: MouseEvent) => {
     border: 2px solid blue;
     box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
     /* Ensure the border doesn't affect layout drastically */
-    box-sizing: border-box; 
+    box-sizing: border-box;
 }
 </style>

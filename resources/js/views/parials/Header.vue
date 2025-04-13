@@ -70,7 +70,7 @@
 
 <script setup>
 import { PencilIcon, PlusCircleIcon, SaveIcon } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router'; 
 
 const router = useRouter();
@@ -84,6 +84,8 @@ const props = defineProps({
     },
 }); 
 
+const gondolaId = computed(() => route.params.id);
+
 // Emitir eventos para o componente pai
 const emit = defineEmits(['close', 'gondola-added']);
 
@@ -95,9 +97,10 @@ const openAddGondolaModal = () => {
     const query = {
         ...route.query,
     };
+    console.log('query', route.params);
     router.push({
-        name: 'gondola.create',
-        params: { gondolaId: route.params?.gondolaId || null },
+        name: 'plannerate.gondola.create',
+        params: { id: gondolaId.value },
         query,
     });
 };

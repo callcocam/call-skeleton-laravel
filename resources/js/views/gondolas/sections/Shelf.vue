@@ -1,20 +1,37 @@
 <template>
-    <div class="shelf relative flex items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800"
-        :style="shelfStyle" ref="shelfElement">
+    <div
+        class="shelf relative flex flex-col items-end justify-around border-y border-gray-400 bg-gray-700 text-gray-50 dark:bg-gray-800"
+        :style="shelfStyle"
+        ref="shelfElement"
+    >
         <!-- TODO: Renderizar Segmentos/Produtos aqui -->
-        <draggable v-model="sortableSegments" item-key="id" handle=".drag-segment-handle"
-            class="relative flex w-full items-end justify-around" :style="segmentsContainerStyle">
+        <draggable
+            v-model="sortableSegments"
+            item-key="id"
+            handle=".drag-segment-handle"
+            class="relative flex w-full items-end justify-around"
+            :style="segmentsContainerStyle"
+        >
             <template #item="{ element: segment }">
                 <Segment :key="segment.id" :shelf="shelf" :segment="segment" :scale-factor="scaleFactor" />
             </template>
         </draggable>
-        <div class="absolute inset-0 bottom-0 z-0 flex h-full w-full items-center justify-center">
-            <ShelfContent :shelf="shelf"
-                @drop-product="(product: Product, shelf: Shelf, dropPosition: any) => $emit('drop-product', product, shelf, dropPosition)" />
-        </div> 
-        <ShelfControls :shelf="shelf" :scale-factor="scaleFactor" :section-width="sectionWidth"
-            :section-height="sectionHeight" :shelf-element="shelfElement" :base-height="baseHeight"
-            :sections-container="sectionsContainer" :section-index="sectionIndex" />
+        <ShelfControls
+            :shelf="shelf"
+            :scale-factor="scaleFactor"
+            :section-width="sectionWidth"
+            :section-height="sectionHeight"
+            :shelf-element="shelfElement"
+            :base-height="baseHeight"
+            :sections-container="sectionsContainer"
+            :section-index="sectionIndex"
+        />
+        <!-- <div class="absolute inset-0 bottom-0 z-0 flex h-full w-full items-center justify-center"> -->
+            <ShelfContent
+                :shelf="shelf"
+                @drop-product="(product: Product, shelf: Shelf, dropPosition: any) => $emit('drop-product', product, shelf, dropPosition)"
+            />
+        <!-- </div> -->
     </div>
 </template>
 

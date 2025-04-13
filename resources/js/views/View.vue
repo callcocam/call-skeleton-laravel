@@ -1,7 +1,7 @@
 <template>
     <div class="px-10">
         <Header v-if="record" :planogram="record" />
-        <div v-if="gondolas?.length" >
+        <div   >
             <div class="flex h-full w-full gap-6 overflow-hidden">
                 <!-- Barra lateral esquerda com componente Products separado -->
                 <Products v-if="gondolas?.length" />
@@ -12,7 +12,7 @@
                 </div>
                 <Properties />
             </div>
-        </div>
+        </div> 
     </div>
 </template>
 <script setup lang="ts">
@@ -40,7 +40,7 @@ const get = async () => {
     const response = await apiService.get('plannerate/'.concat(id.value));
     record.value = response.data; 
     editorStore.setGondolas(response.data.gondolas);
-    // editorStore.setGondolaId(route.params.gondolaId as string); // Atualiza o ID da gôndola no store
+    editorStore.setGondolaId(route.params.gondolaId as string); // Atualiza o ID da gôndola no store
 };
 
 // watch(

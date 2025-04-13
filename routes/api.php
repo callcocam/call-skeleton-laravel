@@ -1,6 +1,7 @@
 <?php
- 
+
 use Callcocam\Plannerate\Http\Controllers\Api\GondolaController;
+use Callcocam\Plannerate\Http\Controllers\Api\LayerController;
 use Callcocam\Plannerate\Http\Controllers\Api\PlannerateController;
 use Callcocam\Plannerate\Http\Controllers\Api\SectionController;
 use Callcocam\Plannerate\Http\Controllers\Api\SegmentController;
@@ -24,4 +25,6 @@ Route::middleware(['api', 'auth:sanctum'])
             ->name('shelves.segments');
         Route::patch('shelves/{shelf}/transfer', [ShelfController::class, 'transfer'])
             ->name('shelves.transfer');
+        Route::resource('layers',  LayerController::class)
+            ->only(['index', 'show', 'store', 'update', 'destroy']);
     });
