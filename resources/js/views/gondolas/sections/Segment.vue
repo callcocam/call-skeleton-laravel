@@ -29,7 +29,9 @@ const props = defineProps<{
 
 const segmentSelected = ref(false); // State to track if the segment is selected
 /** Segment quantity (number of layers) */
-const segmentQuantity = ref(props.segment.quantity);
+const segmentQuantity = computed(() => {
+    return props.segment.layer.quantity;
+});
 
 const productStore = useProductStore(); // Instance of the product store
 const gondolaStore = useGondolaStore(); // Instance of the gondola store
@@ -43,7 +45,7 @@ const gondolaStore = useGondolaStore(); // Instance of the gondola store
  */
 const segmentStyle = computed(() => {
     // Calculate segment dimensions
-    const layerHeight = props.segment.layer.product.height * segmentQuantity.value * props.scaleFactor;
+    const layerHeight = props.segment.layer.product.height *   props.scaleFactor;
     const layerWidth = props.segment.layer.product.width * props.segment.layer.quantity * props.scaleFactor;
 
     // Conditional style when segment is selected

@@ -42,11 +42,13 @@ const segmentSelected = ref(false);
 
 const layerStyle = computed(() => {
     const topPosition = props.layer.layer_position * props.scaleFactor;
+    const layerHeight = props.layer.product.height;
+    const layerWidth = props.layer.quantity * props.layer.product.width;
     return {
         position: 'absolute' as const,
         left: '0px',
-        width: `${props.layer.layer_width * props.scaleFactor}px`,
-        height: `${props.layer.layer_height * props.scaleFactor}px`,
+        width: `${layerWidth * props.scaleFactor}px`,
+        height: `${layerHeight * props.scaleFactor}px`,
         top: `${topPosition}px`,
         zIndex: '2',
         // Add a default border or background for visual clarity
@@ -96,6 +98,9 @@ const handleLayerClick = (event: MouseEvent) => {
 // Function to increase quantity
 const onIncreaseQuantity = async () => {
     layerSpacing.value = props.layer.spacing;
+    if (productStore.selectedProductIds.size > 1) {
+        return;
+    }
     emit('increase', {
         ...props.layer,
         quantity: (layerQuantity.value += 1),
@@ -103,6 +108,9 @@ const onIncreaseQuantity = async () => {
 };
 // Function to decrease quantity
 const onDecreaseQuantity = async () => {
+    if (productStore.selectedProductIds.size > 1) {
+        return;
+    }
     if (layerQuantity.value > 1) {
         layerSpacing.value = props.layer.spacing;
         emit('decrease', {
@@ -113,6 +121,9 @@ const onDecreaseQuantity = async () => {
 };
 // Function to increase spacing
 const onSpacingIncrease = async () => {
+   if(productStore.selectedProductIds.size > 1) {
+       return;
+    }
     emit('spacingIncrease', {
         ...props.layer,
         spacing: layerSpacing.value++,
@@ -120,6 +131,9 @@ const onSpacingIncrease = async () => {
 };
 // Function to decrease spacing
 const onSpacingDecrease = async () => {
+   if(productStore.selectedProductIds.size > 1) {
+       return;
+    }
     if (layerSpacing.value > 0) {
         emit('spacingDecrease', {
             ...props.layer,

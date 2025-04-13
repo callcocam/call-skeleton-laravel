@@ -16,6 +16,8 @@ export interface Product {
     width: number; // Width of the product in base units (e.g., mm)
     height: number; // Height of the product in base units (e.g., mm)
     depth?: number;
+    sku?: string;
+    layer: Layer; // Assuming Layer is a type that represents the layer information
     category_id?: string;
     created_at?: string;
     updated_at?: string;
@@ -29,6 +31,11 @@ export interface ProductContext {
 
 // Interface para o estado da store
 export interface ProductState {
+    /**
+     * IDs dos produtos selecionados (na UI, ex: Layers).
+     * Usado para controlar quais produtos estão atualmente selecionados.
+     */
+    selectedProduct: Product | null; // Produto selecionado (na UI, ex: Layers)
     selectedProductIds: Set<string>; // IDs dos produtos selecionados (na UI, ex: Layers)
     productContextData: Map<string, ProductContext>; // Dados contextuais por ID de produto
     loading: boolean; // Indicador de carregamento para chamadas API
@@ -37,6 +44,7 @@ export interface ProductState {
 
 export const useProductStore = defineStore('product', {
     state: (): ProductState => ({
+        selectedProduct: null, // Produto selecionado (na UI, ex: Layers)
         selectedProductIds: new Set(),
         productContextData: new Map(),
         loading: false,
@@ -94,6 +102,9 @@ export const useProductStore = defineStore('product', {
         deselectProduct(productId: string) {
             this.selectedProductIds.delete(productId);
         },
+        setSelectedProduct(product: Product) {
+            this.selectedProduct = product;
+        },
 
         /**
          * Alterna a seleção de um produto (seleciona se não estiver, deseleciona se estiver).
@@ -113,6 +124,73 @@ export const useProductStore = defineStore('product', {
         clearSelection() {
             this.selectedProductIds.clear();
         },
+        /**
+         * Remove produto da layer.
+         * @param product Produto a ser removido.
+         * @param layer Layer da camada a ser removida.
+         * @param shelfData Dados da prateleira (não utilizado atualmente, mas pode ser útil no futuro).
+         */
+        deleteProductFromLayer(product: Product, layer: Layer, shelfData: any) {
+            this.removeLayer(layer, shelfData);
+            // Remove o produto do contexto
+            this.productContextData.delete(product.id);
+            // Remove o produto da seleção
+            this.selectedProductIds.delete(product.id);
+            this.selectedProduct = null;
+        },
+        /**
+         * Remove produto e layer da gondola.
+         * @param layer Layer da camada a ser removida.
+         * @param shelfData Dados da prateleira (não utilizado atualmente, mas pode ser útil no futuro).
+         */
+        removeLayer(layer: Layer, shelfData: any) {
+            const gondolaStore = useGondolaStore();
+            const { toast } = useToast();
+            const productId = this.selectedProductIds.has(layer.product_id) ? layer.product_id : '';
+            if (productId) {
+                this.setProductContextData(productId, { quantity: 0 });
+                // Remove a camada no backend
+                apiService.delete(`/layers/${layer.id}`)
+                    .then(() => {
+
+                        toast({
+                            title: 'Camada removida',
+                            description: 'Camada removida com sucesso',
+                            variant: 'default',
+                        });
+                        // Remove a camada no gondolaStore 
+                        apiService.get(`/shelves/${shelfData.id}`)
+                            .then((response: any) => {
+                                const resetShelf = response.data;
+                                gondolaStore.updateShelf(resetShelf.id, resetShelf, false);
+                            }).catch((error: any) => {
+                                this.error = error.response?.data?.message || error.message || 'Failed to fetch updated layer';
+                                console.error('Error fetching updated layer:', error);
+                            });
+                    })
+                    .catch((error: any) => {
+                        console.error('Error removing layer:', error.response?.data?.message || error.message || 'Failed to remove layer');
+                        toast({
+                            title: 'Erro ao remover camada',
+                            description: error.response?.data?.message || error.message || 'Falha ao remover camada',
+                            variant: 'destructive',
+                        });
+                        apiService.get(`/shelves/${shelfData.id}`)
+                            .then((response: any) => {
+                                const resetShelf = response.data;
+                                gondolaStore.updateShelf(resetShelf.id, resetShelf, false);
+                            }).catch((error: any) => {
+                                this.error = error.response?.data?.message || error.message || 'Failed to fetch updated layer';
+                                console.error('Error fetching updated layer:', error);
+                            });
+                    })
+                    .finally(() => {
+                        // Reset loading state if needed
+                        this.loading = false;
+                    });
+            }
+        },
+        /**
 
         // updateLayerQuantity
         /**

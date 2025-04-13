@@ -23,8 +23,7 @@
     </Dialog>
 </template>
 
-<script setup lang="ts"> 
-
+<script setup lang="ts">
 interface ConfirmModalProps {
     isOpen: boolean;
     title?: string;

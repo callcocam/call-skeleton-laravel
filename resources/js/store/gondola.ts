@@ -188,15 +188,14 @@ export const useGondolaStore = defineStore('gondola', {
          * @param shelfData Dados atualizados da prateleira
          */
         async updateShelf(shelfId: string, shelfData: any, save: boolean = true) {
-            if (!this.currentGondola || !shelfId || !shelfData) return;
-            console.log('updateShelf', shelfId, {   ...shelfData });
+            if (!this.currentGondola || !shelfId || !shelfData) return; 
             try {
                 // 1. Primeiro, atualizamos o estado localmente para feedback imediato
                 const updatedSections = this.currentGondola.sections.map((section: any) => {
                     // Procura a prateleira correta em cada seção
                     if (section.shelves) {
                         const updatedShelves = section.shelves.map((shelf: any) => {
-                            if (shelf.id === shelfId) {
+                            if (shelf.id === shelfId) { 
                                 // Retorna um novo objeto com os dados atualizados
                                 return { ...shelf, ...shelfData };
                             }

@@ -1,5 +1,11 @@
 <template>
-    <div :style="sectionStyle" :data-section-id="section.id" @dragover.prevent="handleSectionDragOver" @drop.prevent="handleSectionDrop" @dragleave="handleSectionDragLeave">
+    <div
+        :style="sectionStyle"
+        :data-section-id="section.id"
+        @dragover.prevent="handleSectionDragOver"
+        @drop.prevent="handleSectionDrop"
+        @dragleave="handleSectionDragLeave"
+    >
         <!-- Conteúdo da Seção (Prateleiras) -->
         <Shelf
             v-for="shelf in section.shelves"
@@ -25,7 +31,7 @@ import { useGondolaStore } from '../../../store/gondola';
 import { useProductStore } from '../../../store/product';
 import { useToast } from './../../../components/ui/toast';
 import Shelf from './Shelf.vue'; // Importar o componente Shelf
-import { Product, Segment, Shelf as ShelfType, Section } from './types';
+import { Product, Section, Segment, Shelf as ShelfType } from './types';
 
 // Definir Props
 const props = defineProps<{
@@ -70,13 +76,7 @@ const sectionStyle = computed(() => {
         transition: 'border-color 0.2s ease-in-out, background-color 0.2s ease-in-out',
     };
 });
-
-// Estilo da base (altura - posicionada fora do div principal por causa do margin-bottom)
-const baseStyle = computed(() => ({
-    height: (props.section?.baseHeight || props.section?.base_height || 17) * props.scaleFactor + 'px',
-    // Faz a base ficar abaixo do container principal
-    bottom: `-${(props.section?.baseHeight || props.section?.base_height || 17) * props.scaleFactor}px`,
-}));
+ 
 
 // --- Lógica de Drag and Drop das Prateleiras ---
 
@@ -235,7 +235,19 @@ const handleKeydown = (event: KeyboardEvent) => {
 const handleClickOutside = (event: MouseEvent) => {
     // Check if the click target or any of its parents has the class 'layer'
     // We assume layers are the selectable elements we want to ignore clicks inside of.
-    const clickedElement = event.target as HTMLElement;
+    const clickedElement = event.target as HTMLElement; 
+    if (clickedElement.closest('.border-destructive')) {
+        // If the click was inside an element with the 'layer' class, do nothing.
+        return;
+    }
+    if (clickedElement.dataset.state) {
+        // If the click was inside an element with the 'layer' class, do nothing.
+        return;
+    }
+    if (clickedElement.closest('.no-remove-properties')) {
+        // If the click was inside an element with the 'no-remove-properties' class, do nothing.
+        return;
+    }
     if (!clickedElement.closest('.layer')) {
         // If the click was outside any element with the 'layer' class (or its children),
         // clear the selection.

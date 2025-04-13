@@ -130,6 +130,8 @@ class LayerController extends Controller
         try {
             DB::beginTransaction();
             $layer->delete();
+            // Remove o segmento da camada
+            $layer->segment()->delete();
             DB::commit();
             return response()->json([
                 'message' => 'Camada excluída com sucesso',
