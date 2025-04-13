@@ -190,9 +190,7 @@ export const useProductStore = defineStore('product', {
                     });
             }
         },
-        /**
 
-        // updateLayerQuantity
         /**
          * Atualiza a quantidade de um produto selecionado.
          * @param layer Layer da camada a ser atualizada.
@@ -204,6 +202,7 @@ export const useProductStore = defineStore('product', {
             const gondolaStore = useGondolaStore();
             const { toast } = useToast();
             if (productId) {
+               
                 this.setProductContextData(productId, { quantity });
                 // Atualiza a quantidade no backend
                 apiService.put(`/layers/${layer.id}`, {
@@ -211,7 +210,7 @@ export const useProductStore = defineStore('product', {
                     spacing: this.productContextData.get(productId)?.spacing || 0,
                 }).then(() => {
                     // Atualiza a quantidade no gondolaStore
-                    gondolaStore.updateShelf(shelfData.id, shelfData, false)
+                    gondolaStore.updateSegment(shelfData.shelf_id, shelfData.id, shelfData, false);
                     toast({
                         title: 'Quantidade atualizada',
                         description: 'Quantidade atualizada com sucesso',
@@ -224,14 +223,11 @@ export const useProductStore = defineStore('product', {
                         description: error.response?.data?.message || error.message || 'Falha ao atualizar quantidade',
                         variant: 'destructive',
                     });
-                    apiService.get(`/shelves/${shelfData.id}`)
-                        .then((response: any) => {
-                            const resetShelf = response.data;
-                            gondolaStore.updateShelf(resetShelf.id, resetShelf, false);
-                        }).catch((error: any) => {
-                            this.error = error.response?.data?.message || error.message || 'Failed to fetch updated layer';
-                            console.error('Error fetching updated layer:', error);
-                        });
+                    gondolaStore.updateSegment(shelfData.shelf_id, {
+                        ...shelfData,
+                        quantity: quantity--
+                    }, false);
+                   
                 }).finally(() => {
 
                 });

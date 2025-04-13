@@ -40,21 +40,31 @@ class ShelfWidthSpaceValidation implements ValidationRule
         $sectionWidth = $shelf->section->width;
 
         $totalWidth = 0;
-        $segSpacing = 0; // Inicializa o espaçamento do segmento atual
+        
         foreach ($shelf->segments as $seg) {
-            $productWidth = $seg->layer->product->width;
-            $quantity = $value;
-            // Define o espaçamento correto (usa o novo valor para o segmento atual)
-            $segSpacing =   (float) $seg->layer->spacing;
-            // Para n produtos, precisamos de (n-1) espaçamentos entre eles
-            // Se quantity for 0 ou 1, não há espaçamento
-            $totalSpacing = $quantity > 1 ? $segSpacing * $quantity : 0;
-
-            // A largura total para este segmento é: largura dos produtos + espaçamento total
-            $totalWidth += ($productWidth * $quantity) + $totalSpacing; 
+            $currentLayer = $seg->layer;
+            $productWidth = $currentLayer->product->width;
+            
+            // Define a quantidade correta: usa o valor do request para o segmento atual,
+            // e o valor do banco para os outros segmentos
+            $quantity = ($currentLayer->id === $layer->id) ? $value : $currentLayer->quantity;
+            
+            // O espaçamento é entre produtos, então para n produtos, temos (n-1) espaçamentos
+            $spacing = (float) $currentLayer->spacing;
+            
+            // Calcula a largura deste segmento:
+            // Largura = largura dos produtos + espaçamento entre eles
+            $segmentWidth = 0;
+            if ($quantity > 0) {
+                $segmentWidth = ($productWidth * $quantity);
+                // Adiciona espaçamentos entre produtos (n-1 espaçamentos)
+                if ($quantity > 1) {
+                    $segmentWidth += $spacing * ($quantity - 1);
+                }
+            }
+            
+            $totalWidth += $segmentWidth;
         }
-
-
 
         if ($totalWidth > $sectionWidth) {
             $fail(sprintf(

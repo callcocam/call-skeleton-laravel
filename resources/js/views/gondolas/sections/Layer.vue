@@ -1,23 +1,12 @@
 <template>
-    <div
-        class="layer group flex cursor-pointer justify-between border"
-        :style="layerStyle"
-        :class="{ 'layer--selected': isSelected }"
-        @click="handleLayerClick"
-    >
-        <Product
-            v-for="(quantity, index) in layerQuantity"
-            :key="index"
-            :product="layer.product"
-            :scale-factor="scaleFactor"
-            :product-spacing="layerSpacing"
-        />
+    <div class="layer group flex cursor-pointer border" :style="layerStyle" :class="{ 'layer--selected': isSelected }" @click="handleLayerClick">
+        <ProductGroup :product="layer.product" :quantity="layerQuantity" :scale-factor="scaleFactor" :product-spacing="layerSpacing" />
     </div>
 </template>
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useProductStore } from '../../../store/product'; // Corrected relative path
-import Product from './Product.vue';
+import ProductGroup from './ProductGroup.vue'; // Importando o novo componente
 import { Layer, Segment } from './types';
 
 const props = defineProps<{
@@ -43,15 +32,21 @@ const segmentSelected = ref(false);
 const layerStyle = computed(() => {
     const topPosition = props.layer.layer_position * props.scaleFactor;
     const layerHeight = props.layer.product.height;
-    const layerWidth = props.layer.quantity * props.layer.product.width;
+
+    // Calculamos a largura total, mas a renderização dos produtos será
+    // responsabilidade do componente ProductGroup
+    const productWidth = props.layer.product.width;
+    const totalProductsWidth = productWidth * props.layer.quantity;
+    const totalSpacingWidth = props.layer.quantity > 1 ? props.layer.spacing * (props.layer.quantity - 1) : 0;
+    const totalWidth = totalProductsWidth + totalSpacingWidth;
+
     return {
         position: 'absolute' as const,
         left: '0px',
-        width: `${layerWidth * props.scaleFactor}px`,
+        width: `${totalWidth * props.scaleFactor}px`,
         height: `${layerHeight * props.scaleFactor}px`,
         top: `${topPosition}px`,
         zIndex: '2',
-        // Add a default border or background for visual clarity
     };
 });
 
@@ -69,7 +64,6 @@ const handleLayerClick = (event: MouseEvent) => {
         console.error('Layer clicked, but product ID is missing.');
         return;
     }
-
     const isCtrlOrMetaPressed = event.ctrlKey || event.metaKey;
     const productIdAsString = String(productId); // Convert ID to string once
 
@@ -101,6 +95,7 @@ const onIncreaseQuantity = async () => {
     if (productStore.selectedProductIds.size > 1) {
         return;
     }
+    console.log('Layer quantity increased:', layerQuantity.value);
     emit('increase', {
         ...props.layer,
         quantity: (layerQuantity.value += 1),
@@ -121,8 +116,8 @@ const onDecreaseQuantity = async () => {
 };
 // Function to increase spacing
 const onSpacingIncrease = async () => {
-   if(productStore.selectedProductIds.size > 1) {
-       return;
+    if (productStore.selectedProductIds.size > 1) {
+        return;
     }
     emit('spacingIncrease', {
         ...props.layer,
@@ -131,8 +126,8 @@ const onSpacingIncrease = async () => {
 };
 // Function to decrease spacing
 const onSpacingDecrease = async () => {
-   if(productStore.selectedProductIds.size > 1) {
-       return;
+    if (productStore.selectedProductIds.size > 1) {
+        return;
     }
     if (layerSpacing.value > 0) {
         emit('spacingDecrease', {

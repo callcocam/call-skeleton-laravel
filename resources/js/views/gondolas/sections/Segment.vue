@@ -1,5 +1,5 @@
 <template>
-    <div class="segment drag-segment-handle group relative flex items-center justify-center" :style="segmentStyle">
+    <div class="segment drag-segment-handle group relative flex items-center justify-between" :style="segmentStyle">
         <Layer
             v-for="(quantity, index) in segmentQuantity"
             :key="index"
@@ -30,7 +30,7 @@ const props = defineProps<{
 const segmentSelected = ref(false); // State to track if the segment is selected
 /** Segment quantity (number of layers) */
 const segmentQuantity = computed(() => {
-    return props.segment.layer.quantity;
+    return props.segment.quantity;
 });
 
 const productStore = useProductStore(); // Instance of the product store
@@ -45,8 +45,16 @@ const gondolaStore = useGondolaStore(); // Instance of the gondola store
  */
 const segmentStyle = computed(() => {
     // Calculate segment dimensions
-    const layerHeight = props.segment.layer.product.height *   props.scaleFactor;
-    const layerWidth = props.segment.layer.product.width * props.segment.layer.quantity * props.scaleFactor;
+    const layerHeight = props.segment.layer.product.height * props.scaleFactor;
+
+    // Cálculo atualizado da largura total, considerando produtos e espaçamento
+    const productWidth = props.segment.layer.product.width;
+    const productQuantity = props.segment.layer.quantity;
+    const productSpacing = props.segment.layer.spacing;
+
+    // Largura total: largura dos produtos + espaçamento entre eles
+    const totalWidth =
+        productWidth * productQuantity * props.scaleFactor + (productQuantity > 1 ? productSpacing * (productQuantity - 1) * props.scaleFactor : 0);
 
     // Conditional style when segment is selected
     const selectedStyle = segmentSelected.value
@@ -59,7 +67,7 @@ const segmentStyle = computed(() => {
     // Return complete style object
     return {
         height: `${layerHeight}px`,
-        width: `${layerWidth}px`,
+        width: `${totalWidth}px`,
         marginBottom: `${props.shelf.shelf_height * props.scaleFactor}px`,
         ...selectedStyle,
     };
@@ -67,11 +75,17 @@ const segmentStyle = computed(() => {
 
 // Function to increase quantity
 const onIncreaseQuantity = (layer: LayerType) => {
-    productStore.updateLayerQuantity(layer, layer.quantity, updateSegments(layer));
+    productStore.updateLayerQuantity(layer, layer.quantity, {
+        ...props.segment,
+        layer,
+    });
 };
 // Function to decrease quantity
 const onDecreaseQuantity = (layer: LayerType) => {
-    productStore.updateLayerQuantity(layer, layer.quantity, updateSegments(layer));
+    productStore.updateLayerQuantity(layer, layer.quantity, {
+        ...props.segment,
+        layer,
+    });
 };
 // Function to increase spacing
 const onSpacingIncrease = (layer: LayerType) => {
@@ -81,21 +95,11 @@ const onSpacingIncrease = (layer: LayerType) => {
 const onSpacingDecrease = (layer: LayerType) => {
     productStore.updateLayerSpacing(layer, layer.spacing);
 };
-
-const updateSegments = (layer: LayerType) => {
-    const segments = props.shelf.segments.map((segment) => {
-        if (segment.id === props.segment.id) {
-            return {
-                ...segment,
-                layer,
-            };
-        }
-        return segment;
-    });
-
-    return {
-        ...props.shelf,
-        segments,
-    };
-};
 </script>
+
+<style scoped>
+.segment {
+    position: relative;
+    transition: all 0.3s ease;
+}
+</style>
