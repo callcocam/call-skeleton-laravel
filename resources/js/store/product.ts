@@ -4,6 +4,7 @@ import { defineStore } from 'pinia';
 import { apiService } from '../services'; // Import your apiService
 import { useGondolaStore } from './gondola';
 import { Layer } from '../views/gondolas/sections/types';
+import { useToast } from '../components/ui/toast';
 // Interface para representar um produto
 export interface Product {
     id: string;
@@ -123,6 +124,7 @@ export const useProductStore = defineStore('product', {
         updateLayerQuantity(layer: Layer, quantity: number, shelfData: any) {
             const productId = this.selectedProductIds.has(layer.product_id) ? layer.product_id : '';
             const gondolaStore = useGondolaStore();
+            const { toast } = useToast();
             if (productId) {
                 this.setProductContextData(productId, { quantity });
                 // Atualiza a quantidade no backend
@@ -132,15 +134,22 @@ export const useProductStore = defineStore('product', {
                 }).then(() => {
                     // Atualiza a quantidade no gondolaStore
                     gondolaStore.updateShelf(shelfData.id, shelfData, false)
+                    toast({
+                        title: 'Quantidade atualizada',
+                        description: 'Quantidade atualizada com sucesso',
+                        variant: 'default',
+                    });
                 }).catch((error: any) => {
+                    console.error('Error updating layer quantity:', error.response?.data?.message || error.message || 'Failed to update layer quantity');
+                    toast({
+                        title: 'Erro ao atualizar quantidade',
+                        description: error.response?.data?.message || error.message || 'Falha ao atualizar quantidade',
+                        variant: 'destructive',
+                    });
                     apiService.get(`/shelves/${shelfData.id}`)
                         .then((response: any) => {
                             const resetShelf = response.data;
-                            console.log('Updated layer:', resetShelf);
-                           setTimeout(() => {
-                                gondolaStore.updateShelf(resetShelf.id, resetShelf, false);
-                            }
-                            , 1000);
+                            gondolaStore.updateShelf(resetShelf.id, resetShelf, false);
                         }).catch((error: any) => {
                             this.error = error.response?.data?.message || error.message || 'Failed to fetch updated layer';
                             console.error('Error fetching updated layer:', error);
