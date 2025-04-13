@@ -189,6 +189,7 @@ export const useGondolaStore = defineStore('gondola', {
          */
         async updateShelf(shelfId: string, shelfData: any, save: boolean = true) {
             if (!this.currentGondola || !shelfId || !shelfData) return;
+            console.log('updateShelf', shelfId, {   ...shelfData });
             try {
                 // 1. Primeiro, atualizamos o estado localmente para feedback imediato
                 const updatedSections = this.currentGondola.sections.map((section: any) => {

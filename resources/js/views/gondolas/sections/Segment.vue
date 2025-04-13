@@ -65,27 +65,11 @@ const segmentStyle = computed(() => {
 
 // Function to increase quantity
 const onIncreaseQuantity = (layer: LayerType) => {
-    productStore.updateLayerQuantity(layer, layer.quantity);
-
-    // Update the segment quantity in the gondola store
-    const segment = {
-        ...props.segment,
-        layer: {
-            ...layer,
-            quantity: layer.quantity + 1,
-        },
-    };
-    gondolaStore.updateShelf(
-        props.shelf.id,
-        {
-            segment,
-        },
-        false,
-    );
+    productStore.updateLayerQuantity(layer, layer.quantity, updateSegments(layer));
 };
 // Function to decrease quantity
 const onDecreaseQuantity = (layer: LayerType) => {
-    productStore.updateLayerQuantity(layer, layer.quantity);
+    productStore.updateLayerQuantity(layer, layer.quantity, updateSegments(layer));
 };
 // Function to increase spacing
 const onSpacingIncrease = (layer: LayerType) => {
@@ -94,5 +78,22 @@ const onSpacingIncrease = (layer: LayerType) => {
 // Function to decrease spacing
 const onSpacingDecrease = (layer: LayerType) => {
     productStore.updateLayerSpacing(layer, layer.spacing);
+};
+
+const updateSegments = (layer: LayerType) => {
+    const segments = props.shelf.segments.map((segment) => {
+        if (segment.id === props.segment.id) {
+            return {
+                ...segment,
+                layer,
+            };
+        }
+        return segment;
+    });
+
+    return {
+        ...props.shelf,
+        segments,
+    };
 };
 </script>

@@ -118,11 +118,11 @@ export const useProductStore = defineStore('product', {
          * Atualiza a quantidade de um produto selecionado.
          * @param layer Layer da camada a ser atualizada.
          * @param quantity Nova quantidade do produto.
+         * @param shelfData Dados da prateleira (não utilizado atualmente, mas pode ser útil no futuro).
          */
-        updateLayerQuantity(layer: Layer, quantity: number) {
+        updateLayerQuantity(layer: Layer, quantity: number, shelfData: any) {
             const productId = this.selectedProductIds.has(layer.product_id) ? layer.product_id : '';
-            const gondolaStore = useGondolaStore(); 
-            console.log('layer', layer);
+            const gondolaStore = useGondolaStore();
             if (productId) {
                 this.setProductContextData(productId, { quantity });
                 // Atualiza a quantidade no backend
@@ -130,7 +130,8 @@ export const useProductStore = defineStore('product', {
                     quantity: quantity,
                     spacing: this.productContextData.get(productId)?.spacing || 0,
                 }).then(() => {
-
+                    // Atualiza a quantidade no gondolaStore
+                    gondolaStore.updateShelf(shelfData.id, shelfData, false)
                 }).catch((error: any) => {
                     this.error = error.response?.data?.message || error.message || 'Failed to update layer quantity';
                     console.error('Error updating layer quantity:', error);

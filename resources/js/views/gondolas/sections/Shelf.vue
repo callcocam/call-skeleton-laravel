@@ -90,7 +90,6 @@ const shelfStyle = computed(() => {
 });
 
 // --- Lógica de Drag and Drop (para produtos) ---
-
 /**
  * Referência local aos segmentos para o draggable
  * Aplica ordenamento e garante IDs para todos os segmentos
@@ -107,7 +106,6 @@ const sortableSegments = computed<SegmentType[]>({
             ordering: index + 1,
         }));
         // Emitir evento para o componente pai (Section) lidar com a atualização
-
         gondolaStore.updateShelf(props.shelf.id, {
             segments: reorderedSegments,
         });
