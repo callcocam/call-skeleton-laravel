@@ -1,6 +1,6 @@
 <template>
     <div
-        class="layer group flex cursor-pointer border"
+        class="layer group flex cursor-pointer"
         :style="layerStyle"
         @click="handleLayerClick"
         @dragstart="onDragStart"

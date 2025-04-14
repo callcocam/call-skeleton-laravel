@@ -206,7 +206,7 @@ export const useProductStore = defineStore('product', {
                 this.setProductContextData(productId, { quantity });
                 // Atualiza a quantidade no backend
                 apiService.put(`/layers/${layer.id}`, {
-                    spacing: layer.spacing,
+                    // spacing: layer.spacing,
                     quantity: quantity,
                 }).then(() => {
                     // Atualiza a quantidade no gondolaStore
@@ -246,7 +246,7 @@ export const useProductStore = defineStore('product', {
                 this.setProductContextData(productId, { spacing });
                 // Atualiza o espaçamento no backend
                 apiService.put(`/layers/${layer.id}`, {
-                    quantity: layer.quantity,
+                    // quantity: layer.quantity,
                     spacing: spacing,
                 })
                     .then(() => {
@@ -261,7 +261,7 @@ export const useProductStore = defineStore('product', {
                         });
                         gondolaStore.updateSegment(shelfData.shelf_id, {
                             ...shelfData,
-                            quantity: spacing--
+                            spacing: spacing--
                         }, false);
                     });
             }
