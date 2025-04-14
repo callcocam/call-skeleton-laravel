@@ -18,10 +18,12 @@
 import { computed, ref } from 'vue'; 
 import { useProductStore } from '../../../store/product'; // Corrected relative path
 import Layer from './Layer.vue';
-import { Layer as LayerType, Segment, Shelf } from './types';
+import { LayerSegment as LayerType, Segment, Shelf } from './types';
 
 const props = defineProps<{
-    segment: Segment;
+    segment: Segment & {
+        layer: LayerType;
+    };
     shelf: Shelf;
     scaleFactor: number;
 }>();

@@ -247,21 +247,21 @@ class GondolaController extends Controller
                     $section = $gondola->sections()->create($sectionToCreate);
 
                     // Definir a quantidade de prateleiras
-                    $shelfQty = data_get($sectionData, 'num_shelves', 4);
-                    $product_type = data_get($sectionData, 'product_type', 'normal');
+                    $shelfQty = data_get($sectionData, 'shelf_config.num_shelves', 4);
+                    $product_type = data_get($sectionData, 'shelf_config.product_type', 'normal');
 
                     // Criar prateleiras
                     for ($i = 0; $i < $shelfQty; $i++) {
                         // Calcular posição vertical da prateleira (shelf_position)
-                        $position = $shelfService->calculateShelfPosition($shelfQty, data_get($sectionData, 'shelf_height', 4), data_get($sectionSettings, 'holes', []), $i, $gondola->scale_factor);
+                        $position = $shelfService->calculateShelfPosition($shelfQty, data_get($sectionData, 'shelf_config.shelf_height', 4), data_get($sectionSettings, 'holes', []), $i, $gondola->scale_factor);
 
                         $shelfData = [
                             'section_id' => $section->id,
                             'code' => 'SLF' . $i . '-' . now()->format('ymd') . rand(100, 999),
                             'product_type' => $product_type,
-                            'shelf_width' => data_get($sectionData, 'shelf_width', 130),
-                            'shelf_height' => data_get($sectionData, 'shelf_height', 4),
-                            'shelf_depth' => data_get($sectionData, 'shelf_depth', 40),
+                            'shelf_width' => data_get($sectionData, 'shelf_config.shelf_width', 130),
+                            'shelf_height' => data_get($sectionData, 'shelf_config.shelf_height', 4),
+                            'shelf_depth' => data_get($sectionData, 'shelf_config.shelf_depth', 40),
                             'shelf_position' => round($position),
                             'ordering' => $i,
                             'settings' => [],
@@ -514,5 +514,5 @@ class GondolaController extends Controller
             ], 500);
         }
     }
-    
+
 }
