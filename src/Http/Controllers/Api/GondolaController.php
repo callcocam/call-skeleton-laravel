@@ -14,6 +14,7 @@ use Callcocam\Plannerate\Http\Requests\Gondola\UpdateGondolaRequest;
 use Callcocam\Plannerate\Http\Resources\GondolaResource;
 use Callcocam\Plannerate\Models\Gondola;
 use Callcocam\Plannerate\Models\Planogram;
+use Callcocam\Plannerate\Models\Shelf;
 use Callcocam\Plannerate\Services\ShelfPositioningService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -510,6 +511,63 @@ class GondolaController extends Controller
 
             return response()->json([
                 'message' => 'Ocorreu um erro ao reordenar a gôndola',
+                'status' => 'error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove uma prateleira (shelf) específica
+     *
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function destroyShelf(string $id)
+    {
+        try {
+            DB::beginTransaction();
+            
+            // Buscar a prateleira pelo ID
+            $shelf = Shelf::with(['segments', 'segments.layer'])->findOrFail($id);
+            
+            // Excluir segmentos e layers associados à prateleira
+            if ($shelf->segments) {
+                foreach ($shelf->segments as $segment) {
+                    // Excluir layer do segmento
+                    if ($segment->layer) {
+                        $segment->layer->forceDelete();
+                    }
+                    // Excluir segmento
+                    $segment->forceDelete();
+                }
+            }
+            
+            // Excluir a prateleira
+            $shelf->forceDelete();
+            
+            DB::commit();
+            
+            return response()->json([
+                'message' => 'Prateleira excluída com sucesso',
+                'status' => 'success'
+            ]);
+        } catch (ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Prateleira não encontrada',
+                'status' => 'error'
+            ], 404);
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error('Erro ao excluir prateleira', [
+                'shelf_id' => $id,
+                'exception' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            
+            return response()->json([
+                'message' => 'Ocorreu um erro ao excluir a prateleira',
                 'status' => 'error'
             ], 500);
         }

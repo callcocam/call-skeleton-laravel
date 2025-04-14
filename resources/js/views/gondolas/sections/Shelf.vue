@@ -37,13 +37,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineEmits, defineProps, ref } from 'vue';
+import { computed, defineEmits, defineProps, onMounted, ref } from 'vue';
 import draggable from 'vuedraggable';
 import { useGondolaStore } from '../../../store/gondola';
 import Segment from './Segment.vue';
 import ShelfContent from './ShelfContent.vue';
 import ShelfControls from './ShelfControls.vue'; // Importar o componente ShelfControls
 import { Layer, Product, Segment as SegmentType, Shelf } from './types';
+import { useShelfStore } from '../../../store/shelf';
 
 // Definir Props
 const props = defineProps<{
@@ -62,6 +63,7 @@ const shelfElement = ref<HTMLElement | null>(null);
 // Definir Emits
 const emit = defineEmits(['drop-product']); // Para quando um produto é solto na prateleira
 const gondolaStore = useGondolaStore(); // Instanciar o gondola store
+const shelfStore = useShelfStore(); // Instanciar o shelf store
 // --- Computeds para Estilos ---
 const shelfStyle = computed(() => {
     // Convertemos a posição da prateleira para pixels usando o fator de escala
@@ -125,6 +127,16 @@ const segmentsContainerStyle = computed(() => {
     return {
         height: `${props.shelf.shelf_height * props.scaleFactor}px`,
     };
+});
+
+onMounted(() => {
+    // Adicionar lógica para quando a prateleira é montada
+    if (shelfElement.value) {
+        shelfElement.value.addEventListener('click', (event) => {
+            // Emitir evento para o componente pai (Section) lidar com o clique
+            shelfStore.selectShelf(props.shelf);
+        });
+    }
 });
 </script>
 

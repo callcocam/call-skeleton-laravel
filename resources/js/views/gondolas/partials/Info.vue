@@ -10,6 +10,7 @@ import { useRedirect } from '../../../composables/useRedirect';
 import { apiService } from '../../../services';
 import { useEditorStore } from '../../../store/editor';
 import { useGondolaStore } from '../../../store/gondola'; // Importar o store da gôndola
+import { useShelfStore } from '../../../store/shelf'; // Importar o store de prateleiras
 import { Button } from './../../../components/ui/button'; // Adicionar import do Button se não for global
 import Category from './Category.vue'; // Assumindo que Category e Popover estão corretos
 import Popover from './Popover.vue';
@@ -38,6 +39,7 @@ const emit = defineEmits(['update:invertOrder', 'update:category']);
 const router = useRouter();
 const editorStore = useEditorStore();
 const gondolaStore = useGondolaStore(); // Usar o store da gôndola
+const shelfStore = useShelfStore(); // Usar o store de prateleiras
 const { redirectRemoveGondola } = useRedirect(router); // Composables
 
 // Estado Local
@@ -55,6 +57,17 @@ const showGrid = computed(() => editorStore.showGrid);
 const currentGondola = computed(() => gondolaStore.currentGondola);
 /** Seções da gôndola atual (do store). */
 const sections = computed(() => currentGondola.value?.sections || []);
+/** Largura da seção (do store). */
+const sectionWidth = computed(() => currentGondola.value?.section_width || 0);
+/** Altura da seção (do store). */
+const sectionHeight = computed(() => currentGondola.value?.section_height || 0);
+/** Largura da prateleira (do store). */
+const shelfWidth = computed(() => currentGondola.value?.shelf_width || 0);
+
+const shelfSelected = computed(() => {
+    // Verifica se há prateleiras selecionadas
+    return shelfStore.selectedShelf;
+});
 
 // Métodos
 /**
@@ -78,7 +91,7 @@ const invertSectionOrder = () => {
     if (currentGondola.value) {
         apiService.post(`sections/${currentGondola.value.id}/shelves/reorder`).then((response) => {
             // Emitir evento para o componente pai (Sections) lidar com a atualização
-            gondolaStore.invertSectionOrder(response.data); 
+            gondolaStore.invertSectionOrder(response.data);
         });
     }
 };
@@ -120,10 +133,6 @@ const confirmRemoveGondola = async () => {
     // Adiciona verificação se a gôndola existe
     if (!currentGondola.value) return;
 
-    // Usar um modal de confirmação mais robusto seria ideal
-    if (!confirm('Tem certeza de que deseja remover esta gôndola?')) {
-        return;
-    }
     try {
         const gondolaToRemove = currentGondola.value; // Guarda a referência antes de limpar
         const gondolaId = gondolaToRemove.id;
@@ -142,6 +151,28 @@ const confirmRemoveGondola = async () => {
         // Em caso de erro, talvez buscar a gôndola novamente ou forçar um reload
         // gondolaStore.fetchGondola(gondolaId); // Tentativa de reverter (complexo)
     }
+};
+
+/**
+ * Confirma a remoção da prateleira selecionada.
+ * Atualiza o store, chama a API e redireciona.
+ */
+const showDeleteConfirm = ref(false); // Estado para controle do modal de confirmação
+const confirmRemoveShelf = async () => {
+    showDeleteConfirm.value = true; // Abre o modal de confirmação
+};
+const confirmDelete = async () => {
+    // Adiciona verificação se a gôndola existe
+    if (!shelfSelected.value) return;
+    try {
+        // Chamar o método de exclusão da prateleira no gondolaStore
+        await shelfStore.deleteSelectedShelf();
+    } catch (error) {
+        console.error('Erro ao excluir prateleira:', error);
+    }
+};
+const cancelDelete = () => {
+    showDeleteConfirm.value = false; // Fecha o modal de confirmação
 };
 </script>
 
@@ -225,6 +256,20 @@ const confirmRemoveGondola = async () => {
 
                 <!-- Botões de Ação (verificar se currentGondola existe para habilitar/mostrar) -->
                 <div class="flex items-center space-x-3" v-if="currentGondola">
+                    <!-- Botão de Ação (para prateleiras) -->
+                    <Button
+                        v-if="shelfSelected"
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        @click="confirmRemoveShelf"
+                        class="!p-1 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        :class="{ 'bg-gray-100 dark:bg-gray-700': shelfSelected }"
+                        aria-label="Selecionar Prateleiras"
+                    >
+                        <Trash2 class="h-4 w-4" />
+                        <span class="sr-only">Remover Prateleira</span>
+                    </Button>
                     <!-- Botão para inverter ordem das seções -->
                     <Button
                         type="button"
@@ -258,5 +303,16 @@ const confirmRemoveGondola = async () => {
                 </div>
             </div>
         </div>
+        <ConfirmModal
+            :isOpen="showDeleteConfirm"
+            @update:isOpen="showDeleteConfirm = $event"
+            title="Excluir produto"
+            message="Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita."
+            confirmButtonText="Excluir"
+            cancelButtonText="Cancelar"
+            :isDangerous="true"
+            @confirm="confirmDelete"
+            @cancel="cancelDelete"
+        />
     </div>
 </template>

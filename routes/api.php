@@ -21,6 +21,10 @@ Route::middleware(['api', 'auth:sanctum'])
             ->name('sections.updateInvertOrder');
         Route::resource('shelves', ShelfController::class)
             ->only(['index', 'show', 'store', 'update', 'destroy']);
+            
+        // Rota para excluir prateleira pelo GondolaController
+        Route::delete('gondolas/shelves/{id}', [GondolaController::class, 'destroyShelf'])
+            ->name('gondolas.shelves.destroy');
 
         Route::resource('segments', SegmentController::class)
             ->only(['index', 'show', 'store', 'update', 'destroy']);
