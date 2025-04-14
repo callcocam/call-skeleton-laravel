@@ -15,7 +15,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue'; 
+import { computed, ref } from 'vue';
 import { useProductStore } from '../../../store/product'; // Corrected relative path
 import Layer from './Layer.vue';
 import { LayerSegment as LayerType, Segment, Shelf } from './types';
@@ -34,7 +34,7 @@ const segmentQuantity = computed(() => {
     return props.segment.quantity;
 });
 
-const productStore = useProductStore(); // Instance of the product store 
+const productStore = useProductStore(); // Instance of the product store
 
 // Computed para o estilo do segmento
 // ----------------------------------------------------
@@ -89,11 +89,17 @@ const onDecreaseQuantity = (layer: LayerType) => {
 };
 // Function to increase spacing
 const onSpacingIncrease = (layer: LayerType) => {
-    productStore.updateLayerSpacing(layer, layer.spacing);
+    productStore.updateLayerSpacing(layer, layer.spacing, {
+        ...props.segment,
+        layer,
+    });
 };
 // Function to decrease spacing
 const onSpacingDecrease = (layer: LayerType) => {
-    productStore.updateLayerSpacing(layer, layer.spacing);
+    productStore.updateLayerSpacing(layer, layer.spacing, {
+        ...props.segment,
+        layer,
+    });
 };
 </script>
 

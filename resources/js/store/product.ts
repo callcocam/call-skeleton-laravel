@@ -202,12 +202,12 @@ export const useProductStore = defineStore('product', {
             const gondolaStore = useGondolaStore();
             const { toast } = useToast();
             if (productId) {
-               
+
                 this.setProductContextData(productId, { quantity });
                 // Atualiza a quantidade no backend
                 apiService.put(`/layers/${layer.id}`, {
+                    spacing: layer.spacing,
                     quantity: quantity,
-                    spacing: this.productContextData.get(productId)?.spacing || 0,
                 }).then(() => {
                     // Atualiza a quantidade no gondolaStore
                     gondolaStore.updateSegment(shelfData.shelf_id, shelfData.id, shelfData, false);
@@ -227,7 +227,7 @@ export const useProductStore = defineStore('product', {
                         ...shelfData,
                         quantity: quantity--
                     }, false);
-                   
+
                 }).finally(() => {
 
                 });
@@ -238,19 +238,31 @@ export const useProductStore = defineStore('product', {
          * @param layer Layer da camada a ser atualizada.
          * @param spacing Novo espaçamento do produto.
          */
-        updateLayerSpacing(layer: Layer, spacing: number) {
+        updateLayerSpacing(layer: Layer, spacing: number, shelfData: any) {
             const productId = this.selectedProductIds.has(layer.product_id) ? layer.product_id : '';
             if (productId) {
+                const gondolaStore = useGondolaStore();
+                const { toast } = useToast();
                 this.setProductContextData(productId, { spacing });
                 // Atualiza o espaçamento no backend
                 apiService.put(`/layers/${layer.id}`, {
-                    quantity: this.productContextData.get(productId)?.quantity || 1,
+                    quantity: layer.quantity,
                     spacing: spacing,
                 })
                     .then(() => {
+                        gondolaStore.updateSegment(shelfData.shelf_id, shelfData.id, shelfData, false);
                     })
                     .catch((error: any) => {
                         console.error('Error updating layer spacing:', error);
+                        toast({
+                            title: 'Erro ao atualizar quantidade',
+                            description: error.response?.data?.message || error.message || 'Falha ao atualizar quantidade',
+                            variant: 'destructive',
+                        });
+                        gondolaStore.updateSegment(shelfData.shelf_id, {
+                            ...shelfData,
+                            quantity: spacing--
+                        }, false);
                     });
             }
         },

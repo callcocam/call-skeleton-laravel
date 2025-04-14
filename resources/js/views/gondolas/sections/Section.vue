@@ -1,6 +1,6 @@
 <template>
     <div
-    class="bg-gray-800"
+        class="bg-gray-800"
         :style="sectionStyle"
         :data-section-id="section.id"
         @dragover.prevent="handleSectionDragOver"
@@ -186,6 +186,8 @@ const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPositi
         width: parseInt(props.section.width.toString()),
         ordering: (shelf.segments?.length || 0) + 1,
         quantity: 1,
+        shelf_id: shelf.id,
+        section_id: props.section.id,
         spacing: 0,
         position: 0,
         preserveState: false,
@@ -204,28 +206,27 @@ const handleProductDropOnShelf = (product: Product, shelf: ShelfType, dropPositi
     };
 
     // Adiciona o novo segmento à prateleira
-    try {
-        apiService
-            .post(`shelves/${shelf.id}/segments`, {
-                segment: newSegment,
-            })
-            .then((response) => {
-                gondolaStore.updateShelf(response.data.id, response.data);
+    apiService
+        .post(`shelves/${shelf.id}/segments`, {
+            segment: newSegment,
+        })
+        .then((response) => {
+            gondolaStore.updateShelf(response.data.id, response.data);
 
-                toast({
-                    title: 'Success',
-                    description: response.message,
-                    variant: 'default',
-                });
+            toast({
+                title: 'Success',
+                description: response.message,
+                variant: 'default',
             });
-    } catch (error) {
-        console.error('Erro ao adicionar segmento à prateleira:', error);
-        toast({
-            title: 'Error',
-            description: 'Failed to add segment to shelf.',
-            variant: 'destructive',
+        })
+        .catch((error) => {
+            console.error('Erro ao adicionar produto à prateleira:', error);
+            toast({
+                title: 'Error',
+                description: error.response?.data?.message || 'Failed to add product to shelf',
+                variant: 'destructive',
+            });
         });
-    }
 };
 
 // --- Event Handlers for Global Listeners ---
@@ -260,7 +261,7 @@ const handleClickOutside = (event: MouseEvent) => {
 };
 const handleDoubleClick = (event: any) => {
     // Emitir evento para o componente pai (Section) lidar com o clique
-   shelfStore.addShelf({
+    shelfStore.addShelf({
         id: `shelf-${Date.now()}`,
         name: `shelf-${Date.now()}`,
         gondola_id: gondolaStore.currentGondola.id,
@@ -272,14 +273,14 @@ const handleDoubleClick = (event: any) => {
         ordering: 1,
         segments: [],
     } as ShelfType);
-     
+
     event.stopPropagation(); // Impede que o evento se propague para outros manipuladores
 };
 // --- Lifecycle Hooks for Listeners ---
 
 onMounted(() => {
     window.addEventListener('keydown', handleKeydown);
-    document.addEventListener('click', handleClickOutside, true); // Use capture phase to intercept clicks early 
+    document.addEventListener('click', handleClickOutside, true); // Use capture phase to intercept clicks early
     if (sectionRef.value) {
         sectionRef.value.addEventListener('dblclick', handleDoubleClick);
     }

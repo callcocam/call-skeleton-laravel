@@ -9,6 +9,7 @@
 namespace Callcocam\Plannerate\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Callcocam\Plannerate\Http\Requests\Shelf\StoreShelfRequest;
 use Callcocam\Plannerate\Http\Resources\ShelfResource;
 use Callcocam\Plannerate\Models\Shelf;
 use Illuminate\Http\Request;
@@ -144,9 +145,9 @@ class ShelfController extends Controller
         }
     }
 
-    public function segment(Request $request, Shelf $shelf,)
+    public function segment(StoreShelfRequest $request, Shelf $shelf,)
     {
-        $validated = $request->all();
+        $validated = $request->validated();
 
         // Processa atualização normal com possível adição de segmento/camada
         $segment = data_get($validated, 'segment');

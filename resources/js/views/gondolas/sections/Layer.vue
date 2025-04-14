@@ -138,9 +138,11 @@ const onSpacingIncrease = async () => {
     if (productStore.selectedProductIds.size > 1) {
         return;
     }
+    layerQuantity.value = props.layer.quantity;
     emit('spacingIncrease', {
         ...props.layer,
         spacing: layerSpacing.value++,
+        quantity: layerQuantity.value,
     });
 };
 // Function to decrease spacing
@@ -148,10 +150,12 @@ const onSpacingDecrease = async () => {
     if (productStore.selectedProductIds.size > 1) {
         return;
     }
+    layerQuantity.value = props.layer.quantity;
     if (layerSpacing.value > 0) {
         emit('spacingDecrease', {
             ...props.layer,
             spacing: layerSpacing.value--,
+            quantity: layerQuantity.value,
         });
     }
 };
