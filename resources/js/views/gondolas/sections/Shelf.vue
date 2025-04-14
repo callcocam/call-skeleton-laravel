@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineEmits, defineProps, onMounted, ref } from 'vue';
+import { computed, defineEmits, defineProps, onMounted, onUnmounted, ref } from 'vue';
 import draggable from 'vuedraggable';
 import { useGondolaStore } from '../../../store/gondola';
 import Segment from './Segment.vue';
@@ -129,14 +129,52 @@ const segmentsContainerStyle = computed(() => {
     };
 });
 
+const selectShelfClick = (event: MouseEvent) => {
+    // Emitir evento para o componente pai (Section) lidar com o clique
+    shelfStore.selectShelf(props.shelf);
+};
+const controlDeleteShelf = (event: KeyboardEvent) => {
+    // Verificar se Ctrl+Delete foi pressionado
+    if ((event.key === 'Delete' || event.key === 'Backspace') && event.ctrlKey) {
+        console.log('Ctrl+Delete pressed, deleting shelf');
+        event.preventDefault();
+        
+        // Verificar se há uma prateleira selecionada
+        if (shelfStore.hasSelection) {
+            shelfStore.deleteSelectedShelf();
+        } else {
+            // Se não houver seleção, mas o evento veio da prateleira atual, seleciona e exclui
+            shelfStore.selectShelf(props.shelf);
+            shelfStore.deleteSelectedShelf();
+        }
+    }
+};
+
+// Handler global para capturar Ctrl+Delete em qualquer parte da aplicação
+const globalKeyHandler = (event: KeyboardEvent) => {
+    if (shelfStore.selectedShelf && shelfStore.selectedShelf.id === props.shelf.id) {
+        controlDeleteShelf(event);
+    }
+};
+
 onMounted(() => {
     // Adicionar lógica para quando a prateleira é montada
     if (shelfElement.value) {
-        shelfElement.value.addEventListener('click', (event) => {
-            // Emitir evento para o componente pai (Section) lidar com o clique
-            shelfStore.selectShelf(props.shelf);
-        });
+        shelfElement.value.addEventListener('click', selectShelfClick);
     }
+    
+    // Adicionar listener global para capturar Ctrl+Delete
+    document.addEventListener('keydown', globalKeyHandler);
+});
+
+onUnmounted(() => {
+    // Remover os listeners quando o componente for desmontado
+    if (shelfElement.value) {
+        shelfElement.value.removeEventListener('click', selectShelfClick);
+    }
+    
+    // Remover listener global
+    document.removeEventListener('keydown', globalKeyHandler);
 });
 </script>
 

@@ -160,7 +160,46 @@ export const useShelfStore = defineStore('shelf', {
         stopEditing() {
             this.isEditing = false;
         },
-
+        async addShelf(shelf: Shelf) {
+            this.isLoading = true;
+            this.error = null;
+            const { toast } = useToast();
+            const gondolaStore = useGondolaStore();
+            try {
+                const response = await apiService.post('shelves', shelf);
+                this.visibleShelves.push(response.data);
+                this.selectedShelf = response.data;
+                this.lastSelectedShelfId = response.data.id;
+                gondolaStore.updateGondola({
+                    sections: gondolaStore.currentGondola.sections.map((section: any) => {
+                        if (section.id === shelf.section_id) {
+                            return {
+                                ...section,
+                                shelves: [...section.shelves, response.data]
+                            };
+                        }
+                        return section;
+                    })
+                });
+                toast({
+                    title: 'Prateleira adicionada',
+                    description: 'A prateleira foi adicionada com sucesso.',
+                    variant: 'default'
+                });
+                return response.data;
+            } catch (error: any) {
+                this.error = error.message || 'Erro ao adicionar prateleira';
+                toast({
+                    title: 'Erro ao adicionar',
+                    description: this.error,
+                    variant: 'destructive'
+                });
+                console.error('Erro ao adicionar prateleira:', error);
+                throw error;
+            } finally {
+                this.isLoading = false;
+            }
+        },
         /**
          * Salva as alterações feitas na prateleira selecionada
          */

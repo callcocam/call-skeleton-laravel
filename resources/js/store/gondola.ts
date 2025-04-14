@@ -511,67 +511,6 @@ export const useGondolaStore = defineStore('gondola', {
             // Atualiza a lista de produtos em uso
             this.productsInCurrentGondolaIds();
         },
-
-        /**
-         * Remove uma prateleira (shelf) da gôndola
-         * @param shelfId ID da prateleira a ser removida
-         */
-        async deleteShelf(shelfId: string | number) {
-          if (!this.currentGondola || !shelfId) return;
-
-          try {
-            const { toast } = useToast();
-            
-            // Primeiro, atualizamos o estado local para feedback imediato (abordagem otimista)
-            const updatedSections = this.currentGondola.sections.map((section: any) => {
-              if (section.shelves) {
-                // Filtramos a prateleira do array de prateleiras
-                const updatedShelves = section.shelves.filter((shelf: any) => shelf.id !== shelfId);
-                // Retornamos a seção atualizada com as prateleiras filtradas
-                return { ...section, shelves: updatedShelves };
-              }
-              return section;
-            });
-
-            // Atualizamos o estado da gôndola com as seções atualizadas
-            this.currentGondola = {
-              ...this.currentGondola,
-              sections: updatedSections
-            };
-
-            // Em seguida, enviamos a requisição para o backend
-            await apiService.delete(`gondolas/shelves/${shelfId}`);
-            
-            // Notificamos o usuário sobre o sucesso
-            toast({
-              title: 'Prateleira excluída',
-              description: 'A prateleira foi excluída com sucesso.',
-              variant: 'default'
-            });
-            
-            // Recalcular produtos na gôndola após a remoção
-            this.productsInCurrentGondolaIds();
-            
-            return true;
-          } catch (error: any) {
-            const { toast } = useToast();
-            
-            console.error(`Erro ao excluir prateleira ${shelfId}:`, error);
-            
-            // Notificamos o usuário sobre o erro
-            toast({
-              title: 'Erro ao excluir prateleira',
-              description: error.response?.data?.message || 'Ocorreu um erro ao excluir a prateleira.',
-              variant: 'destructive'
-            });
-            
-            // Em caso de erro, recarregamos a gôndola para reverter as alterações locais
-            if (this.currentGondola?.id) {
-              this.fetchGondola(this.currentGondola.id);
-            }
-            
-            throw error;
-          }
-        },
+ 
     },
 });

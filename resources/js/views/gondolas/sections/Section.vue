@@ -1,10 +1,12 @@
 <template>
     <div
+    class="bg-gray-800"
         :style="sectionStyle"
         :data-section-id="section.id"
         @dragover.prevent="handleSectionDragOver"
         @drop.prevent="handleSectionDrop"
         @dragleave="handleSectionDragLeave"
+        ref="sectionRef"
     >
         <!-- Conteúdo da Seção (Prateleiras) -->
         <Shelf
@@ -29,6 +31,7 @@ import { computed, defineEmits, defineProps, onMounted, onUnmounted, ref } from 
 import { apiService } from '../../../services';
 import { useGondolaStore } from '../../../store/gondola';
 import { useProductStore } from '../../../store/product';
+import { useShelfStore } from '../../../store/shelf';
 import { useToast } from './../../../components/ui/toast';
 import Shelf from './Shelf.vue'; // Importar o componente Shelf
 import { Product, Section, Segment, Shelf as ShelfType } from './types';
@@ -46,6 +49,7 @@ const props = defineProps<{
 const emit = defineEmits(['update:segments']); // Exemplo: se precisar emitir atualizações de segmentos
 const gondolaStore = useGondolaStore(); // Instanciar o gondola store
 const productStore = useProductStore(); // Instantiate product store
+const shelfStore = useShelfStore(); // Instanciar o shelf store
 // Services
 const { toast } = useToast();
 
@@ -53,6 +57,7 @@ const { toast } = useToast();
 const dropTargetActive = ref(false);
 const draggingShelf = ref<ShelfType | null>(null);
 const draggingSection = ref(false);
+const sectionRef = ref<HTMLElement | null>(null);
 
 // --- Computeds para Estilos ---
 
@@ -76,7 +81,6 @@ const sectionStyle = computed(() => {
         transition: 'border-color 0.2s ease-in-out, background-color 0.2s ease-in-out',
     };
 });
- 
 
 // --- Lógica de Drag and Drop das Prateleiras ---
 
@@ -235,7 +239,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 const handleClickOutside = (event: MouseEvent) => {
     // Check if the click target or any of its parents has the class 'layer'
     // We assume layers are the selectable elements we want to ignore clicks inside of.
-    const clickedElement = event.target as HTMLElement; 
+    const clickedElement = event.target as HTMLElement;
     if (clickedElement.closest('.border-destructive')) {
         // If the click was inside an element with the 'layer' class, do nothing.
         return;
@@ -254,17 +258,39 @@ const handleClickOutside = (event: MouseEvent) => {
         productStore.clearSelection();
     }
 };
-
+const handleDoubleClick = (event: any) => {
+    // Emitir evento para o componente pai (Section) lidar com o clique
+   shelfStore.addShelf({
+        id: `shelf-${Date.now()}`,
+        name: `shelf-${Date.now()}`,
+        gondola_id: gondolaStore.currentGondola.id,
+        section_id: props.section.id,
+        shelf_position: event.offsetY / props.scaleFactor,
+        shelf_height: 4,
+        quantity: 0,
+        spacing: 0,
+        ordering: 1,
+        segments: [],
+    } as ShelfType);
+     
+    event.stopPropagation(); // Impede que o evento se propague para outros manipuladores
+};
 // --- Lifecycle Hooks for Listeners ---
 
 onMounted(() => {
     window.addEventListener('keydown', handleKeydown);
-    document.addEventListener('click', handleClickOutside, true); // Use capture phase to intercept clicks early
+    document.addEventListener('click', handleClickOutside, true); // Use capture phase to intercept clicks early 
+    if (sectionRef.value) {
+        sectionRef.value.addEventListener('dblclick', handleDoubleClick);
+    }
 });
 
 onUnmounted(() => {
     window.removeEventListener('keydown', handleKeydown);
     document.removeEventListener('click', handleClickOutside, true);
+    if (sectionRef.value) {
+        sectionRef.value.removeEventListener('dblclick', handleDoubleClick);
+    }
 });
 </script>
 
