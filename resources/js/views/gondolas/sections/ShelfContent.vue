@@ -20,13 +20,13 @@ const props = defineProps<{
 const dragShelfActive = ref(false); // Estado para rastrear se a prateleira está sendo arrastada
 const shelftext = ref(`Shelf (Pos: ${props.shelf.shelf_position.toFixed(1)}cm)`); // Texto da prateleira
 // Definir Emits
-const emit = defineEmits(['drop-product']); // Para quando um produto é solto na prateleira
+const emit = defineEmits(['drop-product', 'drop-layer']); // Para quando um produto é solto na prateleira
 watch(dragShelfActive, (newValue) => {
     if (newValue) {
-        // Adicionar lógica para quando a prateleira está sendo arrastada 
+        // Adicionar lógica para quando a prateleira está sendo arrastada
         shelftext.value = `Arrastando Prateleira (Pos: ${props.shelf.shelf_position.toFixed(1)}cm)`;
     } else {
-        // Adicionar lógica para quando a prateleira não está mais sendo arrastada 
+        // Adicionar lógica para quando a prateleira não está mais sendo arrastada
         shelftext.value = `Shelf (Pos: ${props.shelf.shelf_position.toFixed(1)}cm)`;
     }
 });
@@ -55,6 +55,7 @@ const handleDragLeave = (event: DragEvent) => {
 const handleDrop = (event: DragEvent) => {
     event.preventDefault();
     if (event.dataTransfer) {
+        const layerData = event.dataTransfer.getData('text/layer');
         const productData = event.dataTransfer.getData('text/product');
         if (productData) {
             try {
@@ -64,10 +65,14 @@ const handleDrop = (event: DragEvent) => {
             } catch (e) {
                 console.error('Erro ao processar dados do produto solto:', e);
             }
-            // TODO: Remover feedback visual
-            if (event.currentTarget) {
-                (event.currentTarget as HTMLElement).classList.remove('drag-over');
-            }
+        } else if (layerData) {
+            const layer = JSON.parse(layerData);
+            // Emitir evento para o componente pai (Section) lidar com a adição
+            emit('drop-layer', layer, props.shelf, { x: event.offsetX, y: event.offsetY });
+        }
+        // TODO: Remover feedback visual
+        if (event.currentTarget) {
+            (event.currentTarget as HTMLElement).classList.remove('drag-over');
         }
     }
     dragShelfActive.value = false; // Desativa o estado de arrastar a prateleira

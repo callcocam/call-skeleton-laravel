@@ -27,10 +27,11 @@
             :section-index="sectionIndex"
         />
         <!-- <div class="absolute inset-0 bottom-0 z-0 flex h-full w-full items-center justify-center"> -->
-            <ShelfContent
-                :shelf="shelf"
-                @drop-product="(product: Product, shelf: Shelf, dropPosition: any) => $emit('drop-product', product, shelf, dropPosition)"
-            />
+        <ShelfContent
+            :shelf="shelf"
+            @drop-product="(product: Product, shelf: Shelf, dropPosition: any) => $emit('drop-product', product, shelf, dropPosition)"
+            @drop-layer="(layer: Layer, shelf: Shelf) => updateLayer(layer, shelf)"
+        />
         <!-- </div> -->
     </div>
 </template>
@@ -42,7 +43,7 @@ import { useGondolaStore } from '../../../store/gondola';
 import Segment from './Segment.vue';
 import ShelfContent from './ShelfContent.vue';
 import ShelfControls from './ShelfControls.vue'; // Importar o componente ShelfControls
-import { Product, Segment as SegmentType, Shelf } from './types';
+import { Layer, Product, Segment as SegmentType, Shelf } from './types';
 
 // Definir Props
 const props = defineProps<{
@@ -70,7 +71,7 @@ const shelfStyle = computed(() => {
         // Aplicamos a posição sem o sinal negativo para corrigir a direção do movimento
         return {
             position: 'absolute' as const,
-            left: `${leftPosition}px`, // CORRIGIDO: Removido o sinal negativo
+            left: `${leftPosition -4}px`, // CORRIGIDO: Removido o sinal negativo
             width: `${props.sectionWidth * props.scaleFactor}px`,
             height: `${props.shelf.shelf_height * props.scaleFactor}px`,
             top: `${topPosition}px`,
@@ -111,6 +112,11 @@ const sortableSegments = computed<SegmentType[]>({
         });
     },
 });
+
+const updateLayer = (layer: Layer, shelf: Shelf) => {
+    // Emitir evento para o componente pai (Section) lidar com a atualização
+    gondolaStore.transferLayer(layer.segment_id, layer.segment.shelf_id, shelf.id, 0); 
+};
 /**
  * Computed property para estilo do container de segmentos
  * Define a altura baseada na altura da prateleira

@@ -1,5 +1,12 @@
 <template>
-    <div class="layer group flex cursor-pointer border" :style="layerStyle" :class="{ 'layer--selected': isSelected }" @click="handleLayerClick">
+    <div
+        class="layer group flex cursor-pointer border"
+        :style="layerStyle"
+        @click="handleLayerClick"
+        @dragstart="onDragStart"
+        draggable="true"
+        :class="{ 'layer--selected': isSelected }"
+    >
         <ProductGroup :product="layer.product" :quantity="layerQuantity" :scale-factor="scaleFactor" :product-spacing="layerSpacing" />
     </div>
 </template>
@@ -7,19 +14,19 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useProductStore } from '../../../store/product'; // Corrected relative path
 import ProductGroup from './ProductGroup.vue'; // Importando o novo componente
-import { Layer, Segment } from './types';
+import { LayerSegment, Segment } from './types';
 
 const props = defineProps<{
-    layer: Layer;
+    layer: LayerSegment;
     segment: Segment;
     scaleFactor: number;
 }>();
 
 const emit = defineEmits<{
-    (e: 'increase', layer: Layer): void;
-    (e: 'decrease', layer: Layer): void;
-    (e: 'spacingIncrease', layer: Layer): void;
-    (e: 'spacingDecrease', layer: Layer): void;
+    (e: 'increase', layer: LayerSegment): void;
+    (e: 'decrease', layer: LayerSegment): void;
+    (e: 'spacingIncrease', layer: LayerSegment): void;
+    (e: 'spacingDecrease', layer: LayerSegment): void;
 }>();
 
 const productStore = useProductStore();
@@ -86,6 +93,18 @@ const handleLayerClick = (event: MouseEvent) => {
             productStore.clearSelection();
             productStore.selectProduct(productIdAsString);
         }
+    }
+};
+// Function to handle drag start event
+const onDragStart = (event: DragEvent) => { 
+    // Adicionar lógica para quando a prateleira está sendo arrastada
+    if (event.dataTransfer) { 
+        event.dataTransfer.setData('text/layer', JSON.stringify({ 
+                ...props.layer, 
+                segment: props.segment, 
+        }));
+
+        event.dataTransfer.effectAllowed = 'move'; 
     }
 };
 

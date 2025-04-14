@@ -15,8 +15,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useGondolaStore } from '../../../store/gondola'; // Corrected relative path
+import { computed, ref } from 'vue'; 
 import { useProductStore } from '../../../store/product'; // Corrected relative path
 import Layer from './Layer.vue';
 import { Layer as LayerType, Segment, Shelf } from './types';
@@ -33,8 +32,7 @@ const segmentQuantity = computed(() => {
     return props.segment.quantity;
 });
 
-const productStore = useProductStore(); // Instance of the product store
-const gondolaStore = useGondolaStore(); // Instance of the gondola store
+const productStore = useProductStore(); // Instance of the product store 
 
 // Computed para o estilo do segmento
 // ----------------------------------------------------

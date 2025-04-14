@@ -185,6 +185,7 @@ export const useGondolaStore = defineStore('gondola', {
                             if (shelf.id === shelfId) {
                                 // Procura o segmento correto na prateleira
                                 const updatedSegments = shelf.segments.map((segment: any) => {
+                                    console.log('segment', segment);
                                     if (segment.id === segmentId) {
                                         // Retorna um novo objeto com os dados do segmento atualizados
                                         return { ...segment, ...segmentData };
@@ -219,7 +220,7 @@ export const useGondolaStore = defineStore('gondola', {
                 } else {
                     // Caso contrário, envie a atualização normal
                     const response = await apiService.put(`segments/${segmentId}`, segmentData);
-                    console.log('Resposta do servidor:', response.data);
+                    console.log('Resposta do servidor:', response.data); 
                 }
                 // 3. Opcionalmente, você pode atualizar o estado novamente com a resposta do servidor
                 // se necessário para garantir consistência
@@ -412,6 +413,103 @@ export const useGondolaStore = defineStore('gondola', {
             });
             // Atualiza a lista de produtos em uso, pois a estrutura mudou
             this.productsInCurrentGondolaIds();
-        }
-    }
+        },
+        /**
+         * Transfer layer (através do segment) de uma prateleira para outra
+         * @param segmentId ID do segmento a ser movido
+         * @param oldShelfId ID da prateleira de origem
+         * @param newShelfId ID da prateleira de destino
+         * @param newRelativeX Nova posição X do segmento, relativa à prateleira de destino
+         */
+        transferLayer(segmentId: string, oldShelfId: string, newShelfId: string, newRelativeX: number) { 
+            if (!this.currentGondola?.sections || !segmentId || !oldShelfId || !newShelfId) {
+                console.error('Missing data for segment/layer transfer.');
+                return;
+            }
+
+            const { toast } = useToast();
+            let segmentToMove: any | null = null;
+            let oldShelf: any = null;
+            let newShelf: any = null;
+            let oldSectionId: string = '';
+            let newSectionId: string = '';
+
+            // Cria uma cópia profunda para manipulação segura
+            const newSections = JSON.parse(JSON.stringify(this.currentGondola.sections));
+
+            // Encontra as prateleiras e o segmento
+            newSections.forEach((section: any) => {
+                if (section.shelves) {
+                    section.shelves.forEach((shelf: any) => {
+                        // Procura a prateleira de origem
+                        if (shelf.id === oldShelfId) {
+                            oldShelf = shelf;
+                            oldSectionId = section.id;
+                            const segmentIndex = shelf.segments?.findIndex((s: any) => s.id === segmentId);
+                            if (segmentIndex !== undefined && segmentIndex > -1) {
+                                // Remove o segmento da prateleira antiga e guarda o objeto
+                                segmentToMove = shelf.segments.splice(segmentIndex, 1)[0];
+                            }
+                        }
+                        // Procura a prateleira de destino
+                        if (shelf.id === newShelfId) {
+                            newShelf = shelf;
+                            newSectionId = section.id;
+                        }
+                    });
+                }
+            });
+
+            // Verifica se tudo foi encontrado e o segmento foi removido
+            if (!oldShelf || !newShelf || !segmentToMove) {
+                console.error('Could not find shelf or segment for transfer.', { oldShelf, newShelf, segmentToMove });
+                return;
+            }
+
+            // Atualiza os dados do segmento movido
+            if (segmentToMove) {
+                segmentToMove.shelf_id = newShelfId;
+                segmentToMove.position_x = newRelativeX;
+                // Opcionalmente, atualizar a ordem se necessário
+                if (!newShelf.segments) {
+                    newShelf.segments = [];
+                }
+                // A ordem pode ser baseada na posição ou definida manualmente
+                segmentToMove.ordering = newShelf.segments.length + 1;
+            }
+
+            // Adiciona o segmento à nova prateleira
+            newShelf.segments.push(segmentToMove);
+
+            // Atualiza o estado da gôndola
+            this.currentGondola = {
+                ...this.currentGondola,
+                sections: newSections
+            };
+
+            console.log(`Segment with layer transferred from shelf ${oldShelfId} to ${newShelfId}`);
+
+            // Chamada API para persistir a transferência no backend
+            apiService.put(`segments/${segmentId}/transfer`, { 
+                shelf_id: newShelfId,  
+            }).then((response) => {
+                toast({
+                    title: 'Segmento transferido com sucesso',
+                    description: 'O produto foi transferido para outra prateleira com sucesso',
+                    variant: 'default'
+                });
+            }).catch((error) => { 
+                toast({
+                    title: 'Erro ao transferir segmento',
+                    description: 'Ocorreu um erro ao transferir o produto para outra prateleira',
+                    variant: 'destructive'
+                });
+                // Opcionalmente, reverter a alteração no estado
+                this.fetchGondola(this.currentGondola.id);
+            });
+
+            // Atualiza a lista de produtos em uso
+            this.productsInCurrentGondolaIds();
+        },
+    },
 });

@@ -9,6 +9,7 @@
 namespace Callcocam\Plannerate\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Callcocam\Plannerate\Http\Requests\Segment\Api\UpdateTransferSegmentRequest;
 use Callcocam\Plannerate\Http\Resources\SegmentResource;
 use Callcocam\Plannerate\Http\Resources\ShelfResource;
 use Callcocam\Plannerate\Models\Gondola;
@@ -154,6 +155,27 @@ class SegmentController extends Controller
             DB::rollBack();
             return response()->json([
                 'message' => 'Erro ao reordenar segmento',
+                'error' => $e->getMessage(),
+            ], 500);
+        } finally {
+            DB::commit();
+        }
+    }
+
+    public function transfer(UpdateTransferSegmentRequest $request, Segment $segment)
+    {
+        try {
+            DB::beginTransaction();
+            $validated = $request->validated();
+            $segment->update($validated);
+            return response()->json([
+                'message' => 'Segmento transferido com sucesso',
+                'data' => new SegmentResource($segment),
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Erro ao transferir segmento',
                 'error' => $e->getMessage(),
             ], 500);
         } finally {

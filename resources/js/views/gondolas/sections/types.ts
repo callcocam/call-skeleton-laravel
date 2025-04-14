@@ -50,25 +50,7 @@ interface Shelf {
     [key: string]: any; // Para propriedades adicionais da prateleira
 }
 
-// Interface para a prateleira com a camada
-
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+// Interface para a prateleira com a camada 
             
 interface Section {
     id: string;
@@ -93,5 +75,7 @@ interface Section {
     shelves: Shelf[];
     [key: string]: any; // Para propriedades adicionais da seção
 }
-
-export type { Product, Layer, Segment, Shelf, Section };
+interface LayerSegment extends Layer {
+    segement: Segment;
+}
+export type { Product, Layer, Segment, Shelf, Section , LayerSegment };
