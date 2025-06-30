@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Created by Claudio Campos.
- * User: callcocam@gmail.com, contato@sigasmart.com.br
+ * Created by :author_name.
+ * User: :author_username, author@domain.com
  * https://www.sigasmart.com.br
  */
 
-namespace Callcocam\PapaLeguasReact\Landlord;
+namespace VendorName\Skeleton\Landlord;
 
-use Callcocam\PapaLeguasReact\Landlord\Exceptions\TenantColumnUnknownException;
-use Callcocam\PapaLeguasReact\Landlord\Exceptions\TenantNullIdException;
+use VendorName\Skeleton\Landlord\Exceptions\TenantColumnUnknownException;
+use VendorName\Skeleton\Landlord\Exceptions\TenantNullIdException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;

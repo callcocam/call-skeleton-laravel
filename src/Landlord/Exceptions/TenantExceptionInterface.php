@@ -1,10 +1,10 @@
 <?php
 /**
-* Created by Claudio Campos.
-* User: callcocam@gmail.com, contato@sigasmart.com.br
-* https://www.sigasmart.com.br
-*/
-namespace Callcocam\PapaLeguasReact\Landlord\Exceptions;
+ * Created by :author_name.
+ * User: :author_username, author@domain.com
+ * https://www.sigasmart.com.br
+ */
+namespace VendorName\Skeleton\Landlord\Exceptions;
 
 interface TenantExceptionInterface
 {

@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Created by Claudio Campos.
- * User: callcocam@gmail.com, contato@sigasmart.com.br
+ * Created by :author_name.
+ * User: :author_username, author@domain.com
  * https://www.sigasmart.com.br
  */
 
-namespace Callcocam\PapaLeguasReact\Landlord;
+namespace VendorName\Skeleton\Landlord;
 
-use Callcocam\PapaLeguasReact\Landlord\Exceptions\ModelNotFoundForTenantException;
+use VendorName\Skeleton\Landlord\Exceptions\ModelNotFoundForTenantException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 

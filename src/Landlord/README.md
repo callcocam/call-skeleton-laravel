@@ -1,13 +1,15 @@
 # Landlord Multi-Tenant System
 
-Sistema de multi-tenancy que permite isolamento de dados por tenant, com bypass automático para usuários landlord (ad## Configuração
+Sistema de multi-tenancy que permite isolamento de dados por tenant, com bypass automático para usuários landlord (administradores).
+
+## Configuração
 
 ### Arquivo: `config/tenant.php`
 
 ```php
 return [
     'models' => [
-        'tenant' => \Callcocam\PapaLeguasReact\Models\Tenant::class,
+        'tenant' => \VendorName\Skeleton\Models\Tenant::class,
     ],
     
     'tenant' => [
@@ -32,7 +34,7 @@ return [
 ```php
 return [
     'landlord' => [
-        'model' => \Callcocam\PapaLeguasReact\Models\Admin::class,
+        'model' => \VendorName\Skeleton\Models\Admin::class,
         'table' => 'admins',
         'routes' => [
             'prefix' => 'landlord',
@@ -43,8 +45,8 @@ return [
     ],
     
     'models' => [
-        'role' => \Callcocam\PapaLeguasReact\Shinobi\Models\Role::class,
-        'permission' => \Callcocam\PapaLeguasReact\Shinobi\Models\Permission::class,
+        'role' => \VendorName\Skeleton\Shinobi\Models\Role::class,
+        'permission' => \VendorName\Skeleton\Shinobi\Models\Permission::class,
     ],
 ];
 ```
@@ -56,8 +58,8 @@ Configurações específicas do sistema de roles e permissões:
 ```php
 return [
     'models' => [
-        'role' => \Callcocam\PapaLeguasReact\Shinobi\Models\Role::class,
-        'permission' => \Callcocam\PapaLeguasReact\Shinobi\Models\Permission::class,
+        'role' => \VendorName\Skeleton\Shinobi\Models\Role::class,
+        'permission' => \VendorName\Skeleton\Shinobi\Models\Permission::class,
     ],
     
     'tables' => [
@@ -85,8 +87,6 @@ O sistema agora usa uma configuração unificada onde:
 - **Models**: Use `config('react-papa-leguas.models.*')` ou `config('shinobi.models.*')` para modelos
 - **Colunas padrão**: Use `config('tenant.default_tenant_columns')` para colunas de tenant
 
-## Compatibilidade
-
 ## Características
 
 - **Auto-Scoping**: Filtragem automática por tenant em todos os modelos
@@ -99,7 +99,7 @@ O sistema agora usa uma configuração unificada onde:
 ### 1. Adicionar trait aos modelos
 
 ```php
-use Callcocam\PapaLeguasReact\Landlord\BelongsToTenants;
+use VendorName\Skeleton\Landlord\BelongsToTenants;
 
 class Post extends Model
 {
@@ -129,7 +129,7 @@ class Post extends Model
 ### Manual - Desabilitar temporariamente
 
 ```php
-use Callcocam\PapaLeguasReact\Landlord\TenantManager;
+use VendorName\Skeleton\Landlord\TenantManager;
 
 // Para uma operação específica
 app(TenantManager::class)->withoutTenantScoping(function () {
@@ -234,147 +234,4 @@ $tenantPosts = Post::all(); // Posts do tenant atual (se houver)
 
 ## Configuração
 
-Veja `config/tenant.php` e `config/react-papa-leguas.php` para opções de configuração.vel & Lumen 5.2+
- 
-and set your `default_tenant_columns` setting, if you have an app-wide default. LandLord will use this setting to scope models that don’t have a `$tenantColumns` property set.
-
-### Lumen
-
-You'll need to set the service provider in your `bootstrap/app.php`:
-
-```php
-$app->register(Callcocam\PapaLeguas\Core\Landlord\LandlordServiceProvider::class);
-```
-
-And make sure you've un-commented `$app->withEloquent()`.
-
-## Usage
-
-This package assumes that you have at least one column on all of your Tenant scoped tables that references which tenant each row belongs to.
-
-For example, you might have a `companies` table, and a bunch of other tables that have a `company_id` column.
-
-### Adding and Removing Tenants
-
-> **IMPORTANT NOTE:** Landlord is stateless. This means that when you call `addTenant()`, it will only scope the *current request*.
-> 
-> Make sure that you are adding your tenants in such a way that it happens on every request, and before you need Models scoped, like in a middleware or as part of a stateless authentication method like OAuth.
-
-You can tell Landlord to automatically scope by a given Tenant by calling `addTenant()`, either from the `Landlord` facade, or by injecting an instance of `TenantManager()`.
-
-You can pass in either a tenant column and id:
-
-```php
-Landlord::addTenant('tenant_id', 1);
-```
-
-Or an instance of a Tenant model:
-
-```php
-$tenant = Tenant::find(1);
-
-Landlord::addTenant($tenant);
-```
-
-If you pass a Model instance, Landlord will use Eloquent’s `getForeignKey()` method to decide the tenant column name.
-
-You can add as many tenants as you need to, however Landlord will only allow **one** of each type of tenant at a time.
-
-To remove a tenant and stop scoping by it, simply call `removeTenant()`:
-
-```php
-Landlord::removeTenant('tenant_id');
-
-// Or you can again pass a Model instance:
-$tenant = Tenant::find(1);
-
-Landlord::removeTenant($tenant);
-```
-
-You can also check whether Landlord currently is scoping by a given tenant:
-
-```php
-// As you would expect by now, $tenant can be either a string column name or a Model instance
-Landlord::hasTenant($tenant);
-```
-
-And if for some reason you need to, you can retrieve Landlord's tenants:
-
-```php
-// $tenants is a Laravel Collection object, in the format 'tenant_id' => 1
-$tenants = Landlord::getTenants();
-```
-
-### Setting up your Models
-
-To set up a model to be scoped automatically, simply use the `BelongsToTenants` trait:
-
-```php
-
-use Illuminate\Database\Eloquent\Model;
-use Callcocam\PapaLeguas\Core\Landlord\BelongsToTenants;
-
-class ExampleModel extends Model
-{
-    use BelongsToTenants;
-}
-```
-
-If you’d like to override the tenants that apply to a particular model, you can set the `$tenantColumns` property:
-
-```php
-
-use Illuminate\Database\Eloquent\Model;
-use Callcocam\PapaLeguas\Core\Landlord\BelongsToTenants;
-
-class ExampleModel extends Model
-{
-    use BelongsToTenants;
-    
-    public $tenantColumns = ['tenant_id'];
-}
-```
-
-### Creating new Tenant scoped Models
-
-When you create a new instance of a Model which uses `BelongsToTenants`, Landlord will automatically add any applicable Tenant ids, if they are not already set:
-
-```php
-// 'tenant_id' will automatically be set by Landlord
-$model = ExampleModel::create(['name' => 'whatever']);
-```
-
-### Querying Tenant scoped Models
-
-After you've added tenants, all queries against a Model which uses `BelongsToTenant` will be scoped automatically:
-
-```php
-// This will only include Models belonging to the current tenant(s)
-ExampleModel::all();
-
-// This will fail with a ModelNotFoundForTenantException if it belongs to the wrong tenant
-ExampleModel::find(2);
-```
-
-> **Note:** When you are developing a multi tenanted application, it can be confusing sometimes why you keep getting `ModelNotFound` exceptions for rows that DO exist, because they belong to the wrong tenant.
->
-> Landlord will catch those exceptions, and re-throw them as `ModelNotFoundForTenantException`, to help you out :)
-
-If you need to query across all tenants, you can use `allTenants()`:
-
-```php
-// Will include results from ALL tenants, just for this query
-ExampleModel::allTenants()->get()
-```
-
-Under the hood, Landlord uses Laravel's [anonymous global scopes](https://laravel.com/docs/5.3/eloquent#global-scopes). This means that if you are scoping by multiple tenants simultaneously, and you want to exclude one of the for a single query, you can do so:
-
-```php
-// Will not scope by 'tenant_id', but will continue to scope by any other tenants that have been set
-ExampleModel::withoutGlobalScope('tenant_id')->get();
-```
-
-
-## Contributing
-
-If you find an issue, or have a better way to do something, feel free to open an issue or a pull request.
+Veja `config/tenant.php` e `config/react-papa-leguas.php` para opções de configuração.

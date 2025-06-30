@@ -1,12 +1,12 @@
 <?php
 /**
-* Created by Claudio Campos.
-* User: callcocam@gmail.com, contato@sigasmart.com.br
-* https://www.sigasmart.com.br
-*/
-namespace Callcocam\PapaLeguasReact\Landlord\Facades;
+ * Created by :author_name.
+ * User: :author_username, author@domain.com
+ * https://www.sigasmart.com.br
+ */
+namespace VendorName\Skeleton\Landlord\Facades;
 
-use Callcocam\PapaLeguasReact\Landlord\TenantManager;
+use VendorName\Skeleton\Landlord\TenantManager;
 use Illuminate\Support\Facades\Facade;
 
 class Landlord extends Facade
