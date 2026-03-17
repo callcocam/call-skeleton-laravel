@@ -12,7 +12,7 @@ use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramCategoryContract;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
-class CategoryController extends Controller 
+class CategoryController extends Controller
 {
     /**
      * Retorna a hierarquia de categorias (pais e filhos)
@@ -29,7 +29,7 @@ class CategoryController extends Controller
                 ->with(['parent', 'children'])
                 ->find($categoryId);
 
-            if (!$category) {
+            if (! $category) {
                 return response()->json([
                     'error' => 'Categoria não encontrada',
                 ], 404);
@@ -37,7 +37,7 @@ class CategoryController extends Controller
 
             // Busca toda a hierarquia de pais (do mais alto até a categoria atual)
             $hierarchy = $category->getFullHierarchy();
-            
+
             // Busca os filhos diretos da categoria
             $children = $categoryModelClass::query()
                 ->where('category_id', $categoryId)

@@ -1,13 +1,40 @@
 <?php
+
 /**
  * Created by Claudio Campos.
  * User: callcocam@gmail.com, contato@sigasmart.com.br
  * https://www.sigasmart.com.br
  */
+
 namespace Callcocam\LaravelRaptorPlanogram;
 
-use Illuminate\Support\Facades\Route;
 use Callcocam\LaravelRaptorPlanogram\Commands\LaravelRaptorPlanogramCommand;
+use Callcocam\LaravelRaptorPlanogram\Services\AiGenerate\IAPlanogramService;
+use Callcocam\LaravelRaptorPlanogram\Services\AiGenerate\IAPromptBuilderService;
+use Callcocam\LaravelRaptorPlanogram\Services\AiGenerate\IAResponseParserService;
+use Callcocam\LaravelRaptorPlanogram\Services\Analysis\AbcAnalysisService;
+use Callcocam\LaravelRaptorPlanogram\Services\Analysis\TargetStockService;
+use Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\AutoPlanogramService;
+use Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\LayoutOptimizationService;
+use Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\MerchandisingRulesService;
+use Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\ProductSelectionService;
+use Callcocam\LaravelRaptorPlanogram\Services\GondolaPayloadService;
+use Callcocam\LaravelRaptorPlanogram\Services\GondolaService;
+use Callcocam\LaravelRaptorPlanogram\Services\LayerService;
+use Callcocam\LaravelRaptorPlanogram\Services\PlanogramChangeService;
+use Callcocam\LaravelRaptorPlanogram\Services\Printing\GondolaPrintService;
+use Callcocam\LaravelRaptorPlanogram\Services\ProductService;
+use Callcocam\LaravelRaptorPlanogram\Services\QRCode\QRCodeService;
+use Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionAIAllocator;
+use Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionContextBuilder;
+use Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionPersistenceService;
+use Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionPlanogramService;
+use Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionRulesAllocator;
+use Callcocam\LaravelRaptorPlanogram\Services\SectionService;
+use Callcocam\LaravelRaptorPlanogram\Services\SegmentService;
+use Callcocam\LaravelRaptorPlanogram\Services\ShelfPositioningService;
+use Callcocam\LaravelRaptorPlanogram\Services\ShelfService;
+use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -20,31 +47,31 @@ class LaravelRaptorPlanogramServiceProvider extends PackageServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/plannogram.php', 'plannogram');
 
         foreach ([
-            \Callcocam\LaravelRaptorPlanogram\Services\PlanogramChangeService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\GondolaService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\GondolaPayloadService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\SectionService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\ShelfService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\ShelfPositioningService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\SegmentService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\LayerService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\ProductService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\Analysis\AbcAnalysisService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\Analysis\TargetStockService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\AutoPlanogramService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\LayoutOptimizationService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\MerchandisingRulesService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\ProductSelectionService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\AiGenerate\IAPlanogramService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\AiGenerate\IAPromptBuilderService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\AiGenerate\IAResponseParserService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionAIAllocator::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionContextBuilder::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionPersistenceService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionPlanogramService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate\SectionRulesAllocator::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\Printing\GondolaPrintService::class,
-            \Callcocam\LaravelRaptorPlanogram\Services\QRCode\QRCodeService::class,
+            PlanogramChangeService::class,
+            GondolaService::class,
+            GondolaPayloadService::class,
+            SectionService::class,
+            ShelfService::class,
+            ShelfPositioningService::class,
+            SegmentService::class,
+            LayerService::class,
+            ProductService::class,
+            AbcAnalysisService::class,
+            TargetStockService::class,
+            AutoPlanogramService::class,
+            LayoutOptimizationService::class,
+            MerchandisingRulesService::class,
+            ProductSelectionService::class,
+            IAPlanogramService::class,
+            IAPromptBuilderService::class,
+            IAResponseParserService::class,
+            SectionAIAllocator::class,
+            SectionContextBuilder::class,
+            SectionPersistenceService::class,
+            SectionPlanogramService::class,
+            SectionRulesAllocator::class,
+            GondolaPrintService::class,
+            QRCodeService::class,
         ] as $serviceClass) {
             $this->app->singleton($serviceClass);
         }

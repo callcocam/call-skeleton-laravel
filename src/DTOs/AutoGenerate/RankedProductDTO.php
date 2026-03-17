@@ -10,7 +10,7 @@ namespace Callcocam\LaravelRaptorPlanogram\DTOs\AutoGenerate;
 
 /**
  * DTO de Produto Ranqueado para Geração Automática
- * 
+ *
  * Armazena o produto + metadados de análise:
  * - Classificação ABC
  * - Pontuação (score) calculada pela estratégia
@@ -75,4 +75,3 @@ class RankedProductDTO
         ];
     }
 }
-

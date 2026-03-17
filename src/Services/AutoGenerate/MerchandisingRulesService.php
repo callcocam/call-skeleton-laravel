@@ -34,8 +34,8 @@ class MerchandisingRulesService
      * Dentro do range, usa score para decidir posição exata
      * (score maior = posição mais alta dentro do range)
      *
-     * @param  int  $totalShelves Número total de prateleiras disponíveis
-     * @param  float  $scoreRatio Posição relativa do produto (0-1, maior = mais importante)
+     * @param  int  $totalShelves  Número total de prateleiras disponíveis
+     * @param  float  $scoreRatio  Posição relativa do produto (0-1, maior = mais importante)
      * @return int Índice da prateleira (0 = mais baixa, N = mais alta)
      */
     public function determineShelfIndex(

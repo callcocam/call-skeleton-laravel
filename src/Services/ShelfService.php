@@ -12,6 +12,7 @@ use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramLayerRepositoryContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramSectionRepositoryContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramSegmentRepositoryContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramShelfRepositoryContract;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -283,7 +284,7 @@ class ShelfService
 
         // Normaliza deleted_at
         if (isset($updates['deleted_at']) && is_string($updates['deleted_at'])) {
-            $updates['deleted_at'] = \Carbon\Carbon::parse($updates['deleted_at'])->format('Y-m-d H:i:s');
+            $updates['deleted_at'] = Carbon::parse($updates['deleted_at'])->format('Y-m-d H:i:s');
         }
 
         $updates['updated_at'] = now();

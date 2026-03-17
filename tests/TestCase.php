@@ -8,9 +8,9 @@
 
 namespace Callcocam\LaravelRaptorPlanogram\Tests;
 
+use Callcocam\LaravelRaptorPlanogram\LaravelRaptorPlanogramServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Callcocam\LaravelRaptorPlanogram\LaravelRaptorPlanogramServiceProvider;
 
 class TestCase extends Orchestra
 {

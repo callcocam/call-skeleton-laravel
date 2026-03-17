@@ -8,9 +8,9 @@
 
 namespace Callcocam\LaravelRaptorPlanogram\Http\Controllers\Editor;
 
+use Callcocam\LaravelRaptor\Http\Controllers\ResourceController;
 use Callcocam\LaravelRaptorPlanogram\Models\Section;
 use Callcocam\LaravelRaptorPlanogram\Models\Shelf;
-use Callcocam\LaravelRaptor\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -72,7 +72,7 @@ class SectionController extends ResourceController
                 'ordering' => $maxOrdering + 1,
                 'status' => 'published',
             ]);
- 
+
             // Criar prateleiras padrão
             $numShelves = $validated['num_shelves'] ?? 4;
             $shelfHeight = $validated['shelf_height'] ?? 4;
@@ -90,7 +90,7 @@ class SectionController extends ResourceController
                     'tenant_id' => tenant_id(),
                     'user_id' => auth()->id(),
                     'section_id' => $section->id,
-                    'code' => 'SHELF-' . $section->id . '-' . ($i + 1),
+                    'code' => 'SHELF-'.$section->id.'-'.($i + 1),
                     'shelf_height' => $shelfHeight,
                     'shelf_width' => $shelfWidth,
                     'shelf_depth' => $shelfDepth,
@@ -109,7 +109,7 @@ class SectionController extends ResourceController
             DB::rollBack();
 
             return redirect()->back()->withErrors([
-                'error' => 'Erro ao criar seção: ' . $e->getMessage(),
+                'error' => 'Erro ao criar seção: '.$e->getMessage(),
             ]);
         }
     }
@@ -147,7 +147,7 @@ class SectionController extends ResourceController
     {
         try {
             $section = Section::findOrFail($id);
-            
+
             return response()->json([
                 'data' => [
                     'id' => $section->id,
@@ -161,7 +161,7 @@ class SectionController extends ResourceController
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Seção não encontrada: ' . $e->getMessage(),
+                'error' => 'Seção não encontrada: '.$e->getMessage(),
             ], 404);
         }
     }
@@ -180,7 +180,7 @@ class SectionController extends ResourceController
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->withErrors([
-                'error' => 'Erro ao excluir seção: ' . $e->getMessage(),
+                'error' => 'Erro ao excluir seção: '.$e->getMessage(),
             ]);
         }
     }
@@ -189,14 +189,14 @@ class SectionController extends ResourceController
      * Transfere uma seção para outra gôndola
      */
     public function transfer(Request $request, string $sectionId)
-    { 
+    {
         $validated = $request->validate([
             'gondola_id' => 'required|string|exists:gondolas,id',
         ]);
 
         try {
             DB::beginTransaction();
- 
+
             $section = Section::findOrFail($sectionId);
             $targetGondolaId = $validated['gondola_id'];
 
@@ -229,7 +229,7 @@ class SectionController extends ResourceController
             ]);
 
             return back()->withErrors([
-                'error' => 'Erro ao transferir seção: ' . $e->getMessage(),
+                'error' => 'Erro ao transferir seção: '.$e->getMessage(),
             ]);
         }
     }

@@ -3,6 +3,7 @@
 namespace Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate;
 
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramSectionAllocatorContract;
+use Callcocam\LaravelRaptorPlanogram\DTOs\AutoGenerate\RankedProductDTO;
 use Callcocam\LaravelRaptorPlanogram\DTOs\SectionGenerate\SectionAllocationResultDTO;
 use Callcocam\LaravelRaptorPlanogram\Models\Section;
 use Illuminate\Support\Collection;
@@ -26,7 +27,7 @@ class SectionAIAllocator
     /**
      * Alocar produtos na section usando o Agent.
      *
-     * @param  Collection<int, \Callcocam\LaravelRaptorPlanogram\DTOs\AutoGenerate\RankedProductDTO>  $rankedProducts
+     * @param  Collection<int, RankedProductDTO>  $rankedProducts
      */
     public function allocate(Section $section, Collection $rankedProducts): SectionAllocationResultDTO
     {

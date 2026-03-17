@@ -6,7 +6,7 @@ namespace Callcocam\LaravelRaptorPlanogram\DTOs\SectionGenerate;
  * Um item de alocação: produto X em prateleira Y com Z facings.
  *
  * Formato esperado da resposta do PlanogramSectionAllocator (campo allocation[]).
- * 
+ *
  * V2: Agora inclui dimensões do produto para cálculo de position_x.
  */
 readonly class SectionAllocationItemDTO

@@ -8,9 +8,9 @@
 
 namespace Callcocam\LaravelRaptorPlanogram\Http\Controllers\Editor;
 
+use Callcocam\LaravelRaptor\Http\Controllers\ResourceController;
 use Callcocam\LaravelRaptorPlanogram\Models\Section;
 use Callcocam\LaravelRaptorPlanogram\Models\Shelf;
-use Callcocam\LaravelRaptor\Http\Controllers\ResourceController;
 use Illuminate\Http\Request;
 
 class ShelfController extends ResourceController

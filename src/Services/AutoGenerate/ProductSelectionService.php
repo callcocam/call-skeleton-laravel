@@ -134,7 +134,7 @@ class ProductSelectionService
 
         // Query recursiva SQL para buscar TODAS as categorias descendentes
         $categoryIds = $connection->select(
-            "
+            '
             WITH RECURSIVE category_tree AS (
                 -- Categoria inicial
                 SELECT id, category_id, name
@@ -149,7 +149,7 @@ class ProductSelectionService
                 INNER JOIN category_tree ct ON c.category_id = ct.id
             )
             SELECT id FROM category_tree
-        ",
+        ',
             [$categoryId]
         );
 

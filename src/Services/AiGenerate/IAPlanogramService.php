@@ -8,22 +8,23 @@
 
 namespace Callcocam\LaravelRaptorPlanogram\Services\AiGenerate;
 
+use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramCategoryContract;
+use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramProductContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramTenantConnectionResolverContract;
 use Callcocam\LaravelRaptorPlanogram\DTOs\IAGenerate\IAGenerateConfigDTO;
 use Callcocam\LaravelRaptorPlanogram\DTOs\IAGenerate\IAGenerateResultDTO;
 use Callcocam\LaravelRaptorPlanogram\DTOs\IAGenerate\PlanogramContextDTO;
-use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramCategoryContract;
-use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramProductContract;
 use Callcocam\LaravelRaptorPlanogram\Models\Gondola;
+use Callcocam\LaravelRaptorPlanogram\Models\Layer;
+use Callcocam\LaravelRaptorPlanogram\Models\Segment;
+use Callcocam\LaravelRaptorPlanogram\Models\Shelf;
+use Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\ProductSelectionService;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Prism\Prism\Facades\Prism;
-use Callcocam\LaravelRaptorPlanogram\Models\Layer;
-use Callcocam\LaravelRaptorPlanogram\Models\Segment;
-use Callcocam\LaravelRaptorPlanogram\Models\Shelf;
-use Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\ProductSelectionService;
 
 /**
  * Serviço Principal de Geração de Planogramas com IA
@@ -472,7 +473,7 @@ class IAPlanogramService
      */
     protected function callAnthropicAPI(string $prompt, string $model, IAGenerateConfigDTO $config): array
     {
-        $client = new \Illuminate\Http\Client\PendingRequest;
+        $client = new PendingRequest;
         $client->withHeaders([
             'x-api-key' => config('prism.providers.anthropic.api_key'),
             'anthropic-version' => config('prism.providers.anthropic.version', '2023-06-01'),
@@ -516,7 +517,7 @@ class IAPlanogramService
      */
     protected function callOpenAIAPI(string $prompt, string $model, IAGenerateConfigDTO $config): array
     {
-        $client = new \Illuminate\Http\Client\PendingRequest;
+        $client = new PendingRequest;
         $client->withHeaders([
             'Authorization' => 'Bearer '.config('prism.providers.openai.api_key'),
             'Content-Type' => 'application/json',

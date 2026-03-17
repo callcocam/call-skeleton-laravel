@@ -8,29 +8,69 @@
 
 namespace Callcocam\LaravelRaptorPlanogram\Http\Controllers\Editor;
 
-use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramCategoryContract;
+use Callcocam\LaravelRaptor\Http\Controllers\ResourceController;
+use Callcocam\LaravelRaptor\Support\Pages\Edit;
+use Callcocam\LaravelRaptor\Support\Pages\Show;
+use Callcocam\LaravelRaptorFlow\Models\FlowExecution;
+use Callcocam\LaravelRaptorFlow\Services\FlowManager;
 use Callcocam\LaravelRaptorPlanogram\Contracts\GondolaWorkflowContract;
+use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramCategoryContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramGondolaAnalysisRepositoryContract;
-use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramProductImageDispatcherContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramProductContract;
+use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramProductImageDispatcherContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramUserRepositoryContract;
 use Callcocam\LaravelRaptorPlanogram\Http\Requests\Editor\StoreGondolaRequest;
 use Callcocam\LaravelRaptorPlanogram\Http\Requests\Editor\UpdateGondolaRequest;
 use Callcocam\LaravelRaptorPlanogram\Models\Gondola;
 use Callcocam\LaravelRaptorPlanogram\Models\Planogram;
 use Callcocam\LaravelRaptorPlanogram\Models\Section;
-use Callcocam\LaravelRaptorPlanogram\Services\GondolaService;
 use Callcocam\LaravelRaptorPlanogram\Services\GondolaPayloadService;
-use Callcocam\LaravelRaptor\Http\Controllers\ResourceController;
-use Callcocam\LaravelRaptorFlow\Models\FlowExecution;
-use Callcocam\LaravelRaptorFlow\Services\FlowManager;
+use Callcocam\LaravelRaptorPlanogram\Services\GondolaService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
-abstract class GondolaController extends ResourceController
+class GondolaController extends ResourceController
 {
-    
+    public function __construct(
+        protected PlanogramGondolaAnalysisRepositoryContract $gondolaAnalysisRepository,
+        protected PlanogramProductImageDispatcherContract $productImageDispatcher,
+        protected PlanogramUserRepositoryContract $userRepository,
+    ) {}
+
+    protected function getResourceLabel(): ?string
+    {
+        return 'Gôndola';
+    }
+
+    protected function resourcePath(): ?string
+    {
+        return 'tenant';
+    }
+
+    public function getPages(): array
+    {
+        return [
+            'edit' => \Callcocam\LaravelRaptor\Support\Pages\Edit::route('/plannograma/{planogram}/editor/gondolas/{record}/edit')
+                ->label('Editar Gôndola')
+                ->name('plannerates.editor.gondolas.edit')
+                ->icon('Edit')
+                ->group('Planogramas')
+                ->groupCollapsible(true)
+                ->order(30)
+                ->middlewares(['auth', 'verified']),
+            'show' => \Callcocam\LaravelRaptor\Support\Pages\Show::route('/plannograma/{planogram}/editor/gondolas/{record}/show')
+                ->label('Visualizar Gôndola')
+                ->name('plannerates.editor.gondolas.show')
+                ->icon('View')
+                ->group('Planogramas')
+                ->groupCollapsible(true)
+                ->order(31)
+                ->middlewares(['auth', 'verified']),
+        ];
+    }
 
     public function edit($planogram, $record)
     {
@@ -43,7 +83,7 @@ abstract class GondolaController extends ResourceController
         ]);
         // Até aqui vai bem rapido
         $availableUsers = $this->getAvailableUsers($gondola->tenant_id);
-        $recordData = app(GondolaPayloadService::class)->buildEditorPayload($gondola);  
+        $recordData = app(GondolaPayloadService::class)->buildEditorPayload($gondola); 
 
         if (! data_get($recordData, 'planogram.gondolas') || data_get($recordData, 'planogram.gondolas') === []) {
             abort(403, 'Planograma sem gôndolas. Não existe nenhuma gôndola associada a esta etapa do planograma.');
@@ -131,7 +171,7 @@ abstract class GondolaController extends ResourceController
                     );
 
                     return redirect()->back()->with('success', 'Gôndola criada e workflow iniciado com sucesso!');
-                } catch (\Illuminate\Validation\ValidationException $e) {
+                } catch (ValidationException $e) {
                     return redirect()->back()->with('info', 'Gôndola criada! O workflow pode ser iniciado posteriormente no kanban.');
                 }
             }
@@ -424,7 +464,7 @@ abstract class GondolaController extends ResourceController
 
     public function getRouteGondolasAttribute()
     {
-        if (! \Illuminate\Support\Facades\Route::has('tenant.plannerates.editor.gondolas.edit')) {
+        if (! Route::has('tenant.plannerates.editor.gondolas.edit')) {
             return null;
         }
 

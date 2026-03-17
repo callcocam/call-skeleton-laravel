@@ -166,8 +166,8 @@ class LayoutOptimizationService
      *
      * MELHORIA V2: Limite de distância para não colocar produto A em prateleira C
      *
-     * @param  int  $idealIndex Índice ideal calculado
-     * @param  int  $maxDistance Distância máxima permitida (padrão: 3 prateleiras)
+     * @param  int  $idealIndex  Índice ideal calculado
+     * @param  int  $maxDistance  Distância máxima permitida (padrão: 3 prateleiras)
      */
     protected function tryAllocateNearby(
         array $shelves,

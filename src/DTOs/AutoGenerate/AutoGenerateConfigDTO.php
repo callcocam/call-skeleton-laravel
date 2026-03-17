@@ -10,7 +10,7 @@ namespace Callcocam\LaravelRaptorPlanogram\DTOs\AutoGenerate;
 
 /**
  * DTO de Configuração para Geração Automática de Planogramas
- * 
+ *
  * Armazena todas as opções escolhidas pelo usuário no modal:
  * - Estratégia de otimização (ABC, Vendas, Margem, Mix)
  * - Configurações de facings (mín/máx)
@@ -89,4 +89,3 @@ class AutoGenerateConfigDTO
         ];
     }
 }
-

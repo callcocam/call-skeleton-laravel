@@ -8,9 +8,9 @@ use Callcocam\LaravelRaptorPlanogram\DTOs\AutoGenerate\ShelfLayoutDTO;
 use Callcocam\LaravelRaptorPlanogram\DTOs\SectionGenerate\SectionAllocationItemDTO;
 use Callcocam\LaravelRaptorPlanogram\DTOs\SectionGenerate\SectionAllocationResultDTO;
 use Callcocam\LaravelRaptorPlanogram\Models\Section;
+use Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\MerchandisingRulesService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\MerchandisingRulesService;
 
 /**
  * Alocação por regras para UMA section: distribui produtos nas prateleiras

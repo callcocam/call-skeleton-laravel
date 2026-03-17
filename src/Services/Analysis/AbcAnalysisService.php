@@ -665,7 +665,7 @@ class AbcAnalysisService
      * Exemplo: Se a hierarquia tem 7 níveis, retorna o ID do 5º nível
      * Se a hierarquia tem 3 níveis, retorna o ID do 3º nível (o mais alto disponível)
      *
-    * @param  object|null  $product  Produto para buscar a categoria
+     * @param  object|null  $product  Produto para buscar a categoria
      * @return string|null ID da categoria no 5º nível ou null se não houver categoria
      */
     private function getCategoryIdAtLevel5(?object $product): ?string
@@ -692,7 +692,7 @@ class AbcAnalysisService
      *
      * Usa dados pré-carregados em vez de fazer query individual
      *
-    * @param  object|null  $product  Modelo do produto
+     * @param  object|null  $product  Modelo do produto
      * @param  object|null  $lastSaleData  Dados da última venda (pré-carregados)
      */
     private function calculateProductStatusOptimized(?object $product, ?object $lastSaleData): array

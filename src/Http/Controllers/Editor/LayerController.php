@@ -8,8 +8,8 @@
 
 namespace Callcocam\LaravelRaptorPlanogram\Http\Controllers\Editor;
 
-use Callcocam\LaravelRaptorPlanogram\Models\Layer;
 use Callcocam\LaravelRaptor\Http\Controllers\ResourceController;
+use Callcocam\LaravelRaptorPlanogram\Models\Layer;
 use Illuminate\Http\Request;
 
 class LayerController extends ResourceController
