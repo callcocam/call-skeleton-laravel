@@ -76,13 +76,15 @@ class Gondola extends AbstractModel
             ->count();
     }
 
-    public function getRouteGondolasAttribute()
+    public function getRouteGondolasAttribute(): ?string
     {
-        if (! \Illuminate\Support\Facades\Route::has('tenant.plannerates.editor.gondolas.edit')) {
+        $routeName = config('plannogram.gondola_editor_route', 'tenant.plannerates.editor.gondolas.edit');
+
+        if (! \Illuminate\Support\Facades\Route::has($routeName)) {
             return null;
         }
 
-        return route('tenant.plannerates.editor.gondolas.edit', ['planogram' => $this->planogram_id, 'record' => $this->id]);
+        return route($routeName, ['planogram' => $this->planogram_id, 'record' => $this->id]);
     }
 
     protected function applyDomainContext(Builder $query): Builder

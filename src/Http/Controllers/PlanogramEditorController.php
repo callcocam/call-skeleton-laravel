@@ -22,11 +22,6 @@ use Inertia\Response;
 
 class PlanogramEditorController extends ResourceController
 {
-    public function __construct(
-        protected PlanogramStoreRepositoryContract $storeRepository,
-        protected PlanogramUserRepositoryContract $userRepository,
-    ) {}
-
     public function getPages(): array
     {
         return [
@@ -56,7 +51,7 @@ class PlanogramEditorController extends ResourceController
 
         // Carrega dados do mapa da store se existir (está no banco landlord)
         if ($record->store_id) {
-            $store = $this->storeRepository->findMapDataById($record->store_id);
+            $store = $this->storeRepository()->findMapDataById($record->store_id);
             if ($store !== null) {
                 $recordArray['store'] = $store;
             }
@@ -75,7 +70,7 @@ class PlanogramEditorController extends ResourceController
             return Inertia::render('tenant/plannerates/index', [
                 'filters' => $filters,
                 'record' => $recordArray,
-                'users' => $this->userRepository->listBasicUsers(),
+                'users' => $this->userRepository()->listBasicUsers(),
             ]);
         }
 
@@ -176,6 +171,16 @@ class PlanogramEditorController extends ResourceController
     protected function getResourceLabel(): ?string
     {
         return 'Plannerate';
+    }
+
+    protected function storeRepository(): PlanogramStoreRepositoryContract
+    {
+        return app(PlanogramStoreRepositoryContract::class);
+    }
+
+    protected function userRepository(): PlanogramUserRepositoryContract
+    {
+        return app(PlanogramUserRepositoryContract::class);
     }
 
     protected function planogramWorkflowModelClass(): string

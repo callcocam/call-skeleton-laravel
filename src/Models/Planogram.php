@@ -10,9 +10,10 @@ namespace Callcocam\LaravelRaptorPlanogram\Models;
 
 use Callcocam\LaravelRaptor\Models\AbstractModel;
 use Callcocam\LaravelRaptorFlow\Models\FlowConfigStep;
+use Callcocam\LaravelRaptorFlow\Models\FlowExecution;
+use Callcocam\LaravelRaptorPlanogram\Contracts\GondolaWorkflowContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramCategoryContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramWorkflowContract;
-use Callcocam\LaravelRaptorPlanogram\Enums\GondolaWorkflowStatus;
 use Callcocam\LaravelRaptorPlanogram\Support\Traits\HasCrossDatabaseRelations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -66,10 +67,10 @@ class Planogram extends AbstractModel
 
     public function gondolasStarted()
     {
-        $gondolaIds = DB::connection(config('raptor.database.landlord_connection_name', 'landlord'))
-            ->table('gondola_workflow_executions')
-            ->where('status', GondolaWorkflowStatus::InProgress->value)
-            ->pluck('gondola_id'); 
+        $gondolaIds = FlowExecution::query()
+            ->where('workable_type', $this->gondolaWorkflowModelClass())
+            ->where('status', 'in_progress')
+            ->pluck('workable_id');
 
         return $this->hasMany(Gondola::class)->whereIn('id', $gondolaIds);
     }
@@ -200,6 +201,11 @@ class Planogram extends AbstractModel
     protected function planogramWorkflowModelClass(): string
     {
         return get_class(app(PlanogramWorkflowContract::class));
+    }
+
+    protected function gondolaWorkflowModelClass(): string
+    {
+        return get_class(app(GondolaWorkflowContract::class));
     }
 
     protected function categoryModelClass(): string

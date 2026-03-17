@@ -77,15 +77,18 @@ class LaravelRaptorPlanogramServiceProvider extends PackageServiceProvider
 
     protected function registerPackageRoutes(): void
     {
-        $routeFile = __DIR__.'/../routes/planogram.php';
+        $planogramRouteFile = __DIR__.'/../routes/planogram.php';
+        $exportRouteFile = __DIR__.'/../routes/export.php';
 
-        if (! is_file($routeFile)) {
-            return;
+        if (is_file($planogramRouteFile)) {
+            Route::middleware(config('plannogram.route_middleware', ['web', 'auth']))
+                ->prefix(config('plannogram.route_prefix', 'planogram-package'))
+                ->name(config('plannogram.route_name_prefix', 'planogram-package.'))
+                ->group($planogramRouteFile);
         }
 
-        Route::middleware(config('plannogram.route_middleware', ['web', 'auth']))
-            ->prefix(config('plannogram.route_prefix', 'planogram-package'))
-            ->name(config('plannogram.route_name_prefix', 'planogram-package.'))
-            ->group($routeFile);
+        if (is_file($exportRouteFile)) {
+            Route::middleware(['web'])->group($exportRouteFile);
+        }
     }
 }

@@ -19,9 +19,14 @@ use Callcocam\LaravelRaptorPlanogram\Http\Controllers\Editor\ShelfController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api')->name('api.')->group(function () {
+	$gondolaController = config('plannogram.controllers.gondola_editor', GondolaController::class);
 	$productDetailsController = config('plannogram.controllers.product_details');
 	$productImageController = config('plannogram.controllers.product_image');
 	$gondolaAnalysisController = config('plannogram.controllers.gondola_analysis');
+
+	if (! is_string($gondolaController) || ! class_exists($gondolaController)) {
+		$gondolaController = GondolaController::class;
+	}
 
 	if (is_string($productDetailsController) && class_exists($productDetailsController)) {
 		Route::get('products/details/{ean}', [$productDetailsController, 'show'])->name('products.details');
@@ -36,17 +41,17 @@ Route::prefix('api')->name('api.')->group(function () {
 			->name('products.delete-image');
 	}
 
-	Route::post('editor/planograms/{planogram}/gondolas', [GondolaController::class, 'store'])
+	Route::post('editor/planograms/{planogram}/gondolas', [$gondolaController, 'store'])
 		->name('editor.gondolas.store');
-	Route::put('editor/gondolas/{gondola}', [GondolaController::class, 'update'])
+	Route::put('editor/gondolas/{gondola}', [$gondolaController, 'update'])
 		->name('editor.gondolas.update');
-	Route::delete('editor/gondolas/{gondola}', [GondolaController::class, 'destroy'])
+	Route::delete('editor/gondolas/{gondola}', [$gondolaController, 'destroy'])
 		->name('editor.gondolas.destroy');
-	Route::get('editor/gondolas/{gondola}/sections', [GondolaController::class, 'sections'])
+	Route::get('editor/gondolas/{gondola}/sections', [$gondolaController, 'sections'])
 		->name('editor.gondolas.sections');
-	Route::get('plannograma/{planogram}/editor/gondolas/{gondola}/products', [GondolaController::class, 'products'])
+	Route::get('plannograma/{planogram}/editor/gondolas/{gondola}/products', [$gondolaController, 'products'])
 		->name('editor.gondolas.products');
-	Route::post('editor/gondolas/{gondola}/update-images', [GondolaController::class, 'updateImages'])
+	Route::post('editor/gondolas/{gondola}/update-images', [$gondolaController, 'updateImages'])
 		->name('editor.gondolas.update-images');
 
 	Route::get('editor/categories', [CategoryController::class, 'index'])

@@ -15,7 +15,9 @@ return [
     'current_client_id' => null,
     'tenant_database' => null,
     'app_url' => null,
+    'gondola_editor_route' => 'tenant.plannerates.editor.gondolas.edit',
     'controllers' => [
+        'gondola_editor' => null,
         'product_details' => null,
         'product_image' => null,
         'gondola_analysis' => null,

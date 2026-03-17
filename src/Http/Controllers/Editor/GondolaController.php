@@ -28,45 +28,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
-class GondolaController extends ResourceController
+abstract class GondolaController extends ResourceController
 {
-    public function __construct(
-        protected PlanogramGondolaAnalysisRepositoryContract $gondolaAnalysisRepository,
-        protected PlanogramProductImageDispatcherContract $productImageDispatcher,
-        protected PlanogramUserRepositoryContract $userRepository,
-    ) {}
-
-    protected function getResourceLabel(): ?string
-    {
-        return 'Gôndola';
-    }
-
-    protected function resourcePath(): ?string
-    {
-        return 'tenant';
-    }
-
-    public function getPages(): array
-    {
-        return [
-            'edit' => \Callcocam\LaravelRaptor\Support\Pages\Edit::route('/plannograma/{planogram}/editor/gondolas/{record}/edit')
-                ->label('Editar Gôndola')
-                ->name('plannerates.editor.gondolas.edit')
-                ->icon('Edit')
-                ->group('Planogramas')
-                ->groupCollapsible(true)
-                ->order(30)
-                ->middlewares(['auth', 'verified']),
-            'show' => \Callcocam\LaravelRaptor\Support\Pages\Show::route('/plannograma/{planogram}/editor/gondolas/{record}/show')
-                ->label('Visualizar Gôndola')
-                ->name('plannerates.editor.gondolas.show')
-                ->icon('View')
-                ->group('Planogramas')
-                ->groupCollapsible(true)
-                ->order(31)
-                ->middlewares(['auth', 'verified']),
-        ];
-    }
+    
 
     public function edit($planogram, $record)
     {
@@ -79,15 +43,15 @@ class GondolaController extends ResourceController
         ]);
         // Até aqui vai bem rapido
         $availableUsers = $this->getAvailableUsers($gondola->tenant_id);
-        $recordData = app(GondolaPayloadService::class)->buildEditorPayload($gondola); 
+        $recordData = app(GondolaPayloadService::class)->buildEditorPayload($gondola);  
 
         if (! data_get($recordData, 'planogram.gondolas') || data_get($recordData, 'planogram.gondolas') === []) {
             abort(403, 'Planograma sem gôndolas. Não existe nenhuma gôndola associada a esta etapa do planograma.');
         }
 
         // Carregar análises mais recentes
-        $abcAnalysis = $this->gondolaAnalysisRepository->getLatestAbcAnalysis($gondola->id);
-        $stockAnalysis = $this->gondolaAnalysisRepository->getLatestStockAnalysis($gondola->id);
+        $abcAnalysis = $this->gondolaAnalysisRepository()->getLatestAbcAnalysis($gondola->id);
+        $stockAnalysis = $this->gondolaAnalysisRepository()->getLatestStockAnalysis($gondola->id);
 
         return Inertia::render('tenant/plannerates/gondolas/edit-v3', [
             'record' => $recordData,
@@ -123,8 +87,8 @@ class GondolaController extends ResourceController
         $recordData = app(GondolaPayloadService::class)->buildEditorPayload($gondola);
 
         // Carregar análises mais recentes
-        $abcAnalysis = $this->gondolaAnalysisRepository->getLatestAbcAnalysis($gondola->id);
-        $stockAnalysis = $this->gondolaAnalysisRepository->getLatestStockAnalysis($gondola->id);
+        $abcAnalysis = $this->gondolaAnalysisRepository()->getLatestAbcAnalysis($gondola->id);
+        $stockAnalysis = $this->gondolaAnalysisRepository()->getLatestStockAnalysis($gondola->id);
 
         return Inertia::render('tenant/plannerates/gondolas/edit-v3', [
             'record' => $recordData,
@@ -258,7 +222,7 @@ class GondolaController extends ResourceController
     protected function getAvailableUsers(string $tenantId): array
     {
         return Cache::remember("tenant_{$tenantId}_users_v2", now()->addMinutes(30), function () use ($tenantId) {
-            return $this->userRepository->listUsersByTenant($tenantId);
+            return $this->userRepository()->listUsersByTenant($tenantId);
         });
     }
 
@@ -427,7 +391,7 @@ class GondolaController extends ResourceController
             return redirect()->back()->with('error', 'Database do cliente não configurado.');
         }
 
-        $this->productImageDispatcher->dispatchByEans($eans, $database);
+        $this->productImageDispatcher()->dispatchByEans($eans, $database);
 
         return redirect()->back()->with(
             'success',
@@ -532,6 +496,21 @@ class GondolaController extends ResourceController
     protected function categoryModelClass(): string
     {
         return get_class(app(PlanogramCategoryContract::class));
+    }
+
+    protected function gondolaAnalysisRepository(): PlanogramGondolaAnalysisRepositoryContract
+    {
+        return app(PlanogramGondolaAnalysisRepositoryContract::class);
+    }
+
+    protected function productImageDispatcher(): PlanogramProductImageDispatcherContract
+    {
+        return app(PlanogramProductImageDispatcherContract::class);
+    }
+
+    protected function userRepository(): PlanogramUserRepositoryContract
+    {
+        return app(PlanogramUserRepositoryContract::class);
     }
 
     protected function productModelClass(): string
