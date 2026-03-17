@@ -79,7 +79,7 @@ class Gondola extends AbstractModel
 
     public function getRouteGondolasAttribute(): ?string
     {
-        if (! \Illuminate\Support\Facades\Route::has('tenant.plannerates.editor.gondolas.edit')) {
+        if (! Route::has('tenant.plannerates.editor.gondolas.edit')) {
             return null;
         }
 

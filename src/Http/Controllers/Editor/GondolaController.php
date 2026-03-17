@@ -53,7 +53,7 @@ class GondolaController extends ResourceController
     public function getPages(): array
     {
         return [
-            'edit' => \Callcocam\LaravelRaptor\Support\Pages\Edit::route('/plannograma/{planogram}/editor/gondolas/{record}/edit')
+            'edit' => Edit::route('/plannograma/{planogram}/editor/gondolas/{record}/edit')
                 ->label('Editar Gôndola')
                 ->name('plannerates.editor.gondolas.edit')
                 ->icon('Edit')
@@ -61,7 +61,7 @@ class GondolaController extends ResourceController
                 ->groupCollapsible(true)
                 ->order(30)
                 ->middlewares(['auth', 'verified']),
-            'show' => \Callcocam\LaravelRaptor\Support\Pages\Show::route('/plannograma/{planogram}/editor/gondolas/{record}/show')
+            'show' => Show::route('/plannograma/{planogram}/editor/gondolas/{record}/show')
                 ->label('Visualizar Gôndola')
                 ->name('plannerates.editor.gondolas.show')
                 ->icon('View')
@@ -83,7 +83,7 @@ class GondolaController extends ResourceController
         ]);
         // Até aqui vai bem rapido
         $availableUsers = $this->getAvailableUsers($gondola->tenant_id);
-        $recordData = app(GondolaPayloadService::class)->buildEditorPayload($gondola); 
+        $recordData = app(GondolaPayloadService::class)->buildEditorPayload($gondola);
 
         if (! data_get($recordData, 'planogram.gondolas') || data_get($recordData, 'planogram.gondolas') === []) {
             abort(403, 'Planograma sem gôndolas. Não existe nenhuma gôndola associada a esta etapa do planograma.');

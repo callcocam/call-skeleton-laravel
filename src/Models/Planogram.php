@@ -10,7 +10,6 @@ namespace Callcocam\LaravelRaptorPlanogram\Models;
 
 use Callcocam\LaravelRaptor\Models\AbstractModel;
 use Callcocam\LaravelRaptorFlow\Models\FlowConfigStep;
-use Callcocam\LaravelRaptorFlow\Models\FlowExecution;
 use Callcocam\LaravelRaptorPlanogram\Contracts\GondolaWorkflowContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramCategoryContract;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramWorkflowContract;
@@ -70,7 +69,7 @@ class Planogram extends AbstractModel
         $gondolaIds = DB::connection(config('raptor.database.landlord_connection_name', 'landlord'))
             ->table('gondola_workflow_executions')
             ->where('status', GondolaWorkflowStatus::InProgress->value)
-            ->pluck('gondola_id'); 
+            ->pluck('gondola_id');
 
         return $this->hasMany(Gondola::class)->whereIn('id', $gondolaIds);
     }
