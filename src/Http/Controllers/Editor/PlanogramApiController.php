@@ -22,7 +22,7 @@ class PlanogramApiController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Planogram::query()
-            ->where('tenant_id', tenant_id()) 
+            ->where('tenant_id', tenant_id())
             ->select('id', 'name', 'description', 'status')
             ->orderBy('name');
 
@@ -45,7 +45,7 @@ class PlanogramApiController extends Controller
     {
         $gondolas = Gondola::query()
             ->where('tenant_id', tenant_id())
-            ->where('planogram_id', $planogramId) 
+            ->where('planogram_id', $planogramId)
             ->select('id', 'name', 'planogram_id')
             ->orderBy('name')
             ->get();

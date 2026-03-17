@@ -10,12 +10,12 @@ namespace Callcocam\LaravelRaptorPlanogram\DTOs\AutoGenerate;
 
 /**
  * DTO de Layout de Prateleira
- * 
+ *
  * Representa uma prateleira (shelf) com os produtos alocados nela:
  * - Índice da prateleira (0 = mais baixa, N = mais alta)
  * - Lista de produtos ranqueados alocados
  * - Largura e profundidade disponível
- * 
+ *
  * V2: Agora valida profundidade do produto vs prateleira.
  */
 class ShelfLayoutDTO
@@ -44,11 +44,11 @@ class ShelfLayoutDTO
 
     /**
      * Adicionar produto à prateleira
-     * 
+     *
      * Valida:
      * - Largura disponível
      * - Profundidade do produto vs prateleira
-     * 
+     *
      * @return bool True se coube, false se não há espaço ou não cabe em profundidade
      */
     public function addProduct(RankedProductDTO $product): bool
@@ -65,6 +65,7 @@ class ShelfLayoutDTO
                 'shelf_depth' => $this->depth,
                 'shelf_id' => $this->id,
             ]);
+
             return false;
         }
 
@@ -72,6 +73,7 @@ class ShelfLayoutDTO
         if ($this->occupiedWidth + $productWidth <= $this->availableWidth) {
             $this->products[] = $product;
             $this->occupiedWidth += $productWidth;
+
             return true;
         }
 
@@ -84,6 +86,7 @@ class ShelfLayoutDTO
     public function hasSpace(RankedProductDTO $product): bool
     {
         $productWidth = ($product->product->width ?? 10) * $product->facings;
+
         return ($this->occupiedWidth + $productWidth) <= $this->availableWidth;
     }
 
@@ -113,8 +116,7 @@ class ShelfLayoutDTO
             'occupied_width' => $this->occupiedWidth,
             'occupancy_percentage' => round($this->getOccupancyPercentage(), 2),
             'products_count' => count($this->products),
-            'products' => array_map(fn($p) => $p->toArray(), $this->products),
+            'products' => array_map(fn ($p) => $p->toArray(), $this->products),
         ];
     }
 }
-

@@ -8,8 +8,8 @@
 
 namespace Callcocam\LaravelRaptorPlanogram\Http\Controllers\Editor;
 
-use Callcocam\LaravelRaptorPlanogram\Models\Segment;
 use Callcocam\LaravelRaptor\Http\Controllers\ResourceController;
+use Callcocam\LaravelRaptorPlanogram\Models\Segment;
 use Illuminate\Http\Request;
 
 class SegmentController extends ResourceController

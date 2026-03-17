@@ -188,6 +188,7 @@ class AutoPlanogramService
                         'shelf_id' => $shelfLayout->id,
                         'shelf_index' => $shelfLayout->shelfIndex,
                     ]);
+
                     continue;
                 }
 

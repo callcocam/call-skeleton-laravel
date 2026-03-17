@@ -2,6 +2,4 @@
 
 namespace Callcocam\LaravelRaptorPlanogram\Contracts;
 
-interface PlanogramWorkflowContract
-{
-}
+interface PlanogramWorkflowContract {}

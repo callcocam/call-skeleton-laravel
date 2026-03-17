@@ -5,10 +5,10 @@ namespace Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate;
 use Callcocam\LaravelRaptorPlanogram\Contracts\PlanogramTenantConnectionResolverContract;
 use Callcocam\LaravelRaptorPlanogram\DTOs\AutoGenerate\AutoGenerateConfigDTO;
 use Callcocam\LaravelRaptorPlanogram\DTOs\SectionGenerate\SectionGenerateResultDTO;
-use Illuminate\Support\Facades\Log;
 use Callcocam\LaravelRaptorPlanogram\Models\Gondola;
 use Callcocam\LaravelRaptorPlanogram\Models\Planogram;
 use Callcocam\LaravelRaptorPlanogram\Services\AutoGenerate\ProductSelectionService;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Orquestra a geração do planograma por Section (módulo).
@@ -365,5 +365,4 @@ class SectionPlanogramService
 
         return min($maxForCurrent, max($fairFloor, $proportional));
     }
-
 }

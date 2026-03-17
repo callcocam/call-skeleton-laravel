@@ -22,7 +22,6 @@ class GondolaPdfPreviewController extends Controller
     {
         $data = $this->printService->prepareGondolaData($gondolaId);
 
-       
         // Carregar análises mais recentes
         $abcAnalysis = $this->gondolaAnalysisRepository->getLatestAbcAnalysis($gondolaId);
         $stockAnalysis = $this->gondolaAnalysisRepository->getLatestStockAnalysis($gondolaId);

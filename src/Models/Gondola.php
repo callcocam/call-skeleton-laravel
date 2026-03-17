@@ -14,6 +14,7 @@ use Callcocam\LaravelRaptorPlanogram\Contracts\GondolaWorkflowContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Route;
 
 class Gondola extends AbstractModel
 {
@@ -78,7 +79,7 @@ class Gondola extends AbstractModel
 
     public function getRouteGondolasAttribute()
     {
-        if (! \Illuminate\Support\Facades\Route::has('tenant.plannerates.editor.gondolas.edit')) {
+        if (! Route::has('tenant.plannerates.editor.gondolas.edit')) {
             return null;
         }
 

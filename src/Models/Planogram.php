@@ -69,7 +69,7 @@ class Planogram extends AbstractModel
         $gondolaIds = DB::connection(config('raptor.database.landlord_connection_name', 'landlord'))
             ->table('gondola_workflow_executions')
             ->where('status', GondolaWorkflowStatus::InProgress->value)
-            ->pluck('gondola_id'); 
+            ->pluck('gondola_id');
 
         return $this->hasMany(Gondola::class)->whereIn('id', $gondolaIds);
     }

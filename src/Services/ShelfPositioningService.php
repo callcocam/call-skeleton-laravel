@@ -13,7 +13,7 @@ class ShelfPositioningService
     /**
      * Calcula os furos em uma seção com base nas dimensões fornecidas
      *
-     * @param  array<string, mixed>  $section Dados da seção contendo altura, dimensões dos furos, etc
+     * @param  array<string, mixed>  $section  Dados da seção contendo altura, dimensões dos furos, etc
      * @return array<int, array<string, int|float>> Array de furos calculados com suas dimensões e posições
      */
     public function calculateHoles(array $section): array
@@ -52,8 +52,8 @@ class ShelfPositioningService
     /**
      * Encontra o furo mais próximo de uma posição alvo
      *
-     * @param  float  $targetPosition Posição ideal onde queremos colocar a prateleira
-     * @param  array<int, array<string, int|float>>  $holes Array de furos disponíveis
+     * @param  float  $targetPosition  Posição ideal onde queremos colocar a prateleira
+     * @param  array<int, array<string, int|float>>  $holes  Array de furos disponíveis
      * @return array<string, int|float>|null O furo mais próximo da posição alvo
      */
     public function findClosestHole(float $targetPosition, array $holes): ?array
@@ -81,11 +81,11 @@ class ShelfPositioningService
     /**
      * Calcula a posição vertical (top) da prateleira com base nos furos disponíveis
      *
-     * @param  int  $totalShelves Total de prateleiras
-     * @param  float  $shelfHeight Altura da prateleira
-     * @param  array<int, array<string, int|float>>  $holes Array de furos disponíveis
-     * @param  int  $currentIndex Índice da prateleira atual
-     * @param  float  $scaleFactor Fator de escala para ajuste de tamanho
+     * @param  int  $totalShelves  Total de prateleiras
+     * @param  float  $shelfHeight  Altura da prateleira
+     * @param  array<int, array<string, int|float>>  $holes  Array de furos disponíveis
+     * @param  int  $currentIndex  Índice da prateleira atual
+     * @param  float  $scaleFactor  Fator de escala para ajuste de tamanho
      * @return float Posição superior da prateleira
      */
     public function calculateShelfPosition(
@@ -149,12 +149,12 @@ class ShelfPositioningService
     /**
      * Retorna um array com todos os estilos CSS necessários para posicionar a prateleira
      *
-     * @param  int  $totalShelves Total de prateleiras
-     * @param  float  $shelfHeight Altura da prateleira
-     * @param  float  $sectionWidth Largura da seção
-     * @param  array<int, array<string, int|float>>  $holes Array de furos disponíveis
-     * @param  int  $currentIndex Índice da prateleira atual
-     * @param  float  $scaleFactor Fator de escala para ajuste de tamanho
+     * @param  int  $totalShelves  Total de prateleiras
+     * @param  float  $shelfHeight  Altura da prateleira
+     * @param  float  $sectionWidth  Largura da seção
+     * @param  array<int, array<string, int|float>>  $holes  Array de furos disponíveis
+     * @param  int  $currentIndex  Índice da prateleira atual
+     * @param  float  $scaleFactor  Fator de escala para ajuste de tamanho
      * @return array<string, string> Array associativo com estilos CSS
      */
     public function getShelfStyleArray(
@@ -188,7 +188,7 @@ class ShelfPositioningService
     /**
      * Converte um array de estilos em uma string CSS inline
      *
-     * @param  array<string, string>  $styleArray Array associativo com estilos CSS
+     * @param  array<string, string>  $styleArray  Array associativo com estilos CSS
      * @return string String formatada para uso como estilo inline
      */
     public function convertStyleArrayToString(array $styleArray): string

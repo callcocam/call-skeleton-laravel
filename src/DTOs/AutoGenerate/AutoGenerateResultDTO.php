@@ -10,7 +10,7 @@ namespace Callcocam\LaravelRaptorPlanogram\DTOs\AutoGenerate;
 
 /**
  * DTO de Resultado da Geração Automática
- * 
+ *
  * Contém o layout completo gerado:
  * - Prateleiras com produtos alocados
  * - Produtos que não couberam
@@ -55,7 +55,7 @@ class AutoGenerateResultDTO
 
     /**
      * Converter para formato de changes do editor
-     * 
+     *
      * Este é o formato que o frontend espera para aplicar as mudanças
      */
     public function toEditorChanges(string $gondolaId): array
@@ -89,8 +89,8 @@ class AutoGenerateResultDTO
     public function toArray(): array
     {
         return [
-            'shelves' => array_map(fn($s) => $s->toArray(), $this->shelves),
-            'unallocated_products' => array_map(fn($p) => $p->toArray(), $this->unallocatedProducts),
+            'shelves' => array_map(fn ($s) => $s->toArray(), $this->shelves),
+            'unallocated_products' => array_map(fn ($p) => $p->toArray(), $this->unallocatedProducts),
             'statistics' => [
                 'total_allocated' => $this->totalAllocated,
                 'total_unallocated' => $this->totalUnallocated,
@@ -101,4 +101,3 @@ class AutoGenerateResultDTO
         ];
     }
 }
-

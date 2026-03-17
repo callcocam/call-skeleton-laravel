@@ -3,12 +3,12 @@
 namespace Callcocam\LaravelRaptorPlanogram\Services\SectionGenerate;
 
 use Callcocam\LaravelRaptorPlanogram\DTOs\SectionGenerate\SectionAllocationResultDTO;
+use Callcocam\LaravelRaptorPlanogram\Models\Layer;
 use Callcocam\LaravelRaptorPlanogram\Models\Section;
+use Callcocam\LaravelRaptorPlanogram\Models\Segment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Callcocam\LaravelRaptorPlanogram\Models\Layer;
-use Callcocam\LaravelRaptorPlanogram\Models\Segment;
 
 /**
  * Limpa e persiste a alocação de uma section (Segment + Layer).
@@ -112,10 +112,10 @@ class SectionPersistenceService
         return $created;
     }
 
-   /**
+    /**
      * Inverte ordering dos segments de cada shelf (para flow right_to_left).
      *
-     * @param array<string, Segment[]> $segmentsByShelf
+     * @param  array<string, Segment[]>  $segmentsByShelf
      */
     protected function reverseShelfOrdering(array $segmentsByShelf): void
     {
