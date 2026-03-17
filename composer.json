@@ -1,26 +1,27 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "callcocam/laravel-raptor-planogram",
+    "description": "This is my package laravel-raptor-planogram",
     "keywords": [
-        ":vendor_name",
+        "Claudio Campos",
         "laravel",
-        ":package_slug"
+        "laravel-raptor-planogram"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/callcocam/laravel-raptor-planogram",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "Claudio Campos",
+            "email": "contato@sigasmar.com.br",
             "role": "Developer"
         }
     ],
     "require": {
         "php": "^8.2",
+        "callcocam/laravel-raptor": "dev-main",
         "spatie/laravel-package-tools": "^1.16",
         "illuminate/contracts": "^12.0"
     },
-    "require-dev": {     
+    "require-dev": {
         "laravel/pint": "^1.18",
         "nunomaduro/collision": "^8.6",
         "orchestra/testbench": "^9.0.0||^8.22.0",
@@ -30,19 +31,19 @@
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src/",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "Callcocam\\LaravelRaptorPlanogram\\": "src/",
+            "Callcocam\\LaravelRaptorPlanogram\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests/",
+            "Callcocam\\LaravelRaptorPlanogram\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
     "scripts": {
         "post-autoload-dump": "@composer run prepare",
-        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "clear": "@php vendor/bin/testbench package:purge-laravel-raptor-planogram --ansi",
         "prepare": "@php vendor/bin/testbench package:discover --ansi",
         "build": [
             "@composer run prepare",
@@ -68,10 +69,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Callcocam\\LaravelRaptorPlanogram\\LaravelRaptorPlanogramServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "LaravelRaptorPlanogram": "Callcocam\\LaravelRaptorPlanogram\\Facades\\LaravelRaptorPlanogram"
             }
         }
     },

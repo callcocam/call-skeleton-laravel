@@ -1,0 +1,191 @@
+<script lang="ts">
+import { validateGondolaFields } from '@planogram/composables/plannerate/v3/useGondolaFields';
+
+export const validate = (data: {
+    gondolaName: string;
+    location: string;
+    side: string;
+    scaleFactor: number;
+    flow: 'left_to_right' | 'right_to_left';
+    status: string;
+}): boolean => {
+    // Usa validação do composable
+    return validateGondolaFields(data);
+};
+</script>
+
+<script setup lang="ts">
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from '~/components/ui/select';
+import { InfoIcon } from 'lucide-vue-next';
+import { computed } from 'vue';
+
+interface Props {
+    modelValue: {
+        gondolaName: string;
+        location: string;
+        side: string;
+        scaleFactor: number;
+        flow: 'left_to_right' | 'right_to_left';
+        status: string;
+    };
+    errors?: Record<string, string>;
+}
+
+interface Emits {
+    (e: 'update:modelValue', value: Props['modelValue']): void;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+const formData = computed({
+    get: () => props.modelValue,
+    set: (value) => emit('update:modelValue', value),
+});
+
+const setFlow = (flowValue: 'left_to_right' | 'right_to_left') => {
+    formData.value = { ...formData.value, flow: flowValue };
+};
+</script>
+
+<template>
+    <div class="space-y-4">
+        <div class="flex items-center gap-2">
+            <div class="rounded-full bg-primary/10 p-2">
+                <InfoIcon class="h-5 w-5 text-primary" />
+            </div>
+            <h3 class="text-lg font-medium">Informações Básicas</h3>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="space-y-2">
+                <Label for="gondolaName">Nome da Gôndola *</Label>
+                <Input
+                    id="gondolaName"
+                    v-model="formData.gondolaName"
+                    required
+                    :class="{
+                        'border-red-500': errors?.gondolaName,
+                    }"
+                />
+                <p v-if="errors?.gondolaName" class="text-xs text-red-500">
+                    {{ errors.gondolaName }}
+                </p>
+            </div>
+
+            <div class="space-y-2">
+                <Label for="location">Localização Da Gôndola</Label>
+                <Input
+                    id="location"
+                    v-model="formData.location"
+                    placeholder="Ex.: Corredor de Bebidas"
+                    :class="{
+                        'border-red-500': errors?.location,
+                    }"
+                />
+                <p v-if="errors?.location" class="text-xs text-red-500">
+                    {{ errors.location }}
+                </p>
+                <p v-else class="text-xs text-muted-foreground">
+                    Corredor onde a gôndola está localizada
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div class="space-y-2">
+                <Label for="side">Lado do Corredor *</Label>
+                <Input
+                    id="side"
+                    v-model="formData.side"
+                    placeholder="Ex.: A, B ou 1, 2"
+                    :class="{
+                        'border-red-500': errors?.side,
+                    }"
+                />
+                <p v-if="errors?.side" class="text-xs text-red-500">
+                    {{ errors.side }}
+                </p>
+            </div>
+
+            <div class="space-y-2">
+                <Label for="scaleFactor">Fator de Escala *</Label>
+                <Input
+                    id="scaleFactor"
+                    type="number"
+                    v-model.number="formData.scaleFactor"
+                    min="1"
+                    :class="{
+                        'border-red-500': errors?.scaleFactor,
+                    }"
+                />
+                <p v-if="errors?.scaleFactor" class="text-xs text-red-500">
+                    {{ errors.scaleFactor }}
+                </p>
+            </div>
+
+            <div class="space-y-2">
+                <Label for="status">Status</Label>
+                <Select v-model="formData.status">
+                    <SelectTrigger>
+                        <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectLabel>Status</SelectLabel>
+                            <SelectItem value="published">Publicado</SelectItem>
+                            <SelectItem value="draft">Rascunho</SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <Label>Posição do Fluxo *</Label>
+            <div
+                class="grid grid-cols-2 gap-2 rounded-md border"
+                :class="{ 'border-red-500': errors?.flow }"
+            >
+                <Button
+                    :variant="
+                        formData.flow === 'left_to_right'
+                            ? 'default'
+                            : 'outline'
+                    "
+                    @click="setFlow('left_to_right')"
+                    type="button"
+                    class="justify-center rounded-r-none border-r"
+                >
+                    Esquerda para Direita
+                </Button>
+                <Button
+                    :variant="
+                        formData.flow === 'right_to_left'
+                            ? 'default'
+                            : 'outline'
+                    "
+                    @click="setFlow('right_to_left')"
+                    type="button"
+                    class="justify-center rounded-l-none"
+                >
+                    Direita para Esquerda
+                </Button>
+            </div>
+            <p v-if="errors?.flow" class="text-xs text-red-500">
+                {{ errors.flow }}
+            </p>
+        </div>
+    </div>
+</template>
